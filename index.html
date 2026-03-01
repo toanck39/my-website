@@ -538,7 +538,8 @@
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
+  // ===== SLIDER =====
   const slidesEl = document.getElementById('slides');
   const dotsEl = document.getElementById('dots');
   const total = document.querySelectorAll('.slide').length;
@@ -556,7 +557,20 @@
     current = (n + total) % total;
     slidesEl.style.transform = `translateX(-${current * 100}%)`;
     document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
-    // Playlist click handler
+    resetTimer();
+  }
+
+  function resetTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => goTo(current + 1), 4500);
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+
+  resetTimer();
+
+  // ===== PLAYLIST =====
   [
     { playlist: 'playlist-viet', audio: 'audio-viet' },
     { playlist: 'playlist-anh', audio: 'audio-anh' },
@@ -573,10 +587,6 @@
       });
     });
   });
-
-  resetTimer();
-  }
-
-  function resetTimer() {
-    clearInterval(timer);
-    timer = setInterval(() => goTo(current + 1), 450
+</script>
+</body>
+</html>
