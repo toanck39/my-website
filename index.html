@@ -7,62 +7,6 @@
   <title>Website Học Tập - Lê Huy Khải</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    /* ===== MUSIC PLAYER ===== */
-.music-section {
-  background: var(--white);
-  padding: 24px 28px;
-  border-top: 3px solid var(--red);
-}
-
-.music-heading {
-  font-size: 15px;
-  color: var(--red);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 16px;
-}
-
-.music-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.music-col {
-  background: var(--light);
-  border-radius: 8px;
-  padding: 16px;
-  border-left: 4px solid var(--red);
-}
-
-.music-col-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--red);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 14px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(176,28,46,0.2);
-}
-
-.music-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.music-item span {
-  font-size: 13px;
-  color: var(--text);
-  font-weight: 500;
-}
-
-.music-item audio {
-  width: 100%;
-  height: 32px;
-}
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -196,51 +140,14 @@
       position: relative;
       background-size: cover;
       background-position: center;
+      background-repeat: no-repeat;
+      background-color: #1a1a2e;
     }
 
-    /* Gradient overlay */
     .slide::after {
       content: '';
       position: absolute; inset: 0;
       background: linear-gradient(to bottom, rgba(0,0,0,0.05) 60%, rgba(0,0,0,0.55));
-    }
-
-    /* Màu nền dự phòng nếu ảnh chưa load */
-    .slide { background-color: #1a1a2e; }
-
-    .slide-inner {
-      position: absolute;
-      inset: 0; z-index: 1;
-      display: flex; align-items: center; justify-content: center;
-      flex-direction: column;
-    }
-
-    .slide-label {
-      position: absolute;
-      bottom: 20px; right: 20px;
-      z-index: 2;
-      background: rgba(0,0,0,0.55);
-      color: #fff;
-      font-size: 12px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 6px 14px;
-      border-radius: 2px;
-      backdrop-filter: blur(4px);
-    }
-
-    .slide-icon {
-      font-size: 80px;
-      opacity: 0.3;
-      filter: drop-shadow(0 4px 24px rgba(0,0,0,0.4));
-    }
-
-    .slide-text {
-      color: rgba(255,255,255,0.8);
-      font-size: 22px;
-      font-family: 'Playfair Display', serif;
-      margin-top: 12px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.4);
     }
 
     /* Arrow buttons */
@@ -277,7 +184,7 @@
     }
     .dot.active { background: var(--gold); transform: scale(1.25); }
 
-    /* ===== INFO CARDS BELOW SLIDER ===== */
+    /* ===== INFO CARDS ===== */
     .info-section {
       padding: 28px 28px;
       display: grid;
@@ -295,12 +202,126 @@
       transition: transform 0.2s, box-shadow 0.2s;
     }
     .card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(176,28,46,0.12); }
-
     .card-icon { font-size: 28px; margin-bottom: 10px; }
     .card h3 { font-size: 14px; color: var(--red); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
     .card p { font-size: 13px; color: #555; line-height: 1.6; }
 
-    /* Ticker at bottom of sidebar */
+    /* ===== MUSIC PLAYER ===== */
+    .music-section {
+      background: var(--white);
+      padding: 24px 28px;
+      border-top: 3px solid var(--red);
+    }
+
+    .music-heading {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .music-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .music-col {
+      background: #1a1a2e;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .music-col-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 14px 16px;
+      background: var(--red);
+      text-align: center;
+    }
+
+    .now-playing {
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .now-playing audio {
+      width: 100%;
+      height: 32px;
+    }
+
+    .now-playing-label {
+      font-size: 11px;
+      color: var(--gold);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .playlist {
+      list-style: none;
+      padding: 8px 0;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .playlist::-webkit-scrollbar { width: 4px; }
+    .playlist::-webkit-scrollbar-track { background: transparent; }
+    .playlist::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+    .playlist li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-left: 3px solid transparent;
+    }
+
+    .playlist li:hover { background: rgba(255,255,255,0.06); }
+
+    .playlist li.active {
+      background: rgba(201,168,76,0.15);
+      border-left-color: var(--gold);
+    }
+
+    .playlist li.active .song-name { color: var(--gold); }
+
+    .song-num {
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      width: 18px;
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .song-name {
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .song-play-icon {
+      font-size: 11px;
+      color: var(--gold);
+      opacity: 0;
+      flex-shrink: 0;
+    }
+
+    .playlist li.active .song-play-icon,
+    .playlist li:hover .song-play-icon { opacity: 1; }
+
+    /* ===== SIDEBAR BADGE ===== */
     .sidebar-badge {
       margin: auto 16px 16px;
       background: rgba(0,0,0,0.2);
@@ -312,6 +333,44 @@
       line-height: 1.5;
     }
 
+    /* ===== FOOTER ===== */
+    footer {
+      background: linear-gradient(135deg, #1a6fa8 0%, #1e90cc 100%);
+      background-image: url('images/background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-blend-mode: overlay;
+      color: white;
+      text-align: center;
+      padding: 36px 20px;
+      position: relative;
+    }
+
+    footer::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(10, 80, 140, 0.75);
+    }
+
+    .footer-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-owner { font-size: 15px; margin-bottom: 4px; }
+    .footer-content p { font-size: 14px; color: rgba(255,255,255,0.92); }
+    .footer-content strong { color: #ffffff; }
+    .footer-bottom {
+      margin-top: 12px;
+      font-size: 12px !important;
+      color: rgba(255,255,255,0.6) !important;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      padding-top: 12px;
+    }
+
     @media (max-width: 768px) {
       .main-layout { flex-direction: column; }
       nav.sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 4px; }
@@ -319,56 +378,9 @@
       nav.sidebar a:hover, nav.sidebar a.active { border-bottom-color: var(--gold); padding-left: 14px; }
       .slider-wrapper { height: 260px; }
       .info-section { grid-template-columns: 1fr; padding: 16px; }
+      .music-grid { grid-template-columns: 1fr; }
       .site-title { font-size: 18px; }
     }
-  /* ===== FOOTER ===== */
-footer {
-  background: linear-gradient(135deg, #1a6fa8 0%, #1e90cc 100%);
-  background-image: url('images/background.jpg');
-  background-size: cover;
-  background-position: center;
-  background-blend-mode: overlay;
-  color: white;
-  text-align: center;
-  padding: 36px 20px;
-  position: relative;
-}
-
-footer::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: rgba(10, 80, 140, 0.75);
-}
-
-.footer-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.footer-owner {
-  font-size: 15px;
-  margin-bottom: 4px;
-}
-
-.footer-content p {
-  font-size: 14px;
-  color: rgba(255,255,255,0.92);
-}
-
-.footer-content strong {
-  color: #ffffff;
-}
-
-.footer-bottom {
-  margin-top: 12px;
-  font-size: 12px !important;
-  color: rgba(255,255,255,0.6) !important;
-  border-top: 1px solid rgba(255,255,255,0.2);
-  padding-top: 12px;
-}
   </style>
 </head>
 <body>
@@ -423,10 +435,8 @@ footer::before {
         <div class="slide" style="background-image: url('images/slide4.jpg');"></div>
         <div class="slide" style="background-image: url('images/slide5.jpg');"></div>
       </div>
-
       <button class="arrow left" id="prevBtn">&#8249;</button>
       <button class="arrow right" id="nextBtn">&#8250;</button>
-
       <div class="dots" id="dots"></div>
     </div>
 
@@ -452,14 +462,89 @@ footer::before {
   </div>
 </div>
 
-<script>
+<!-- MUSIC PLAYER -->
+<div class="music-section">
+  <h3 class="music-heading">🎵 Nghe Nhạc</h3>
+  <div class="music-grid">
+
+    <!-- CỘT 1: NHẠC VIỆT -->
+    <div class="music-col">
+      <div class="music-col-title">🇻🇳 Nhạc Việt</div>
+      <div class="now-playing">
+        <div class="now-playing-label">▶ Đang phát</div>
+        <audio id="audio-viet" controls>
+          <source src="music/loi-cua-gio.mp3" type="audio/mpeg">
+        </audio>
+      </div>
+      <ul class="playlist" id="playlist-viet">
+        <li class="active" data-src="music/loi-cua-gio.mp3"><span class="song-num">1</span><span class="song-name">Lời của gió</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/neu-phai-xa-nhau.mp3"><span class="song-num">2</span><span class="song-name">Nếu phải xa nhau</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/bai-3-viet.mp3"><span class="song-num">3</span><span class="song-name">Bài hát 3</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/bai-4-viet.mp3"><span class="song-num">4</span><span class="song-name">Bài hát 4</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/bai-5-viet.mp3"><span class="song-num">5</span><span class="song-name">Bài hát 5</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/bai-6-viet.mp3"><span class="song-num">6</span><span class="song-name">Bài hát 6</span><span class="song-play-icon">▶</span></li>
+      </ul>
+    </div>
+
+    <!-- CỘT 2: NHẠC ANH -->
+    <div class="music-col">
+      <div class="music-col-title">🎸 Nhạc Anh</div>
+      <div class="now-playing">
+        <div class="now-playing-label">▶ Đang phát</div>
+        <audio id="audio-anh" controls>
+          <source src="music/sometimes.mp3" type="audio/mpeg">
+        </audio>
+      </div>
+      <ul class="playlist" id="playlist-anh">
+        <li class="active" data-src="music/sometimes.mp3"><span class="song-num">1</span><span class="song-name">Sometimes</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/in-your-eyes.mp3"><span class="song-num">2</span><span class="song-name">In Your Eyes</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/bai-3-anh.mp3"><span class="song-num">3</span><span class="song-name">Bài hát 3</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/bai-4-anh.mp3"><span class="song-num">4</span><span class="song-name">Bài hát 4</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/bai-5-anh.mp3"><span class="song-num">5</span><span class="song-name">Bài hát 5</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/bai-6-anh.mp3"><span class="song-num">6</span><span class="song-name">Bài hát 6</span><span class="song-play-icon">▶</span></li>
+      </ul>
+    </div>
+
+    <!-- CỘT 3: NHẠC HOT TIKTOK -->
+    <div class="music-col">
+      <div class="music-col-title">🔥 Nhạc Hot TikTok</div>
+      <div class="now-playing">
+        <div class="now-playing-label">▶ Đang phát</div>
+        <audio id="audio-tiktok" controls>
+          <source src="music/anh-vui.mp3" type="audio/mpeg">
+        </audio>
+      </div>
+      <ul class="playlist" id="playlist-tiktok">
+        <li class="active" data-src="music/anh-vui.mp3"><span class="song-num">1</span><span class="song-name">Anh vui</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/em-say.mp3"><span class="song-num">2</span><span class="song-name">Em say</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/bai-3-tiktok.mp3"><span class="song-num">3</span><span class="song-name">Bài hát 3</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/bai-4-tiktok.mp3"><span class="song-num">4</span><span class="song-name">Bài hát 4</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/bai-5-tiktok.mp3"><span class="song-num">5</span><span class="song-name">Bài hát 5</span><span class="song-play-icon">▶</span></li>
+        <li data-src="music/bai-6-tiktok.mp3"><span class="song-num">6</span><span class="song-name">Bài hát 6</span><span class="song-play-icon">▶</span></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-content">
+    <p class="footer-owner">Đơn vị chủ quản: <strong>WEBSITE HỌC TẬP CỦA LÊ HUY KHẢI</strong></p>
+    <p>📍 <strong>Địa chỉ:</strong> Hà Nội, Việt Nam</p>
+    <p>📞 <strong>Điện thoại:</strong> 0123 456 789</p>
+    <p>✉️ <strong>Email:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="670b020f121e0c0f060e27020a060e0b4904080a">[email&#160;protected]</a></p>
+    <p class="footer-bottom">Thiết kế và phát triển bởi Lê Huy Khải</p>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   const slidesEl = document.getElementById('slides');
   const dotsEl = document.getElementById('dots');
   const total = document.querySelectorAll('.slide').length;
   let current = 0;
   let timer;
 
-  // Create dots
   for (let i = 0; i < total; i++) {
     const d = document.createElement('button');
     d.className = 'dot' + (i === 0 ? ' active' : '');
@@ -471,39 +556,27 @@ footer::before {
     current = (n + total) % total;
     slidesEl.style.transform = `translateX(-${current * 100}%)`;
     document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
-    resetTimer();
+    // Playlist click handler
+  [
+    { playlist: 'playlist-viet', audio: 'audio-viet' },
+    { playlist: 'playlist-anh', audio: 'audio-anh' },
+    { playlist: 'playlist-tiktok', audio: 'audio-tiktok' }
+  ].forEach(({ playlist, audio }) => {
+    const ul = document.getElementById(playlist);
+    const player = document.getElementById(audio);
+    ul.querySelectorAll('li').forEach(li => {
+      li.addEventListener('click', () => {
+        ul.querySelectorAll('li').forEach(x => x.classList.remove('active'));
+        li.classList.add('active');
+        player.src = li.dataset.src;
+        player.play();
+      });
+    });
+  });
+
+  resetTimer();
   }
 
   function resetTimer() {
     clearInterval(timer);
-    timer = setInterval(() => goTo(current + 1), 4500);
-  }
-
-  document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
-  document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
-
-  resetTimer();
-</script>
-<!-- MUSIC PLAYER -->
-<div class="music-section">
-  <div class="music-player">
-    <div class="music-title">🎵 Nhạc Nền</div>
-    <audio controls>
-      <source src="music/nhac1.mp3" type="audio/mpeg">
-      <source src="music/nhac2.mp3" type="audio/mpeg">
-      <source src="music/nhac3.mp3" type="audio/mpeg">
-    </audio>
-  </div>
-</div>
-<!-- FOOTER -->
-<footer>
-  <div class="footer-content">
-    <p class="footer-owner">Đơn vị chủ quản: <strong>WEBSITE HỌC TẬP CỦA LÊ HUY KHẢI</strong></p>
-    <p>📍 <strong>Địa chỉ:</strong> Hà Nội, Việt Nam</p>
-    <p>📞 <strong>Điện thoại:</strong> 0123 456 789</p>
-    <p>✉️ <strong>Email:</strong> lehuykhai@email.com</p>
-    <p class="footer-bottom">Thiết kế và phát triển bởi Lê Huy Khải</p>
-  </div>
-</footer>
-</body>
-</html>
+    timer = setInterval(() => goTo(current + 1), 450
