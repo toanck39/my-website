@@ -583,7 +583,8 @@
         ul.querySelectorAll('li').forEach(x => x.classList.remove('active'));
         li.classList.add('active');
         player.src = li.dataset.src;
-        player.play();
+        player.load();
+        player.play().catch(() => {});
       });
     });
   });
