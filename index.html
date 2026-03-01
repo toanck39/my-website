@@ -7,6 +7,62 @@
   <title>Website Học Tập - Lê Huy Khải</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
+    /* ===== MUSIC PLAYER ===== */
+.music-section {
+  background: var(--white);
+  padding: 24px 28px;
+  border-top: 3px solid var(--red);
+}
+
+.music-heading {
+  font-size: 15px;
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.music-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.music-col {
+  background: var(--light);
+  border-radius: 8px;
+  padding: 16px;
+  border-left: 4px solid var(--red);
+}
+
+.music-col-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(176,28,46,0.2);
+}
+
+.music-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.music-item span {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.music-item audio {
+  width: 100%;
+  height: 32px;
+}
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -428,6 +484,17 @@ footer::before {
 
   resetTimer();
 </script>
+<!-- MUSIC PLAYER -->
+<div class="music-section">
+  <div class="music-player">
+    <div class="music-title">🎵 Nhạc Nền</div>
+    <audio controls>
+      <source src="music/nhac1.mp3" type="audio/mpeg">
+      <source src="music/nhac2.mp3" type="audio/mpeg">
+      <source src="music/nhac3.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+</div>
 <!-- FOOTER -->
 <footer>
   <div class="footer-content">
