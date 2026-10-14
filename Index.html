@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Máy tính sức mua Kho - VHM & FPT</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; margin: 0; background: #f5f7fb; color: #1f2937; }
+    .wrap { max-width: 760px; margin: 32px auto; padding: 16px; }
+    .card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 8px 28px rgba(0,0,0,.08); }
+    h1 { margin-top: 0; font-size: 26px; text-align: center; }
+    .note { background: #eef6ff; border: 1px solid #cfe6ff; border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; line-height: 1.5; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    label { font-weight: 700; }
+    input { width: 100%; padding: 12px 13px; font-size: 18px; border: 1px solid #cfd6df; border-radius: 10px; outline: none; }
+    input:focus { border-color: #6b8afd; box-shadow: 0 0 0 3px rgba(107,138,253,.12); }
+    .unit { font-size: 13px; color: #6b7280; }
+    button { width: 100%; margin-top: 18px; border: 0; border-radius: 10px; padding: 13px; font-size: 18px; font-weight: 700; cursor: pointer; background: #111827; color: white; }
+    .results { margin-top: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .result { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; }
+    .result .title { font-size: 13px; color: #6b7280; margin-bottom: 6px; }
+    .result .value { font-size: 22px; font-weight: 800; }
+    .full { grid-column: 1 / -1; }
+    .positive { color: #0a8f4d; }
+    .negative { color: #d12f2f; }
+    .warn { margin-top: 14px; font-size: 13px; color: #6b7280; line-height: 1.5; }
+    details { margin-top: 20px; border-top: 1px solid #e5e7eb; padding-top: 14px; }
+    summary { cursor: pointer; font-weight: 700; }
+    .formula { margin-top: 10px; font-family: Consolas, monospace; font-size: 13px; line-height: 1.65; white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; }
+    @media (max-width: 640px) { .grid, .results { grid-template-columns: 1fr; } .full { grid-column: auto; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Máy tính sức mua Kho</h1>
+    <div class="note">
+      Nhập <b>số lượng cổ phiếu</b> và <b>giá hiện tại</b> của VHM, FPT.
+      Giá nhập theo <b>đơn vị nghìn đồng</b>: ví dụ VHM 61.0, FPT 57.1.
+    </div>
+
+    <div class="grid">
+      <div class="field">
+        <label for="vhmQty">Số lượng VHM</label>
+        <input id="vhmQty" type="number" value="35000" min="0" step="1000">
+        <div class="unit">cổ phiếu</div>
+      </div>
+      <div class="field">
+        <label for="vhmPrice">Giá VHM</label>
+        <input id="vhmPrice" type="number" value="61.0" min="0" step="0.1">
+        <div class="unit">nghìn đồng/cp</div>
+      </div>
+      <div class="field">
+        <label for="fptQty">Số lượng FPT</label>
+        <input id="fptQty" type="number" value="35000" min="0" step="1000">
+        <div class="unit">cổ phiếu</div>
+      </div>
+      <div class="field">
+        <label for="fptPrice">Giá FPT</label>
+        <input id="fptPrice" type="number" value="57.1" min="0" step="0.1">
+        <div class="unit">nghìn đồng/cp</div>
+      </div>
+    </div>
+
+    <button onclick="calculate()">TÍNH SỨC MUA</button>
+
+    <div class="results">
+      <div class="result">
+        <div class="title">NAV2 ước tính</div>
+        <div id="nav2" class="value">-</div>
+      </div>
+      <div class="result">
+        <div class="title">Tỷ lệ cọc Kho</div>
+        <div id="ratio" class="value">-</div>
+      </div>
+      <div class="result full">
+        <div class="title">SỨC MUA KHO HIỆN TẠI</div>
+        <div id="buyingPower" class="value">-</div>
+      </div>
+    </div>
+
+    <div id="status" class="warn"></div>
+
+    <details>
+      <summary>Thông số Kho đang dùng</summary>
+      <div class="formula">NAV1 = 1.019.839.225 đ
+Giá vốn VHM = 65.209 nghìn/cp
+Giá vốn FPT = 58.642 nghìn/cp
+Phí mua = 0,15%
+Phí bán = 0,25%
+Phí ứng = 0,09% trên tiền bán sau phí
+Lãi vay lũy kế cơ sở = 7.609.959 đ
+Cọc yêu cầu = 20%
+
+Công thức:
+GT mua tính cọc = tổng giá vốn × 1,0015
+Tiền bán ròng = GT thị trường × 0,9975 × 0,9991
+NAV2 = NAV1 + Tiền bán ròng - GT mua tính cọc - Lãi vay
+Sức mua = 5 × NAV2 - GT mua tính cọc</div>
+    </details>
+
+    <div class="warn">
+      Lưu ý: nếu thay đổi số lượng cổ phiếu, công cụ giả định số cổ phiếu đó vẫn có
+      giá vốn bình quân VHM 65.209 và FPT 58.642 như danh mục hiện tại.
+      Lãi vay lũy kế đang cố định theo mốc 14/10/2026.
+    </div>
+  </div>
+</div>
+
+<script>
+  const NAV1 = 1019839225;
+  const VHM_COST = 65209;
+  const FPT_COST = 58642;
+  const BUY_FEE = 0.0015;
+  const SELL_NET_FACTOR = 0.9975 * 0.9991;
+  const ACCRUED_INTEREST = 7609959;
+
+  function money(n) {
+    return Math.round(n).toLocaleString('vi-VN') + ' đ';
+  }
+
+  function calculate() {
+    const vhmQty = Number(document.getElementById('vhmQty').value || 0);
+    const vhmPrice = Number(document.getElementById('vhmPrice').value || 0) * 1000;
+    const fptQty = Number(document.getElementById('fptQty').value || 0);
+    const fptPrice = Number(document.getElementById('fptPrice').value || 0) * 1000;
+
+    const grossCost = vhmQty * VHM_COST + fptQty * FPT_COST;
+    const totalBuyValue = grossCost * (1 + BUY_FEE);
+
+    const marketValue = vhmQty * vhmPrice + fptQty * fptPrice;
+    const netSellValue = marketValue * SELL_NET_FACTOR;
+
+    const nav2 = NAV1 + netSellValue - totalBuyValue - ACCRUED_INTEREST;
+    const ratio = totalBuyValue > 0 ? nav2 / totalBuyValue : 0;
+    const buyingPower = 5 * nav2 - totalBuyValue;
+
+    document.getElementById('nav2').textContent = money(nav2);
+    document.getElementById('ratio').textContent = (ratio * 100).toFixed(2) + '%';
+
+    const bp = document.getElementById('buyingPower');
+    bp.textContent = money(buyingPower);
+    bp.className = 'value ' + (buyingPower >= 0 ? 'positive' : 'negative');
+
+    const status = document.getElementById('status');
+    if (ratio < 0.20) {
+      const shortfall = 0.20 * totalBuyValue - nav2;
+      status.innerHTML = 'Tỷ lệ cọc đang dưới 20%. Thiếu khoảng <b>' + money(shortfall) + '</b> để trở lại 20%.';
+    } else {
+      status.innerHTML = 'Tỷ lệ cọc đang từ 20% trở lên. Sức mua dương có thể dùng để mô phỏng lệnh mua mới.';
+    }
+  }
+
+  ['vhmQty','vhmPrice','fptQty','fptPrice'].forEach(id => {
+    document.getElementById(id).addEventListener('input', calculate);
+  });
+
+  calculate();
+</script>
+</body>
+</html>
