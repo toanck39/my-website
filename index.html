@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Máy tính sức mua Kho</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#111827; --line:#334155; --text:#f8fafc;
+    --muted:#94a3b8; --green:#22c55e; --red:#ef4444; --blue:#38bdf8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+  body{display:flex;justify-content:center;align-items:flex-start}
+  .app{
+    width:min(980px,100%);
+    min-height:100dvh;
+    padding:10px;
+    display:grid;
+    grid-template-rows:auto auto auto;
+    gap:8px;
+  }
+  h1{
+    margin:0;
+    text-align:center;
+    font-size:clamp(18px,3.2vw,28px);
+    line-height:1.1;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+  }
+  .box{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:8px;
+  }
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:4px;
+    font-weight:700;
+  }
+  input{
+    width:100%;
+    min-width:0;
+    border:1px solid var(--line);
+    background:#020617;
+    color:var(--text);
+    border-radius:9px;
+    padding:10px 8px;
+    font-size:clamp(18px,4vw,24px);
+    font-weight:800;
+    text-align:center;
+    outline:none;
+  }
+  input:focus{border-color:var(--blue)}
+  .unit{font-size:11px;color:var(--muted);text-align:center;margin-top:3px}
+  .results{
+    display:grid;
+    grid-template-columns:1.2fr 1fr 1.4fr;
+    gap:8px;
+  }
+  .result{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px;
+    text-align:center;
+  }
+  .result .k{font-size:12px;color:var(--muted);font-weight:700}
+  .result .v{
+    margin-top:5px;
+    font-size:clamp(20px,4vw,30px);
+    font-weight:900;
+    line-height:1;
+  }
+  .small{
+    font-size:11px;color:var(--muted);text-align:center;line-height:1.25;
+  }
+  .positive{color:var(--green)}
+  .negative{color:var(--red)}
+  .neutral{color:var(--blue)}
+  @media (max-width:700px){
+    .app{padding:7px;gap:6px}
+    .grid{grid-template-columns:repeat(2,1fr);gap:6px}
+    .results{grid-template-columns:1fr 1fr;gap:6px}
+    .result:last-child{grid-column:1/-1}
+    .box,.result{padding:7px}
+    input{padding:8px 6px}
+  }
+  @media (max-height:620px){
+    .app{padding:5px;gap:5px}
+    h1{font-size:17px}
+    .box,.result{padding:6px}
+    input{padding:6px;font-size:18px}
+    .result .v{font-size:20px}
+    .small{font-size:10px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Máy tính sức mua Kho</h1>
+
+  <div class="grid">
+    <div class="box">
+      <label>Số lượng VHM</label>
+      <input id="vhmQty" type="number" value="35000" step="1000" min="0" inputmode="numeric">
+      <div class="unit">cổ phiếu</div>
+    </div>
+    <div class="box">
+      <label>Giá VHM</label>
+      <input id="vhmPrice" type="number" value="61.0" step="0.1" min="0" inputmode="decimal">
+      <div class="unit">nghìn đồng</div>
+    </div>
+    <div class="box">
+      <label>Số lượng FPT</label>
+      <input id="fptQty" type="number" value="35000" step="1000" min="0" inputmode="numeric">
+      <div class="unit">cổ phiếu</div>
+    </div>
+    <div class="box">
+      <label>Giá FPT</label>
+      <input id="fptPrice" type="number" value="57.1" step="0.1" min="0" inputmode="decimal">
+      <div class="unit">nghìn đồng</div>
+    </div>
+  </div>
+
+  <div class="results">
+    <div class="result">
+      <div class="k">NAV2 hiện tại</div>
+      <div id="nav2" class="v neutral">-</div>
+    </div>
+    <div class="result">
+      <div class="k">Tỷ lệ cọc Kho</div>
+      <div id="ratio" class="v">-</div>
+    </div>
+    <div class="result">
+      <div class="k">SỨC MUA KHO</div>
+      <div id="buyingPower" class="v">-</div>
+    </div>
+  </div>
+
+  <div id="status" class="small"></div>
+</div>
+
+<script>
+  // Bộ số liệu gốc đã chốt ngày 14/10/2026
+  const NAV1 = 1019839225;
+  const VHM_COST = 2282310000 / 35000;   // giá vốn chính xác theo tổng GT mua
+  const FPT_COST = 2052481714 / 35000;
+  const BUY_FEE = 0.0015;
+  const SELL_NET_FACTOR = 0.9975 * 0.9991; // phí bán 0,25% + ứng 0,09%
+  const ACCRUED_INTEREST = 7609959;
+  const REQUIRED_RATIO = 0.20;
+
+  function fmtMoney(n){
+    const sign = n < 0 ? "-" : "";
+    const x = Math.abs(n);
+    if (x >= 1e9) return sign + (x/1e9).toFixed(3).replace(".",",") + " tỷ";
+    if (x >= 1e6) return sign + (x/1e6).toFixed(1).replace(".",",") + " tr";
+    return Math.round(n).toLocaleString("vi-VN");
+  }
+
+  function calc(){
+    const vq = +document.getElementById("vhmQty").value || 0;
+    const vp = (+document.getElementById("vhmPrice").value || 0) * 1000;
+    const fq = +document.getElementById("fptQty").value || 0;
+    const fp = (+document.getElementById("fptPrice").value || 0) * 1000;
+
+    const grossCost = vq * VHM_COST + fq * FPT_COST;
+    const totalBuy = grossCost * (1 + BUY_FEE);
+    const marketValue = vq * vp + fq * fp;
+    const netSell = marketValue * SELL_NET_FACTOR;
+
+    const nav2 = NAV1 + netSell - totalBuy - ACCRUED_INTEREST;
+    const ratio = totalBuy > 0 ? nav2 / totalBuy : 0;
+    const buyingPower = 5 * nav2 - totalBuy;
+
+    const navEl = document.getElementById("nav2");
+    const ratioEl = document.getElementById("ratio");
+    const bpEl = document.getElementById("buyingPower");
+    const stEl = document.getElementById("status");
+
+    navEl.textContent = fmtMoney(nav2);
+    ratioEl.textContent = (ratio*100).toFixed(2).replace(".",",") + "%";
+    bpEl.textContent = fmtMoney(buyingPower);
+
+    ratioEl.className = "v " + (ratio >= REQUIRED_RATIO ? "positive" : "negative");
+    bpEl.className = "v " + (buyingPower >= 0 ? "positive" : "negative");
+
+    if (ratio < REQUIRED_RATIO){
+      const shortfall = REQUIRED_RATIO * totalBuy - nav2;
+      stEl.innerHTML = "Thiếu khoảng <b>" + fmtMoney(shortfall) + "</b> để cọc đạt 20%.";
+    } else {
+      stEl.innerHTML = "Cọc đã đạt từ 20% trở lên.";
+    }
+  }
+
+  ["vhmQty","vhmPrice","fptQty","fptPrice"].forEach(id=>{
+    document.getElementById(id).addEventListener("input",calc);
+    document.getElementById(id).addEventListener("focus",e=>e.target.select());
+  });
+
+  calc();
+</script>
+</body>
+</html>
