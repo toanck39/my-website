@@ -18,7 +18,15 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-f
 body{display:flex;justify-content:center;transition:background .2s,color .2s}
 .app{width:min(1180px,100%);padding:7px;display:grid;gap:6px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.titleClock{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .actions{display:flex;gap:6px;align-items:center}
+.clockWrap{
+  display:flex;align-items:baseline;gap:8px;
+  border:1px solid var(--line);background:var(--card);border-radius:10px;
+  padding:4px 10px;white-space:nowrap;
+}
+#time_is_link{color:var(--muted);text-decoration:none;font-size:11px;font-weight:800}
+#Hanoi_z40a{color:var(--text);font-size:clamp(30px,4vw,46px);font-weight:900;letter-spacing:1px;line-height:1}
 h1{margin:0;font-size:clamp(17px,3vw,25px);font-weight:800}
 button{
   border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;
@@ -64,6 +72,9 @@ body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
   .layout{grid-template-columns:1fr}
   .results{grid-template-columns:1fr 1fr}
   .top{align-items:flex-start}
+  .titleClock{gap:7px}
+  .clockWrap{padding:4px 8px}
+  #Hanoi_z40a{font-size:34px}
   .actions{flex-direction:column}
   h1{font-size:18px}
 }
@@ -72,7 +83,13 @@ body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
 <body>
 <div class="app">
   <div class="top">
-    <h1>Portfolio Capacity Monitor</h1>
+    <div class="titleClock">
+      <h1>Portfolio Capacity Monitor</h1>
+      <div class="clockWrap">
+        <a href="https://time.is/Hanoi" id="time_is_link" rel="nofollow">Time.is</a>
+        <span id="Hanoi_z40a"></span>
+      </div>
+    </div>
     <div class="actions">
       <button id="themeBtn" onclick="toggleTheme()">☾ Dark</button>
       <button id="refreshBtn" onclick="loadPrices()">↻ Refresh</button>
@@ -154,6 +171,13 @@ body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
   <div id="status" class="footer"></div>
   <div id="source" class="footer">FPT giữ nguyên 35.000 cp; hệ thống chỉ cảnh báo khi FPT đạt 66,0. Các lô VHM mua thêm được cộng chính xác vào core để tính giá vốn và sức mua.</div>
 </div>
+
+<script src="https://widget.time.is/t.js"></script>
+<script>
+time_is_widget.init({
+  Hanoi_z40a:{time_format:"hours:minutes:seconds"}
+});
+</script>
 
 <script>
 const NAV1 = 1019839225;
