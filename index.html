@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Máy tính sức mua Kho</title>
+<style>
+:root{
+  --bg:#0f172a; --card:#111827; --line:#334155; --text:#f8fafc;
+  --muted:#94a3b8; --green:#22c55e; --red:#ef4444; --blue:#38bdf8; --amber:#f59e0b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+body{display:flex;justify-content:center}
+.app{width:min(1000px,100%);padding:7px;display:grid;gap:5px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+h1{margin:0;font-size:clamp(17px,3vw,25px)}
+button{
+  border:0;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;
+  background:#0ea5e9;color:white;white-space:nowrap
+}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.box,.result{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px}
+label{display:block;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:3px}
+input{
+  width:100%;min-width:0;border:1px solid var(--line);background:#020617;color:var(--text);
+  border-radius:8px;padding:7px 5px;font-size:clamp(18px,4vw,23px);font-weight:900;text-align:center;outline:none
+}
+input:focus{border-color:var(--blue)}
+.unit{font-size:10px;color:var(--muted);text-align:center;margin-top:2px}
+.live{font-size:10px;text-align:center;margin-top:2px;color:var(--blue)}
+.results{display:grid;grid-template-columns:1fr 1fr 1.15fr 1.15fr;gap:5px}
+.result{text-align:center}
+.k{font-size:11px;color:var(--muted);font-weight:700}
+.v{margin-top:4px;font-size:clamp(18px,3.4vw,27px);font-weight:900;line-height:1}
+.positive{color:var(--green)} .negative{color:var(--red)} .neutral{color:var(--blue)} .warning{color:var(--amber)}
+.footer{font-size:10px;color:var(--muted);text-align:center;line-height:1.25}
+@media(max-width:700px){
+  .grid{grid-template-columns:1fr 1fr}
+  .results{grid-template-columns:1fr 1fr}
+  .top{align-items:flex-start}
+  h1{font-size:18px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <h1>Máy tính sức mua Kho</h1>
+    <button id="refreshBtn" onclick="loadPrices()">↻ Cập nhật giá</button>
+  </div>
+
+  <div class="grid">
+    <div class="box">
+      <label>Số lượng VHM</label>
+      <input id="vhmQty" type="number" value="35000" step="1000" min="0" inputmode="numeric">
+      <div class="unit">cổ phiếu</div>
+    </div>
+    <div class="box">
+      <label>Giá VHM</label>
+      <input id="vhmPrice" type="number" value="61.0" step="0.1" min="0" inputmode="decimal">
+      <div id="vhmLive" class="live">chưa tải giá</div>
+    </div>
+    <div class="box">
+      <label>Số lượng FPT</label>
+      <input id="fptQty" type="number" value="35000" step="1000" min="0" inputmode="numeric">
+      <div class="unit">cổ phiếu</div>
+    </div>
+    <div class="box">
+      <label>Giá FPT</label>
+      <input id="fptPrice" type="number" value="57.1" step="0.1" min="0" inputmode="decimal">
+      <div id="fptLive" class="live">chưa tải giá</div>
+    </div>
+  </div>
+
+  <div class="results">
+    <div class="result">
+      <div class="k">NAV2</div>
+      <div id="nav2" class="v neutral">-</div>
+    </div>
+    <div class="result">
+      <div class="k">Tỷ lệ cọc</div>
+      <div id="ratio" class="v">-</div>
+    </div>
+    <div class="result">
+      <div class="k">Sức mua Kho</div>
+      <div id="buyingPower" class="v">-</div>
+    </div>
+    <div class="result">
+      <div class="k">Mua thêm VHM tối đa</div>
+      <div id="vhmCanBuy" class="v">-</div>
+    </div>
+  </div>
+
+  <div id="status" class="footer"></div>
+  <div id="source" class="footer">Nguồn giá gần đúng: vietstock.info public API. F5 hoặc bấm “Cập nhật giá”. Nếu nguồn lỗi, ô giá vẫn cho nhập tay.</div>
+</div>
+
+<script>
+const NAV1 = 1019839225;
+const VHM_COST = 2282310000 / 35000;
+const FPT_COST = 2052481714 / 35000;
+const BUY_FEE = 0.0015;
+const SELL_NET_FACTOR = 0.9975 * 0.9991;
+const ACCRUED_INTEREST = 7609959;
+const REQUIRED_RATIO = 0.20;
+
+function fmtMoney(n){
+  const sign=n<0?"-":"", x=Math.abs(n);
+  if(x>=1e9) return sign+(x/1e9).toFixed(3).replace(".",",")+" tỷ";
+  if(x>=1e6) return sign+(x/1e6).toFixed(1).replace(".",",")+" tr";
+  return Math.round(n).toLocaleString("vi-VN");
+}
+function fmtShares(n){return Math.max(0,Math.floor(n)).toLocaleString("vi-VN")+" cp"}
+
+function calc(){
+  const vq=+vhmQty.value||0, vpK=+vhmPrice.value||0, vp=vpK*1000;
+  const fq=+fptQty.value||0, fp=(+fptPrice.value||0)*1000;
+
+  const grossCost=vq*VHM_COST+fq*FPT_COST;
+  const totalBuy=grossCost*(1+BUY_FEE);
+  const marketValue=vq*vp+fq*fp;
+  const netSell=marketValue*SELL_NET_FACTOR;
+  const nav2=NAV1+netSell-totalBuy-ACCRUED_INTEREST;
+  const ratio=totalBuy>0?nav2/totalBuy:0;
+  const buyingPower=5*nav2-totalBuy;
+  const costPerNewVhm=vp*(1+BUY_FEE);
+  const canBuy=(buyingPower>0&&costPerNewVhm>0)?Math.floor(buyingPower/costPerNewVhm):0;
+
+  nav2El.textContent=fmtMoney(nav2);
+  ratioEl.textContent=(ratio*100).toFixed(2).replace(".",",")+"%";
+  buyingPowerEl.textContent=fmtMoney(buyingPower);
+  vhmCanBuyEl.textContent=fmtShares(canBuy);
+
+  ratioEl.className="v "+(ratio>=REQUIRED_RATIO?"positive":"negative");
+  buyingPowerEl.className="v "+(buyingPower>=0?"positive":"negative");
+  vhmCanBuyEl.className="v "+(canBuy>0?"positive":"negative");
+
+  if(ratio<REQUIRED_RATIO){
+    const shortfall=REQUIRED_RATIO*totalBuy-nav2;
+    statusEl.innerHTML="Thiếu khoảng <b>"+fmtMoney(shortfall)+"</b> để cọc đạt 20%.";
+  }else{
+    statusEl.innerHTML="Có thể mua thêm khoảng <b>"+fmtShares(canBuy)+"</b> VHM tại giá hiện tại.";
+  }
+}
+
+// Tìm giá từ JSON theo nhiều tên trường phổ biến.
+// Chỉ nhận mức giá hợp lý cho VHM/FPT: 10.000 - 300.000 đồng/cp.
+function findPrice(obj){
+  const keys=[
+    "price","lastPrice","last","close","closePrice","matchPrice","matchedPrice",
+    "currentPrice","current","last_price","close_price","gia","giaKhop","gia_khop"
+  ];
+  const seen=new Set();
+  function walk(x,depth){
+    if(depth>7||x==null) return null;
+    if(typeof x==="object"){
+      if(seen.has(x)) return null; seen.add(x);
+      for(const k of keys){
+        if(Object.prototype.hasOwnProperty.call(x,k)){
+          let v=x[k];
+          if(typeof v==="string") v=Number(v.replace(/,/g,""));
+          if(Number.isFinite(v)){
+            // API có thể trả 61, 61000 hoặc 61.0
+            let p=v<1000?v*1000:v;
+            if(p>=10000&&p<=300000) return p;
+          }
+        }
+      }
+      for(const k in x){
+        const r=walk(x[k],depth+1);
+        if(r) return r;
+      }
+    }
+    return null;
+  }
+  return walk(obj,0);
+}
+
+async function fetchJson(url){
+  try{
+    const r=await fetch(url,{cache:"no-store"});
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    return await r.json();
+  }catch(e){
+    // fallback CORS proxy công khai; chỉ dùng khi gọi trực tiếp bị chặn
+    const proxy="https://api.allorigins.win/raw?url="+encodeURIComponent(url);
+    const r=await fetch(proxy,{cache:"no-store"});
+    if(!r.ok) throw new Error("Proxy HTTP "+r.status);
+    return await r.json();
+  }
+}
+
+async function fetchOne(symbol){
+  const data=await fetchJson("https://vietstock.info/api/stocks/"+symbol+"?t="+Date.now());
+  const p=findPrice(data);
+  if(!p) throw new Error("Không tìm thấy trường giá");
+  return p/1000;
+}
+
+async function loadPrices(){
+  refreshBtn.disabled=true;
+  refreshBtn.textContent="Đang tải...";
+  const now=new Date();
+  let ok=0;
+
+  await Promise.all([
+    fetchOne("VHM").then(p=>{
+      vhmPrice.value=p.toFixed(1);
+      vhmLive.textContent="✓ tự tải "+p.toFixed(1);
+      vhmLive.className="live positive"; ok++;
+    }).catch(e=>{
+      vhmLive.textContent="⚠ giữ giá nhập tay";
+      vhmLive.className="live warning";
+    }),
+    fetchOne("FPT").then(p=>{
+      fptPrice.value=p.toFixed(1);
+      fptLive.textContent="✓ tự tải "+p.toFixed(1);
+      fptLive.className="live positive"; ok++;
+    }).catch(e=>{
+      fptLive.textContent="⚠ giữ giá nhập tay";
+      fptLive.className="live warning";
+    })
+  ]);
+
+  calc();
+  const t=now.toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  source.textContent=(ok?("Đã tải "+ok+"/2 mã lúc "+t+". "):"Không tải được giá tự động. ")
+    +"F5 hoặc bấm Cập nhật giá; có thể nhập tay khi nguồn lỗi.";
+  refreshBtn.disabled=false;
+  refreshBtn.textContent="↻ Cập nhật giá";
+}
+
+const vhmQty=document.getElementById("vhmQty");
+const vhmPrice=document.getElementById("vhmPrice");
+const fptQty=document.getElementById("fptQty");
+const fptPrice=document.getElementById("fptPrice");
+const nav2El=document.getElementById("nav2");
+const ratioEl=document.getElementById("ratio");
+const buyingPowerEl=document.getElementById("buyingPower");
+const vhmCanBuyEl=document.getElementById("vhmCanBuy");
+const statusEl=document.getElementById("status");
+const refreshBtn=document.getElementById("refreshBtn");
+const vhmLive=document.getElementById("vhmLive");
+const fptLive=document.getElementById("fptLive");
+const source=document.getElementById("source");
+
+[vhmQty,vhmPrice,fptQty,fptPrice].forEach(el=>{
+  el.addEventListener("input",calc);
+  el.addEventListener("focus",e=>e.target.select());
+});
+
+calc();
+loadPrices();
+</script>
+</body>
+</html>
