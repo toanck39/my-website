@@ -78,9 +78,46 @@ body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
   .actions{flex-direction:column}
   h1{font-size:18px}
 }
+
+/* PIN lock */
+body.locked .app{display:none}
+#pinGate{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:#ffffff;align-items:center;justify-content:center;padding:20px;
+}
+body.locked #pinGate{display:flex}
+.pinCard{
+  width:min(360px,92vw);border:1px solid #dbe3ec;border-radius:16px;
+  padding:22px;background:#f8fafc;box-shadow:0 12px 35px rgba(15,23,42,.12);
+  text-align:center;color:#111827
+}
+.pinTitle{font-size:20px;font-weight:900;margin-bottom:6px}
+.pinSub{font-size:12px;color:#64748b;margin-bottom:14px}
+#pinInput{
+  width:100%;font-size:28px;letter-spacing:8px;text-align:center;
+  padding:10px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#111827
+}
+.pinBtn{
+  width:100%;margin-top:10px;padding:10px;border:0;border-radius:10px;
+  background:#0f172a;color:white;font-weight:900;font-size:15px;cursor:pointer
+}
+#pinMsg{min-height:18px;margin-top:8px;font-size:12px;font-weight:800;color:#dc2626}
+.lockBtn{font-size:12px;padding:7px 9px}
+
 </style>
 </head>
-<body>
+<body class="locked">
+
+<div id="pinGate">
+  <div class="pinCard">
+    <div class="pinTitle">Portfolio Access</div>
+    <div class="pinSub">Nhập mã PIN để mở trang</div>
+    <input id="pinInput" type="password" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="••••">
+    <button class="pinBtn" onclick="unlockPage()">Unlock</button>
+    <div id="pinMsg"></div>
+  </div>
+</div>
+
 <div class="app">
   <div class="top">
     <div class="titleClock">
@@ -93,6 +130,7 @@ body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
     <div class="actions">
       <button id="themeBtn" onclick="toggleTheme()">☾ Dark</button>
       <button id="refreshBtn" onclick="loadPrices()">↻ Refresh</button>
+      <button class="lockBtn" onclick="lockPage()">🔒 Lock</button>
     </div>
   </div>
 
@@ -109,7 +147,7 @@ body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
         </div>
         <div class="box">
           <label>Giá VHM hiện tại</label>
-          <input id="vhmPrice" type="number" value="61.0" step="0.1" min="0" inputmode="decimal">
+          <input id="vhmPrice" type="number" value="58.9" step="0.1" min="0" inputmode="decimal">
           <div id="vhmLive" class="live">chưa tải giá</div>
         </div>
         <div class="box">
@@ -119,7 +157,7 @@ body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
         </div>
         <div class="box">
           <label>Giá FPT hiện tại</label>
-          <input id="fptPrice" type="number" value="57.1" step="0.1" min="0" inputmode="decimal">
+          <input id="fptPrice" type="number" value="58.0" step="0.1" min="0" inputmode="decimal">
           <div id="fptLive" class="live">chưa tải giá</div>
         </div>
       </div>
@@ -169,7 +207,7 @@ body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">FPT giữ nguyên 35.000 cp; hệ thống chỉ cảnh báo khi FPT đạt 66,0. Các lô VHM mua thêm được cộng chính xác vào core để tính giá vốn và sức mua.</div>
+  <div id="source" class="footer">FPT giữ nguyên 35.000 cp; hệ thống chỉ cảnh báo khi FPT đạt 66,0. Lãi tích lũy đang dùng: 9.563.541đ (đến 15/10/2026). Các lô VHM mua thêm được cộng chính xác vào core.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -180,6 +218,49 @@ time_is_widget.init({
 </script>
 
 <script>
+
+const PIN_HASH = "18a9b3183f0e5915a9331391329a52680a26735b440271d0212fb0e076cf9d0c";
+const AUTH_KEY = "pcm_pin_ok";
+
+async function sha256Hex(s){
+  const data = new TextEncoder().encode(s);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function unlockPage(){
+  const input = document.getElementById("pinInput");
+  const msg = document.getElementById("pinMsg");
+  const entered = (input.value || "").trim();
+  if(await sha256Hex(entered) === PIN_HASH){
+    localStorage.setItem(AUTH_KEY,"1");
+    document.body.classList.remove("locked");
+    msg.textContent="";
+    input.value="";
+  } else {
+    msg.textContent="Sai mã PIN";
+    input.select();
+  }
+}
+function lockPage(){
+  localStorage.removeItem(AUTH_KEY);
+  document.body.classList.add("locked");
+  const input=document.getElementById("pinInput");
+  const msg=document.getElementById("pinMsg");
+  if(msg) msg.textContent="";
+  if(input){input.value=""; setTimeout(()=>input.focus(),50);}
+}
+function initPinGate(){
+  if(localStorage.getItem(AUTH_KEY)==="1"){
+    document.body.classList.remove("locked");
+  } else {
+    document.body.classList.add("locked");
+    setTimeout(()=>document.getElementById("pinInput")?.focus(),50);
+  }
+  const input=document.getElementById("pinInput");
+  input?.addEventListener("keydown",e=>{if(e.key==="Enter") unlockPage();});
+}
+document.addEventListener("DOMContentLoaded", initPinGate);
+
 const NAV1 = 1019839225;
 
 // Core cố định
@@ -190,7 +271,7 @@ const BASE_FPT_GROSS_COST = 2052481714;
 
 const BUY_FEE = 0.0015;
 const SELL_NET_FACTOR = 0.9975 * 0.9991;
-const ACCRUED_INTEREST = 7609959;
+const ACCRUED_INTEREST = 9563541; // lãi tích lũy đến 15/10/2026
 const REQUIRED_RATIO = 0.20;
 const AUTO_REFRESH_MS = 5000;
 const FPT_SELL_LEVEL = 66.0;
