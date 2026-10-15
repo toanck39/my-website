@@ -16,7 +16,7 @@ body.dark{
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
 body{display:flex;justify-content:center;transition:background .2s,color .2s}
-.app{width:min(1000px,100%);padding:7px;display:grid;gap:5px}
+.app{width:min(1180px,100%);padding:7px;display:grid;gap:6px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .actions{display:flex;gap:6px;align-items:center}
 h1{margin:0;font-size:clamp(17px,3vw,25px);font-weight:800}
@@ -25,30 +25,43 @@ button{
   background:var(--card);color:var(--text);white-space:nowrap
 }
 button:disabled{opacity:.6;cursor:wait}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
-.box,.result{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px}
+.layout{display:grid;grid-template-columns:1fr 1.25fr;gap:6px;align-items:start}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px}
+.section{font-size:11px;font-weight:900;color:var(--muted);margin-bottom:5px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.box{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:6px}
 label{display:block;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:3px}
 input{
   width:100%;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--text);
-  border-radius:8px;padding:7px 5px;font-size:clamp(18px,4vw,23px);font-weight:900;text-align:center;outline:none
+  border-radius:7px;padding:6px 5px;font-size:18px;font-weight:900;text-align:center;outline:none
 }
 input:focus{border-color:var(--blue)}
-.unit{font-size:10px;color:var(--muted);text-align:center;margin-top:2px}
-.live{font-size:10px;text-align:center;margin-top:2px;color:var(--blue)}
-.results{display:grid;grid-template-columns:1fr 1fr 1.15fr 1.15fr;gap:5px}
-.result{text-align:center}
-.k{font-size:11px;color:var(--muted);font-weight:700}
-.v{margin-top:4px;font-size:clamp(18px,3.4vw,27px);font-weight:900;line-height:1}
+input[readonly]{opacity:.85}
+.unit,.live{font-size:10px;color:var(--muted);text-align:center;margin-top:2px}
+.live{color:var(--blue)}
+.buytable{width:100%;border-collapse:separate;border-spacing:0 4px}
+.buytable th{font-size:10px;color:var(--muted);font-weight:800;padding:0 3px 2px}
+.buytable td{padding:0 3px}
+.buytable .n{width:34px;text-align:center;font-size:11px;color:var(--muted);font-weight:800}
+.buytable input{font-size:16px;padding:5px 4px}
+.results{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.result{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px;text-align:center}
+.k{font-size:10px;color:var(--muted);font-weight:800}
+.v{margin-top:4px;font-size:clamp(16px,2.8vw,23px);font-weight:900;line-height:1}
 .positive{color:var(--green)} .negative{color:var(--red)} .neutral{color:var(--blue)} .warning{color:var(--amber)}
 .footer{font-size:10px;color:var(--muted);text-align:center;line-height:1.25}
 #errorBanner{
   display:none;background:#fff1f2;border:2px solid var(--red);color:#b91c1c;
-  font-weight:900;text-align:center;border-radius:10px;padding:8px 10px;
-  font-size:clamp(14px,3.5vw,19px)
+  font-weight:900;text-align:center;border-radius:10px;padding:8px 10px;font-size:clamp(14px,3.5vw,19px)
 }
 body.dark #errorBanner{background:#3f0b0b;color:#fecaca}
-@media(max-width:700px){
-  .grid{grid-template-columns:1fr 1fr}
+#fptAlert{
+  display:none;margin-top:5px;background:#ecfdf5;border:1px solid #86efac;color:#166534;
+  border-radius:8px;padding:6px;text-align:center;font-size:11px;font-weight:900
+}
+body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
+@media(max-width:820px){
+  .layout{grid-template-columns:1fr}
   .results{grid-template-columns:1fr 1fr}
   .top{align-items:flex-start}
   .actions{flex-direction:column}
@@ -68,30 +81,58 @@ body.dark #errorBanner{background:#3f0b0b;color:#fecaca}
 
   <div id="errorBanner">LỖI KẾT NỐI DỮ LIỆU – NHẬP MANUAL</div>
 
-  <div class="grid">
-    <div class="box">
-      <label>Số lượng VHM</label>
-      <input id="vhmQty" type="number" value="35000" step="1000" min="0" inputmode="numeric">
-      <div class="unit">cổ phiếu</div>
+  <div class="layout">
+    <div class="panel">
+      <div class="section">CORE GỐC</div>
+      <div class="grid">
+        <div class="box">
+          <label>VHM core</label>
+          <input id="baseVhmQty" type="number" value="35000" readonly>
+          <div class="unit">35.000 cp @ 65,209</div>
+        </div>
+        <div class="box">
+          <label>Giá VHM hiện tại</label>
+          <input id="vhmPrice" type="number" value="61.0" step="0.1" min="0" inputmode="decimal">
+          <div id="vhmLive" class="live">chưa tải giá</div>
+        </div>
+        <div class="box">
+          <label>FPT core</label>
+          <input id="fptQty" type="number" value="35000" readonly>
+          <div class="unit">35.000 cp @ 58,642</div>
+        </div>
+        <div class="box">
+          <label>Giá FPT hiện tại</label>
+          <input id="fptPrice" type="number" value="57.1" step="0.1" min="0" inputmode="decimal">
+          <div id="fptLive" class="live">chưa tải giá</div>
+        </div>
+      </div>
+      <div id="fptAlert">FPT ĐÃ ĐẠT 66,0 — MỐC BÁN CORE THEO KẾ HOẠCH</div>
     </div>
-    <div class="box">
-      <label>Giá VHM</label>
-      <input id="vhmPrice" type="number" value="61.0" step="0.1" min="0" inputmode="decimal">
-      <div id="vhmLive" class="live">chưa tải giá</div>
-    </div>
-    <div class="box">
-      <label>Số lượng FPT</label>
-      <input id="fptQty" type="number" value="35000" step="1000" min="0" inputmode="numeric">
-      <div class="unit">cổ phiếu</div>
-    </div>
-    <div class="box">
-      <label>Giá FPT</label>
-      <input id="fptPrice" type="number" value="57.1" step="0.1" min="0" inputmode="decimal">
-      <div id="fptLive" class="live">chưa tải giá</div>
+
+    <div class="panel">
+      <div class="section">10 LÔ VHM MUA THÊM</div>
+      <table class="buytable">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Số lượng mua</th>
+            <th>Giá mua (nghìn)</th>
+          </tr>
+        </thead>
+        <tbody id="buyRows"></tbody>
+      </table>
     </div>
   </div>
 
   <div class="results">
+    <div class="result">
+      <div class="k">Tổng VHM</div>
+      <div id="totalVhmOut" class="v neutral">35.000 cp</div>
+    </div>
+    <div class="result">
+      <div class="k">Giá vốn VHM mới</div>
+      <div id="avgVhmCostOut" class="v neutral">65,209</div>
+    </div>
     <div class="result">
       <div class="k">NAV2</div>
       <div id="nav2Out" class="v neutral">-</div>
@@ -111,55 +152,92 @@ body.dark #errorBanner{background:#3f0b0b;color:#fecaca}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Tự cập nhật khoảng 5 giây/lần. Nguồn: KBS public → CafeF dự phòng → nhập tay.</div>
+  <div id="source" class="footer">FPT giữ nguyên 35.000 cp; hệ thống chỉ cảnh báo khi FPT đạt 66,0. Các lô VHM mua thêm được cộng chính xác vào core để tính giá vốn và sức mua.</div>
 </div>
 
 <script>
 const NAV1 = 1019839225;
-const VHM_COST = 2282310000 / 35000;
-const FPT_COST = 2052481714 / 35000;
+
+// Core cố định
+const BASE_VHM_QTY = 35000;
+const BASE_VHM_GROSS_COST = 2282310000;
+const BASE_FPT_QTY = 35000;
+const BASE_FPT_GROSS_COST = 2052481714;
+
 const BUY_FEE = 0.0015;
 const SELL_NET_FACTOR = 0.9975 * 0.9991;
 const ACCRUED_INTEREST = 7609959;
 const REQUIRED_RATIO = 0.20;
 const AUTO_REFRESH_MS = 5000;
+const FPT_SELL_LEVEL = 66.0;
 
 const $ = id => document.getElementById(id);
-let loading = false;
+let loading=false;
 
 function applyTheme(theme){
-  document.body.classList.toggle("dark", theme === "dark");
-  $("themeBtn").textContent = theme === "dark" ? "☀ Light" : "☾ Dark";
-  localStorage.setItem("theme", theme);
+  document.body.classList.toggle("dark", theme==="dark");
+  $("themeBtn").textContent = theme==="dark" ? "☀ Light" : "☾ Dark";
+  localStorage.setItem("theme",theme);
 }
-function toggleTheme(){
-  const isDark=document.body.classList.contains("dark");
-  applyTheme(isDark ? "light" : "dark");
-}
-applyTheme(localStorage.getItem("theme") || "light");
+function toggleTheme(){applyTheme(document.body.classList.contains("dark")?"light":"dark")}
+applyTheme(localStorage.getItem("theme")||"light");
 
 function fmtMoney(n){
-  const sign=n<0?"-":"", x=Math.abs(n);
-  if(x>=1e9) return sign+(x/1e9).toFixed(3).replace(".",",")+" tỷ";
-  if(x>=1e6) return sign+(x/1e6).toFixed(1).replace(".",",")+" tr";
+  const sign=n<0?"-":"",x=Math.abs(n);
+  if(x>=1e9)return sign+(x/1e9).toFixed(3).replace(".",",")+" tỷ";
+  if(x>=1e6)return sign+(x/1e6).toFixed(1).replace(".",",")+" tr";
   return Math.round(n).toLocaleString("vi-VN");
 }
 function fmtShares(n){return Math.max(0,Math.floor(n)).toLocaleString("vi-VN")+" cp"}
+function fmtK(v){return (v/1000).toFixed(3).replace(".",",")}
+
+function makeRows(){
+  const tb=$("buyRows");
+  tb.innerHTML="";
+  for(let i=1;i<=10;i++){
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td class="n">${i}</td>
+      <td><input class="buyQty" id="buyQty${i}" type="number" value="0" min="0" step="1000" inputmode="numeric"></td>
+      <td><input class="buyPrice" id="buyPrice${i}" type="number" value="0" min="0" step="0.1" inputmode="decimal"></td>`;
+    tb.appendChild(tr);
+  }
+  document.querySelectorAll(".buyQty,.buyPrice").forEach(el=>{
+    el.addEventListener("input",calc);
+    el.addEventListener("focus",e=>e.target.select());
+  });
+}
 
 function calc(){
-  const vq=+$("vhmQty").value||0, vpK=+$("vhmPrice").value||0, vp=vpK*1000;
-  const fq=+$("fptQty").value||0, fp=(+$("fptPrice").value||0)*1000;
+  const vpK=+$("vhmPrice").value||0, vp=vpK*1000;
+  const fpK=+$("fptPrice").value||0, fp=fpK*1000;
 
-  const grossCost=vq*VHM_COST+fq*FPT_COST;
+  let extraQty=0;
+  let extraGrossCost=0;
+  for(let i=1;i<=10;i++){
+    const q=+$("buyQty"+i).value||0;
+    const pK=+$("buyPrice"+i).value||0;
+    extraQty+=q;
+    extraGrossCost+=q*pK*1000;
+  }
+
+  const totalVhmQty=BASE_VHM_QTY+extraQty;
+  const vhmGrossCost=BASE_VHM_GROSS_COST+extraGrossCost;
+  const grossCost=vhmGrossCost+BASE_FPT_GROSS_COST;
   const totalBuy=grossCost*(1+BUY_FEE);
-  const marketValue=vq*vp+fq*fp;
+
+  const marketValue=totalVhmQty*vp+BASE_FPT_QTY*fp;
   const netSell=marketValue*SELL_NET_FACTOR;
   const nav2=NAV1+netSell-totalBuy-ACCRUED_INTEREST;
   const ratio=totalBuy>0?nav2/totalBuy:0;
   const buyingPower=5*nav2-totalBuy;
+
+  const avgVhmCost=totalVhmQty>0?vhmGrossCost/totalVhmQty:0;
   const costPerNewVhm=vp*(1+BUY_FEE);
   const canBuy=(buyingPower>0&&costPerNewVhm>0)?Math.floor(buyingPower/costPerNewVhm):0;
 
+  $("totalVhmOut").textContent=fmtShares(totalVhmQty);
+  $("avgVhmCostOut").textContent=fmtK(avgVhmCost);
   $("nav2Out").textContent=fmtMoney(nav2);
   $("ratioOut").textContent=(ratio*100).toFixed(2).replace(".",",")+"%";
   $("bpOut").textContent=fmtMoney(buyingPower);
@@ -175,18 +253,20 @@ function calc(){
   }else{
     $("status").innerHTML="Có thể mua thêm khoảng <b>"+fmtShares(canBuy)+"</b> VHM tại giá hiện tại.";
   }
+
+  $("fptAlert").style.display = fpK>=FPT_SELL_LEVEL ? "block" : "none";
 }
 
 async function fetchJson(url){
   const options={cache:"no-store",headers:{"Accept":"application/json,text/plain,*/*"}};
   try{
     const r=await fetch(url,options);
-    if(!r.ok) throw new Error("HTTP "+r.status);
+    if(!r.ok)throw new Error("HTTP "+r.status);
     return await r.json();
   }catch(e1){
     const p="https://api.allorigins.win/raw?url="+encodeURIComponent(url);
     const r=await fetch(p,{cache:"no-store"});
-    if(!r.ok) throw new Error("Proxy HTTP "+r.status);
+    if(!r.ok)throw new Error("Proxy HTTP "+r.status);
     return await r.json();
   }
 }
@@ -196,85 +276,74 @@ async function fetchKBS(symbol){
     +encodeURIComponent(symbol)+"?page=1&limit=1&_="+Date.now();
   const j=await fetchJson(url);
   const row=Array.isArray(j?.data)&&j.data.length?j.data[0]:null;
-  if(!row) throw new Error("KBS no data");
-  let p=Number(row.FMP ?? row.price ?? row.matchPrice);
-  if(!Number.isFinite(p)||p<=0) throw new Error("KBS bad price");
-  if(p<1000) p*=1000;
+  if(!row)throw new Error("KBS no data");
+  let p=Number(row.FMP??row.price??row.matchPrice);
+  if(!Number.isFinite(p)||p<=0)throw new Error("KBS bad price");
+  if(p<1000)p*=1000;
   return p/1000;
 }
 
 function collectObjects(x,out=[]){
-  if(!x||typeof x!=="object") return out;
-  if(Array.isArray(x)){ for(const v of x) collectObjects(v,out); }
-  else{
-    out.push(x);
-    for(const k of Object.keys(x)) collectObjects(x[k],out);
-  }
+  if(!x||typeof x!=="object")return out;
+  if(Array.isArray(x)){for(const v of x)collectObjects(v,out)}
+  else{out.push(x);for(const k of Object.keys(x))collectObjects(x[k],out)}
   return out;
 }
 function readSymbol(obj){
   const keys=["symbol","Symbol","code","Code","stockCode","StockCode","ticker","Ticker","MaCK","mack"];
-  for(const k of keys) if(obj[k]!=null) return String(obj[k]).toUpperCase();
+  for(const k of keys)if(obj[k]!=null)return String(obj[k]).toUpperCase();
   return "";
 }
 function readPrice(obj){
-  const keys=["price","Price","matchPrice","MatchPrice","currentPrice","CurrentPrice",
-              "lastPrice","LastPrice","closePrice","ClosePrice","close","Close","GiaKhop","giaKhop"];
+  const keys=["price","Price","matchPrice","MatchPrice","currentPrice","CurrentPrice","lastPrice","LastPrice","closePrice","ClosePrice","close","Close","GiaKhop","giaKhop"];
   for(const k of keys){
     if(obj[k]!=null){
       let v=typeof obj[k]==="string"?Number(obj[k].replace(/,/g,"")):Number(obj[k]);
       if(Number.isFinite(v)&&v>0){
-        if(v<1000) v*=1000;
-        if(v>=10000&&v<=300000) return v/1000;
+        if(v<1000)v*=1000;
+        if(v>=10000&&v<=300000)return v/1000;
       }
     }
   }
   return null;
 }
-
 async function fetchCafeFPair(){
   const url="https://cafef.vn/du-lieu/Ajax/PageNew/RealtimePricesHeader.ashx?symbols=VHM;FPT&_="+Date.now();
   const j=await fetchJson(url);
-  const objs=collectObjects(j);
-  const ans={};
+  const objs=collectObjects(j),ans={};
   for(const o of objs){
-    const s=readSymbol(o);
-    const p=readPrice(o);
-    if((s==="VHM"||s==="FPT")&&p) ans[s]=p;
+    const s=readSymbol(o),p=readPrice(o);
+    if((s==="VHM"||s==="FPT")&&p)ans[s]=p;
   }
-  if(!ans.VHM&&!ans.FPT) throw new Error("CafeF parse fail");
+  if(!ans.VHM&&!ans.FPT)throw new Error("CafeF parse fail");
   return ans;
 }
-
 async function getPrice(symbol){
-  try{
-    const p=await fetchKBS(symbol);
-    return {price:p,source:"KBS"};
-  }catch(e){}
+  try{return {price:await fetchKBS(symbol),source:"KBS"}}catch(e){}
   try{
     const pair=await fetchCafeFPair();
-    if(pair[symbol]) return {price:pair[symbol],source:"CafeF"};
+    if(pair[symbol])return {price:pair[symbol],source:"CafeF"};
   }catch(e){}
   throw new Error("No public price source");
 }
 
 async function loadPrices(){
-  if(loading) return;
-  loading = true;
+  if(loading)return;
+  loading=true;
   const btn=$("refreshBtn");
   btn.disabled=true;
   btn.textContent="Loading...";
 
   let ok=0;
   const details=[];
-  const results = await Promise.allSettled([getPrice("VHM"), getPrice("FPT")]);
+  const results=await Promise.allSettled([getPrice("VHM"),getPrice("FPT")]);
 
   if(results[0].status==="fulfilled"){
     const x=results[0].value;
     $("vhmPrice").value=x.price.toFixed(1);
     $("vhmLive").textContent="✓ "+x.source+" "+x.price.toFixed(1);
     $("vhmLive").className="live positive";
-    ok++; details.push("VHM "+x.source);
+    ok++;details.push("VHM "+x.source);
   }else{
     $("vhmLive").textContent="⚠ dùng giá nhập tay";
     $("vhmLive").className="live warning";
@@ -285,40 +354,33 @@ async function loadPrices(){
     $("fptPrice").value=x.price.toFixed(1);
     $("fptLive").textContent="✓ "+x.source+" "+x.price.toFixed(1);
     $("fptLive").className="live positive";
-    ok++; details.push("FPT "+x.source);
+    ok++;details.push("FPT "+x.source);
   }else{
     $("fptLive").textContent="⚠ dùng giá nhập tay";
     $("fptLive").className="live warning";
   }
 
-  const banner=$("errorBanner");
-  if(ok<2){
-    banner.style.display="block";
-    banner.textContent="LỖI KẾT NỐI DỮ LIỆU – NHẬP MANUAL";
-  }else{
-    banner.style.display="none";
-  }
-
+  $("errorBanner").style.display=ok<2?"block":"none";
   calc();
 
   const t=new Date().toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   $("source").textContent=
     (ok?("Đã tải "+ok+"/2 mã lúc "+t+" ("+details.join(", ")+"). "):"Không tải được nguồn công khai. ")
-    +"Tự thử lại mỗi 5 giây; có thể nhập tay bất cứ lúc nào.";
+    +"10 lô VHM mua thêm được cộng trực tiếp vào core để tính lại toàn bộ.";
 
   btn.disabled=false;
   btn.textContent="↻ Refresh";
-  loading = false;
+  loading=false;
 }
 
-["vhmQty","vhmPrice","fptQty","fptPrice"].forEach(id=>{
+makeRows();
+["vhmPrice","fptPrice"].forEach(id=>{
   $(id).addEventListener("input",calc);
   $(id).addEventListener("focus",e=>e.target.select());
 });
-
 calc();
 loadPrices();
-setInterval(loadPrices, AUTO_REFRESH_MS);
+setInterval(loadPrices,AUTO_REFRESH_MS);
 </script>
 </body>
 </html>
