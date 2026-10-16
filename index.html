@@ -52,7 +52,7 @@ input[readonly]{opacity:.85}
 .buytable td{padding:0 3px}
 .buytable .n{width:34px;text-align:center;font-size:11px;color:var(--muted);font-weight:800}
 .buytable input{font-size:16px;padding:5px 4px}
-.results{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.results{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
 .result{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px;text-align:center}
 .k{font-size:10px;color:var(--muted);font-weight:800}
 .v{margin-top:4px;font-size:clamp(16px,2.8vw,23px);font-weight:900;line-height:1}
@@ -193,6 +193,22 @@ body.locked #pinGate{display:flex}
       <div id="nav2Out" class="v neutral">-</div>
     </div>
     <div class="result">
+      <div class="k">Lỗ đã chốt</div>
+      <div id="realizedOut" class="v negative">-</div>
+    </div>
+    <div class="result">
+      <div class="k">Lỗ đang mở</div>
+      <div id="openPnlOut" class="v">-</div>
+    </div>
+    <div class="result">
+      <div class="k">Tổng lãi/lỗ toàn TK</div>
+      <div id="totalPnlOut" class="v">-</div>
+    </div>
+    <div class="result">
+      <div class="k">Tài sản ròng hiện tại</div>
+      <div id="netWorthOut" class="v neutral">-</div>
+    </div>
+    <div class="result">
       <div class="k">Tỷ lệ cọc</div>
       <div id="ratioOut" class="v">-</div>
     </div>
@@ -308,6 +324,8 @@ function initPinGate(){
 document.addEventListener("DOMContentLoaded", initPinGate);
 
 const NAV1 = 1019839225;
+const REALIZED_PNL = -293261231;
+const NET_DEPOSIT_CAPITAL = 1313100457;
 
 // Core cố định
 const BASE_VHM_QTY = 35000;
@@ -380,6 +398,9 @@ function calc(){
   const marketValue=totalVhmQty*vp+BASE_FPT_QTY*fp;
   const netSell=marketValue*SELL_NET_FACTOR;
   const nav2=NAV1+netSell-totalBuy-ACCRUED_INTEREST;
+  const openPnl=nav2-NAV1;
+  const totalPnl=REALIZED_PNL+openPnl;
+  const netWorth=NET_DEPOSIT_CAPITAL+totalPnl;
   const ratio=totalBuy>0?nav2/totalBuy:0;
   const buyingPower=5*nav2-totalBuy;
 
@@ -390,6 +411,12 @@ function calc(){
   $("totalVhmOut").textContent=fmtShares(totalVhmQty);
   $("avgVhmCostOut").textContent=fmtK(avgVhmCost);
   $("nav2Out").textContent=fmtMoney(nav2);
+  $("realizedOut").textContent=fmtMoney(REALIZED_PNL);
+  $("openPnlOut").textContent=fmtMoney(openPnl);
+  $("totalPnlOut").textContent=fmtMoney(totalPnl);
+  $("netWorthOut").textContent=fmtMoney(netWorth);
+  $("openPnlOut").className="v "+(openPnl>=0?"positive":"negative");
+  $("totalPnlOut").className="v "+(totalPnl>=0?"positive":"negative");
   $("ratioOut").textContent=(ratio*100).toFixed(2).replace(".",",")+"%";
   $("bpOut").textContent=fmtMoney(buyingPower);
   $("vhmBuyOut").textContent=fmtShares(canBuy);
