@@ -160,6 +160,21 @@ body.locked #pinGate{display:flex}
           <input id="fptPrice" type="number" value="58.0" step="0.1" min="0" inputmode="decimal">
           <div id="fptLive" class="live">chưa tải giá</div>
         </div>
+        <div class="box">
+          <label>Số lượng VIC</label>
+          <input id="vicQty" type="number" value="0" step="100" min="0" inputmode="numeric">
+          <div class="unit">mặc định 0 cp</div>
+        </div>
+        <div class="box">
+          <label>Giá VIC hiện tại</label>
+          <input id="vicPrice" type="number" value="217.3" step="0.1" min="0" inputmode="decimal">
+          <div id="vicLive" class="live">chưa tải giá</div>
+        </div>
+        <div class="box">
+          <label>Giá vốn VIC</label>
+          <input id="vicCost" type="number" value="0" step="0.1" min="0" inputmode="decimal">
+          <div class="unit">chỉ cần nhập khi SL VIC &gt; 0</div>
+        </div>
       </div>
       <div id="fptAlert">FPT ĐÃ ĐẠT 66,0 — MỐC BÁN CORE THEO KẾ HOẠCH</div>
     </div>
@@ -193,10 +208,6 @@ body.locked #pinGate{display:flex}
       <div id="nav2Out" class="v neutral">-</div>
     </div>
     <div class="result">
-      <div class="k">Lỗ đã chốt</div>
-      <div id="realizedOut" class="v negative">-</div>
-    </div>
-    <div class="result">
       <div class="k">Lỗ đang mở</div>
       <div id="openPnlOut" class="v">-</div>
     </div>
@@ -223,7 +234,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">FPT giữ nguyên 35.000 cp; hệ thống chỉ cảnh báo khi FPT đạt 66,0. Lãi tích lũy đang dùng: 9.563.541đ (đến 15/10/2026). Các lô VHM mua thêm được cộng chính xác vào core.</div>
+  <div id="source" class="footer">FPT core giữ nguyên 35.000 cp. VIC mặc định 0 cp; nếu nhập VIC &gt; 0, cần nhập cả giá vốn VIC để NAV2/Tài sản ròng được tính chính xác. Lãi tích lũy đang dùng: 9.563.541đ (đến 15/10/2026).</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -380,6 +391,9 @@ function makeRows(){
 function calc(){
   const vpK=+$("vhmPrice").value||0, vp=vpK*1000;
   const fpK=+$("fptPrice").value||0, fp=fpK*1000;
+  const vicQty=+$("vicQty").value||0;
+  const vicPriceK=+$("vicPrice").value||0, vicPrice=vicPriceK*1000;
+  const vicCostK=+$("vicCost").value||0, vicCost=vicCostK*1000;
 
   let extraQty=0;
   let extraGrossCost=0;
@@ -392,10 +406,17 @@ function calc(){
 
   const totalVhmQty=BASE_VHM_QTY+extraQty;
   const vhmGrossCost=BASE_VHM_GROSS_COST+extraGrossCost;
-  const grossCost=vhmGrossCost+BASE_FPT_GROSS_COST;
+
+  // VIC chỉ được đưa vào phép tính khi có cả số lượng và giá vốn.
+  // Điều này tránh làm sai NAV nếu người dùng mới chỉ nhập số lượng/giá thị trường.
+  const vicReady = vicQty<=0 || vicCostK>0;
+  const vicGrossCost = (vicQty>0 && vicCostK>0) ? vicQty*vicCost : 0;
+
+  const grossCost=vhmGrossCost+BASE_FPT_GROSS_COST+vicGrossCost;
   const totalBuy=grossCost*(1+BUY_FEE);
 
-  const marketValue=totalVhmQty*vp+BASE_FPT_QTY*fp;
+  const vicMarketValue = (vicQty>0 && vicCostK>0) ? vicQty*vicPrice : 0;
+  const marketValue=totalVhmQty*vp+BASE_FPT_QTY*fp+vicMarketValue;
   const netSell=marketValue*SELL_NET_FACTOR;
   const nav2=NAV1+netSell-totalBuy-ACCRUED_INTEREST;
   const openPnl=nav2-NAV1;
@@ -411,7 +432,6 @@ function calc(){
   $("totalVhmOut").textContent=fmtShares(totalVhmQty);
   $("avgVhmCostOut").textContent=fmtK(avgVhmCost);
   $("nav2Out").textContent=fmtMoney(nav2);
-  $("realizedOut").textContent=fmtMoney(REALIZED_PNL);
   $("openPnlOut").textContent=fmtMoney(openPnl);
   $("totalPnlOut").textContent=fmtMoney(totalPnl);
   $("netWorthOut").textContent=fmtMoney(netWorth);
@@ -425,7 +445,9 @@ function calc(){
   $("bpOut").className="v "+(buyingPower>=0?"positive":"negative");
   $("vhmBuyOut").className="v "+(canBuy>0?"positive":"negative");
 
-  if(ratio<REQUIRED_RATIO){
+  if(!vicReady){
+    $("status").innerHTML='<span class="negative"><b>ĐÃ NHẬP VIC NHƯNG CHƯA CÓ GIÁ VỐN — VIC CHƯA ĐƯỢC CỘNG VÀO NAV2.</b></span>';
+  }else if(ratio<REQUIRED_RATIO){
     const shortfall=REQUIRED_RATIO*totalBuy-nav2;
     $("status").innerHTML="Thiếu khoảng <b>"+fmtMoney(shortfall)+"</b> để cọc đạt 20%.";
   }else{
@@ -486,14 +508,14 @@ function readPrice(obj){
   return null;
 }
 async function fetchCafeFPair(){
-  const url="https://cafef.vn/du-lieu/Ajax/PageNew/RealtimePricesHeader.ashx?symbols=VHM;FPT&_="+Date.now();
+  const url="https://cafef.vn/du-lieu/Ajax/PageNew/RealtimePricesHeader.ashx?symbols=VHM;FPT;VIC&_="+Date.now();
   const j=await fetchJson(url);
   const objs=collectObjects(j),ans={};
   for(const o of objs){
     const s=readSymbol(o),p=readPrice(o);
-    if((s==="VHM"||s==="FPT")&&p)ans[s]=p;
+    if((s==="VHM"||s==="FPT"||s==="VIC")&&p)ans[s]=p;
   }
-  if(!ans.VHM&&!ans.FPT)throw new Error("CafeF parse fail");
+  if(!ans.VHM&&!ans.FPT&&!ans.VIC)throw new Error("CafeF parse fail");
   return ans;
 }
 async function getPrice(symbol){
@@ -514,7 +536,7 @@ async function loadPrices(){
 
   let ok=0;
   const details=[];
-  const results=await Promise.allSettled([getPrice("VHM"),getPrice("FPT")]);
+  const results=await Promise.allSettled([getPrice("VHM"),getPrice("FPT"),getPrice("VIC")]);
 
   if(results[0].status==="fulfilled"){
     const x=results[0].value;
@@ -538,12 +560,28 @@ async function loadPrices(){
     $("fptLive").className="live warning";
   }
 
-  $("errorBanner").style.display=ok<2?"block":"none";
+  if(results[2].status==="fulfilled"){
+    const x=results[2].value;
+    $("vicPrice").value=x.price.toFixed(1);
+    $("vicLive").textContent="✓ "+x.source+" "+x.price.toFixed(1);
+    $("vicLive").className="live positive";
+    ok++;details.push("VIC "+x.source);
+  }else{
+    $("vicLive").textContent="⚠ dùng giá nhập tay";
+    $("vicLive").className="live warning";
+  }
+
+  const vicHeld=(+$("vicQty").value||0)>0;
+  const essentialOk =
+    results[0].status==="fulfilled" &&
+    results[1].status==="fulfilled" &&
+    (!vicHeld || results[2].status==="fulfilled");
+  $("errorBanner").style.display=essentialOk?"none":"block";
   calc();
 
   const t=new Date().toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   $("source").textContent=
-    (ok?("Đã tải "+ok+"/2 mã lúc "+t+" ("+details.join(", ")+"). "):"Không tải được nguồn công khai. ")
+    (ok?("Đã tải "+ok+"/3 mã lúc "+t+" ("+details.join(", ")+"). "):"Không tải được nguồn công khai. ")
     +"10 lô VHM mua thêm được cộng trực tiếp vào core để tính lại toàn bộ.";
 
   btn.disabled=false;
@@ -552,7 +590,7 @@ async function loadPrices(){
 }
 
 makeRows();
-["vhmPrice","fptPrice"].forEach(id=>{
+["vhmPrice","fptPrice","vicQty","vicPrice","vicCost"].forEach(id=>{
   $(id).addEventListener("input",calc);
   $(id).addEventListener("focus",e=>e.target.select());
 });
