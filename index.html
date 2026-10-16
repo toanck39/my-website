@@ -159,7 +159,7 @@ body.locked #pinGate{display:flex}
         </div>
         <div class="box">
           <label>Giá VHM hiện tại</label>
-          <input id="vhmPrice" type="number" value="58.9" step="0.1" min="0" inputmode="decimal">
+          <input id="vhmPrice" type="number" value="60.6" step="0.1" min="0" inputmode="decimal">
           <div id="vhmLive" class="live">chưa tải giá</div>
         </div>
         <div class="box">
@@ -169,7 +169,7 @@ body.locked #pinGate{display:flex}
         </div>
         <div class="box">
           <label>Giá FPT hiện tại</label>
-          <input id="fptPrice" type="number" value="58.0" step="0.1" min="0" inputmode="decimal">
+          <input id="fptPrice" type="number" value="58.6" step="0.1" min="0" inputmode="decimal">
           <div id="fptLive" class="live">chưa tải giá</div>
         </div>
         <div class="box">
@@ -236,7 +236,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">VIC chỉ dùng để quan sát sự đồng pha với VHM, không tham gia tính NAV. 10 lô VHM mua thêm được cộng trực tiếp vào core để tính lại toàn bộ.</div>
+  <div id="source" class="footer">Mốc tính thứ Hai 19/10/2026: lãi tích lũy 17.377.869đ; lãi phát sinh mỗi ngày khoảng 1.953.582đ. VIC chỉ dùng để quan sát đồng pha với VHM.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -348,7 +348,8 @@ const BASE_FPT_GROSS_COST = 2052481714;
 
 const BUY_FEE = 0.0015;
 const SELL_NET_FACTOR = 0.9975 * 0.9991;
-const ACCRUED_INTEREST = 9563541; // lãi tích lũy đến 15/10/2026
+const ACCRUED_INTEREST = 17377869; // lãi tích lũy tại đầu ngày 19/10/2026
+const DAILY_INTEREST = 1953582; // lãi mỗi ngày theo GT mua hiện tại
 const REQUIRED_RATIO = 0.20;
 const AUTO_REFRESH_MS = 5000;
 const FPT_SELL_LEVEL = 66.0;
@@ -572,7 +573,7 @@ async function loadPrices(){
   const t=new Date().toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   $("source").textContent=
     (ok?("Đã tải "+ok+"/3 mã lúc "+t+" ("+details.join(", ")+"). "):"Không tải được nguồn công khai. ")
-    +"10 lô VHM mua thêm được cộng trực tiếp vào core để tính lại toàn bộ.";
+    +"Lãi/ngày: "+fmtMoney(DAILY_INTEREST)+". Mốc thứ Hai đã cộng đủ lãi sáng T7 + sáng CN + sáng T2.";
 
   btn.disabled=false;
   btn.textContent="↻ Refresh";
