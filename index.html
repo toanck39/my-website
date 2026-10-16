@@ -104,6 +104,18 @@ body.locked #pinGate{display:flex}
 #pinMsg{min-height:18px;margin-top:8px;font-size:12px;font-weight:800;color:#dc2626}
 .lockBtn{font-size:12px;padding:7px 9px}
 
+
+.stressLow{
+  font-size:12px !important;
+  font-weight:700 !important;
+  opacity:.78;
+}
+#status,#source{
+  font-size:10px !important;
+  font-weight:500;
+  opacity:.78;
+}
+
 </style>
 </head>
 <body class="locked">
@@ -161,19 +173,9 @@ body.locked #pinGate{display:flex}
           <div id="fptLive" class="live">chưa tải giá</div>
         </div>
         <div class="box">
-          <label>Số lượng VIC</label>
-          <input id="vicQty" type="number" value="0" step="100" min="0" inputmode="numeric">
-          <div class="unit">mặc định 0 cp</div>
-        </div>
-        <div class="box">
           <label>Giá VIC hiện tại</label>
           <input id="vicPrice" type="number" value="217.3" step="0.1" min="0" inputmode="decimal">
           <div id="vicLive" class="live">chưa tải giá</div>
-        </div>
-        <div class="box">
-          <label>Giá vốn VIC</label>
-          <input id="vicCost" type="number" value="0" step="0.1" min="0" inputmode="decimal">
-          <div class="unit">chỉ cần nhập khi SL VIC &gt; 0</div>
         </div>
       </div>
       <div id="fptAlert">FPT ĐÃ ĐẠT 66,0 — MỐC BÁN CORE THEO KẾ HOẠCH</div>
@@ -209,11 +211,11 @@ body.locked #pinGate{display:flex}
     </div>
     <div class="result">
       <div class="k">Lỗ đang mở</div>
-      <div id="openPnlOut" class="v">-</div>
+      <div id="openPnlOut" class="v stressLow">-</div>
     </div>
     <div class="result">
       <div class="k">Tổng lãi/lỗ toàn TK</div>
-      <div id="totalPnlOut" class="v">-</div>
+      <div id="totalPnlOut" class="v stressLow">-</div>
     </div>
     <div class="result">
       <div class="k">Tài sản ròng hiện tại</div>
@@ -234,7 +236,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">FPT core giữ nguyên 35.000 cp. VIC mặc định 0 cp; nếu nhập VIC &gt; 0, cần nhập cả giá vốn VIC để NAV2/Tài sản ròng được tính chính xác. Lãi tích lũy đang dùng: 9.563.541đ (đến 15/10/2026).</div>
+  <div id="source" class="footer">VIC chỉ dùng để quan sát sự đồng pha với VHM, không tham gia tính NAV. 10 lô VHM mua thêm được cộng trực tiếp vào core để tính lại toàn bộ.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -391,9 +393,7 @@ function makeRows(){
 function calc(){
   const vpK=+$("vhmPrice").value||0, vp=vpK*1000;
   const fpK=+$("fptPrice").value||0, fp=fpK*1000;
-  const vicQty=+$("vicQty").value||0;
-  const vicPriceK=+$("vicPrice").value||0, vicPrice=vicPriceK*1000;
-  const vicCostK=+$("vicCost").value||0, vicCost=vicCostK*1000;
+  const vicPriceK=+$("vicPrice").value||0; // chỉ quan sát, không tham gia tính NAV
 
   let extraQty=0;
   let extraGrossCost=0;
@@ -406,17 +406,11 @@ function calc(){
 
   const totalVhmQty=BASE_VHM_QTY+extraQty;
   const vhmGrossCost=BASE_VHM_GROSS_COST+extraGrossCost;
-
-  // VIC chỉ được đưa vào phép tính khi có cả số lượng và giá vốn.
-  // Điều này tránh làm sai NAV nếu người dùng mới chỉ nhập số lượng/giá thị trường.
-  const vicReady = vicQty<=0 || vicCostK>0;
-  const vicGrossCost = (vicQty>0 && vicCostK>0) ? vicQty*vicCost : 0;
-
-  const grossCost=vhmGrossCost+BASE_FPT_GROSS_COST+vicGrossCost;
+  const grossCost=vhmGrossCost+BASE_FPT_GROSS_COST;
   const totalBuy=grossCost*(1+BUY_FEE);
 
-  const vicMarketValue = (vicQty>0 && vicCostK>0) ? vicQty*vicPrice : 0;
-  const marketValue=totalVhmQty*vp+BASE_FPT_QTY*fp+vicMarketValue;
+  // VIC chỉ dùng để quan sát đồng pha, không được đưa vào NAV/tỷ lệ cọc.
+  const marketValue=totalVhmQty*vp+BASE_FPT_QTY*fp;
   const netSell=marketValue*SELL_NET_FACTOR;
   const nav2=NAV1+netSell-totalBuy-ACCRUED_INTEREST;
   const openPnl=nav2-NAV1;
@@ -435,8 +429,8 @@ function calc(){
   $("openPnlOut").textContent=fmtMoney(openPnl);
   $("totalPnlOut").textContent=fmtMoney(totalPnl);
   $("netWorthOut").textContent=fmtMoney(netWorth);
-  $("openPnlOut").className="v "+(openPnl>=0?"positive":"negative");
-  $("totalPnlOut").className="v "+(totalPnl>=0?"positive":"negative");
+  $("openPnlOut").className="v stressLow "+(openPnl>=0?"positive":"negative");
+  $("totalPnlOut").className="v stressLow "+(totalPnl>=0?"positive":"negative");
   $("ratioOut").textContent=(ratio*100).toFixed(2).replace(".",",")+"%";
   $("bpOut").textContent=fmtMoney(buyingPower);
   $("vhmBuyOut").textContent=fmtShares(canBuy);
@@ -445,13 +439,11 @@ function calc(){
   $("bpOut").className="v "+(buyingPower>=0?"positive":"negative");
   $("vhmBuyOut").className="v "+(canBuy>0?"positive":"negative");
 
-  if(!vicReady){
-    $("status").innerHTML='<span class="negative"><b>ĐÃ NHẬP VIC NHƯNG CHƯA CÓ GIÁ VỐN — VIC CHƯA ĐƯỢC CỘNG VÀO NAV2.</b></span>';
-  }else if(ratio<REQUIRED_RATIO){
+  if(ratio<REQUIRED_RATIO){
     const shortfall=REQUIRED_RATIO*totalBuy-nav2;
-    $("status").innerHTML="Thiếu khoảng <b>"+fmtMoney(shortfall)+"</b> để cọc đạt 20%.";
+    $("status").innerHTML='Thiếu khoảng <b>'+fmtMoney(shortfall)+'</b> để cọc đạt 20%.';
   }else{
-    $("status").innerHTML="Có thể mua thêm khoảng <b>"+fmtShares(canBuy)+"</b> VHM tại giá hiện tại.";
+    $("status").innerHTML='Có thể mua thêm khoảng <b>'+fmtShares(canBuy)+'</b> VHM tại giá hiện tại.';
   }
 
   $("fptAlert").style.display = fpK>=FPT_SELL_LEVEL ? "block" : "none";
@@ -571,11 +563,9 @@ async function loadPrices(){
     $("vicLive").className="live warning";
   }
 
-  const vicHeld=(+$("vicQty").value||0)>0;
   const essentialOk =
     results[0].status==="fulfilled" &&
-    results[1].status==="fulfilled" &&
-    (!vicHeld || results[2].status==="fulfilled");
+    results[1].status==="fulfilled";
   $("errorBanner").style.display=essentialOk?"none":"block";
   calc();
 
@@ -590,7 +580,7 @@ async function loadPrices(){
 }
 
 makeRows();
-["vhmPrice","fptPrice","vicQty","vicPrice","vicCost"].forEach(id=>{
+["vhmPrice","fptPrice","vicPrice"].forEach(id=>{
   $(id).addEventListener("input",calc);
   $(id).addEventListener("focus",e=>e.target.select());
 });
