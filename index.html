@@ -154,8 +154,8 @@ body.locked #pinGate{display:flex}
       <div class="grid">
         <div class="box">
           <label>VHM core</label>
-          <input id="baseVhmQty" type="number" value="35000" readonly>
-          <div class="unit">35.000 cp @ 65,209</div>
+          <input id="baseVhmQty" type="number" value="25000" readonly>
+          <div class="unit">25.000 cp @ 65,209</div>
         </div>
         <div class="box">
           <label>Giá VHM hiện tại</label>
@@ -199,7 +199,7 @@ body.locked #pinGate{display:flex}
   <div class="results">
     <div class="result">
       <div class="k">Tổng VHM</div>
-      <div id="totalVhmOut" class="v neutral">35.000 cp</div>
+      <div id="totalVhmOut" class="v neutral">25.000 cp</div>
     </div>
     <div class="result">
       <div class="k">Giá vốn VHM mới</div>
@@ -240,7 +240,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Mốc tính thứ Hai 19/10/2026: lãi tích lũy 17.377.869đ; lãi phát sinh mỗi ngày khoảng 1.953.582đ. VIC tham gia NAV/tỷ lệ cọc khi có nhập lô mua thêm.</div>
+  <div id="source" class="footer">Cập nhật 19/10/2026: đã bán 5.000 VHM @61,4 và 5.000 VHM @60,9; VHM core còn 25.000 cp. Lãi/ngày ước tính theo GT mua còn lại: 1.659.702đ.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -340,20 +340,20 @@ function initPinGate(){
 
 document.addEventListener("DOMContentLoaded", initPinGate);
 
-const NAV1 = 1019839225;
-const REALIZED_PNL = -293261231;
+const NAV1 = 976194797;
+const REALIZED_PNL = -336905659;
 const NET_DEPOSIT_CAPITAL = 1313100457;
 
 // Core cố định
-const BASE_VHM_QTY = 35000;
-const BASE_VHM_GROSS_COST = 2282310000;
+const BASE_VHM_QTY = 25000;
+const BASE_VHM_GROSS_COST = 1630221429;
 const BASE_FPT_QTY = 35000;
 const BASE_FPT_GROSS_COST = 2052481714;
 
 const BUY_FEE = 0.0015;
 const SELL_NET_FACTOR = 0.9975 * 0.9991;
-const ACCRUED_INTEREST = 17377869; // lãi tích lũy tại đầu ngày 19/10/2026
-const DAILY_INTEREST = 1953582; // lãi mỗi ngày theo GT mua hiện tại
+const ACCRUED_INTEREST = 16376910; // hiệu chỉnh để khớp NAV thực tế đầu ngày 19/10/2026 = 819.993.000đ
+const DAILY_INTEREST = 1659702; // 0,045%/ngày theo GT mua còn lại sau khi bán 10.000 VHM
 const REQUIRED_RATIO = 0.20;
 const AUTO_REFRESH_MS = 5000;
 const FPT_SELL_LEVEL = 66.0;
@@ -600,7 +600,7 @@ async function loadPrices(){
   const t=new Date().toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   $("source").textContent=
     (ok?("Đã tải "+ok+"/3 mã lúc "+t+" ("+details.join(", ")+"). "):"Không tải được nguồn công khai. ")
-    +"Lãi/ngày: "+fmtMoney(DAILY_INTEREST)+". Mốc thứ Hai đã cộng đủ lãi sáng T7 + sáng CN + sáng T2.";
+    +"Lãi/ngày mới: "+fmtMoney(DAILY_INTEREST)+". Đã bán 10.000 VHM (5.000 @61,4 + 5.000 @60,9); core VHM còn 25.000 cp.";
 
   btn.disabled=false;
   btn.textContent="↻ Refresh";
