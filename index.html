@@ -50,7 +50,7 @@ input[readonly]{opacity:.85}
 .buytable{width:100%;border-collapse:separate;border-spacing:0 4px}
 .buytable th{font-size:10px;color:var(--muted);font-weight:800;padding:0 3px 2px}
 .buytable td{padding:0 3px}
-.buytable .n{width:34px;text-align:center;font-size:11px;color:var(--muted);font-weight:800}
+.buytable .n{width:54px;text-align:center;font-size:11px;color:var(--muted);font-weight:800}
 .buytable input{font-size:16px;padding:5px 4px}
 .results{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
 .result{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px;text-align:center}
@@ -182,11 +182,11 @@ body.locked #pinGate{display:flex}
     </div>
 
     <div class="panel">
-      <div class="section">10 LÔ VHM MUA THÊM</div>
+      <div class="section">5 LÔ VHM + 5 LÔ VIC MUA THÊM</div>
       <table class="buytable">
         <thead>
           <tr>
-            <th></th>
+            <th>Mã/lô</th>
             <th>Số lượng mua</th>
             <th>Giá mua (nghìn)</th>
           </tr>
@@ -233,10 +233,14 @@ body.locked #pinGate{display:flex}
       <div class="k">Mua thêm VHM tối đa</div>
       <div id="vhmBuyOut" class="v">-</div>
     </div>
+    <div class="result">
+      <div class="k">Mua thêm VIC tối đa</div>
+      <div id="vicBuyOut" class="v">-</div>
+    </div>
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Mốc tính thứ Hai 19/10/2026: lãi tích lũy 17.377.869đ; lãi phát sinh mỗi ngày khoảng 1.953.582đ. VIC chỉ dùng để quan sát đồng pha với VHM.</div>
+  <div id="source" class="footer">Mốc tính thứ Hai 19/10/2026: lãi tích lũy 17.377.869đ; lãi phát sinh mỗi ngày khoảng 1.953.582đ. VIC tham gia NAV/tỷ lệ cọc khi có nhập lô mua thêm.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -377,14 +381,23 @@ function fmtK(v){return (v/1000).toFixed(3).replace(".",",")}
 function makeRows(){
   const tb=$("buyRows");
   tb.innerHTML="";
-  for(let i=1;i<=10;i++){
-    const tr=document.createElement("tr");
-    tr.innerHTML=`
-      <td class="n">${i}</td>
-      <td><input class="buyQty" id="buyQty${i}" type="number" value="0" min="0" step="1000" inputmode="numeric"></td>
-      <td><input class="buyPrice" id="buyPrice${i}" type="number" value="0" min="0" step="0.1" inputmode="decimal"></td>`;
-    tb.appendChild(tr);
+
+  const groups=[
+    {symbol:"VHM", prefix:"vhm", count:5},
+    {symbol:"VIC", prefix:"vic", count:5}
+  ];
+
+  for(const g of groups){
+    for(let i=1;i<=g.count;i++){
+      const tr=document.createElement("tr");
+      tr.innerHTML=`
+        <td class="n">${g.symbol} ${i}</td>
+        <td><input class="buyQty" id="${g.prefix}BuyQty${i}" type="number" value="0" min="0" step="1000" inputmode="numeric"></td>
+        <td><input class="buyPrice" id="${g.prefix}BuyPrice${i}" type="number" value="0" min="0" step="0.1" inputmode="decimal"></td>`;
+      tb.appendChild(tr);
+    }
   }
+
   document.querySelectorAll(".buyQty,.buyPrice").forEach(el=>{
     el.addEventListener("input",calc);
     el.addEventListener("focus",e=>e.target.select());
@@ -394,24 +407,34 @@ function makeRows(){
 function calc(){
   const vpK=+$("vhmPrice").value||0, vp=vpK*1000;
   const fpK=+$("fptPrice").value||0, fp=fpK*1000;
-  const vicPriceK=+$("vicPrice").value||0; // chỉ quan sát, không tham gia tính NAV
+  const vicPriceK=+$("vicPrice").value||0, vicPrice=vicPriceK*1000;
 
-  let extraQty=0;
-  let extraGrossCost=0;
-  for(let i=1;i<=10;i++){
-    const q=+$("buyQty"+i).value||0;
-    const pK=+$("buyPrice"+i).value||0;
-    extraQty+=q;
-    extraGrossCost+=q*pK*1000;
+  let extraVhmQty=0;
+  let extraVhmGrossCost=0;
+  let extraVicQty=0;
+  let extraVicGrossCost=0;
+
+  for(let i=1;i<=5;i++){
+    const vhmQ=+$("vhmBuyQty"+i).value||0;
+    const vhmPK=+$("vhmBuyPrice"+i).value||0;
+    extraVhmQty+=vhmQ;
+    extraVhmGrossCost+=vhmQ*vhmPK*1000;
+
+    const vicQ=+$("vicBuyQty"+i).value||0;
+    const vicPK=+$("vicBuyPrice"+i).value||0;
+    extraVicQty+=vicQ;
+    extraVicGrossCost+=vicQ*vicPK*1000;
   }
 
-  const totalVhmQty=BASE_VHM_QTY+extraQty;
-  const vhmGrossCost=BASE_VHM_GROSS_COST+extraGrossCost;
-  const grossCost=vhmGrossCost+BASE_FPT_GROSS_COST;
+  const totalVhmQty=BASE_VHM_QTY+extraVhmQty;
+  const totalVicQty=extraVicQty;
+  const vhmGrossCost=BASE_VHM_GROSS_COST+extraVhmGrossCost;
+  const vicGrossCost=extraVicGrossCost;
+  const grossCost=vhmGrossCost+BASE_FPT_GROSS_COST+vicGrossCost;
   const totalBuy=grossCost*(1+BUY_FEE);
 
-  // VIC chỉ dùng để quan sát đồng pha, không được đưa vào NAV/tỷ lệ cọc.
-  const marketValue=totalVhmQty*vp+BASE_FPT_QTY*fp;
+  // VIC chỉ tham gia NAV/tỷ lệ cọc khi có nhập các lô mua thêm VIC.
+  const marketValue=totalVhmQty*vp+BASE_FPT_QTY*fp+totalVicQty*vicPrice;
   const netSell=marketValue*SELL_NET_FACTOR;
   const nav2=NAV1+netSell-totalBuy-ACCRUED_INTEREST;
   const openPnl=nav2-NAV1;
@@ -422,7 +445,9 @@ function calc(){
 
   const avgVhmCost=totalVhmQty>0?vhmGrossCost/totalVhmQty:0;
   const costPerNewVhm=vp*(1+BUY_FEE);
-  const canBuy=(buyingPower>0&&costPerNewVhm>0)?Math.floor(buyingPower/costPerNewVhm):0;
+  const costPerNewVic=vicPrice*(1+BUY_FEE);
+  const canBuyVhm=(buyingPower>0&&costPerNewVhm>0)?Math.floor(buyingPower/costPerNewVhm):0;
+  const canBuyVic=(buyingPower>0&&costPerNewVic>0)?Math.floor(buyingPower/costPerNewVic):0;
 
   $("totalVhmOut").textContent=fmtShares(totalVhmQty);
   $("avgVhmCostOut").textContent=fmtK(avgVhmCost);
@@ -434,17 +459,19 @@ function calc(){
   $("totalPnlOut").className="v stressLow "+(totalPnl>=0?"positive":"negative");
   $("ratioOut").textContent=(ratio*100).toFixed(2).replace(".",",")+"%";
   $("bpOut").textContent=fmtMoney(buyingPower);
-  $("vhmBuyOut").textContent=fmtShares(canBuy);
+  $("vhmBuyOut").textContent=fmtShares(canBuyVhm);
+  $("vicBuyOut").textContent=fmtShares(canBuyVic);
 
   $("ratioOut").className="v "+(ratio>=REQUIRED_RATIO?"positive":"negative");
   $("bpOut").className="v "+(buyingPower>=0?"positive":"negative");
-  $("vhmBuyOut").className="v "+(canBuy>0?"positive":"negative");
+  $("vhmBuyOut").className="v "+(canBuyVhm>0?"positive":"negative");
+  $("vicBuyOut").className="v "+(canBuyVic>0?"positive":"negative");
 
   if(ratio<REQUIRED_RATIO){
     const shortfall=REQUIRED_RATIO*totalBuy-nav2;
     $("status").innerHTML='Thiếu khoảng <b>'+fmtMoney(shortfall)+'</b> để cọc đạt 20%.';
   }else{
-    $("status").innerHTML='Có thể mua thêm khoảng <b>'+fmtShares(canBuy)+'</b> VHM tại giá hiện tại.';
+    $("status").innerHTML='Có thể mua thêm khoảng <b>'+fmtShares(canBuyVhm)+'</b> VHM hoặc <b>'+fmtShares(canBuyVic)+'</b> VIC tại giá hiện tại.';
   }
 
   $("fptAlert").style.display = fpK>=FPT_SELL_LEVEL ? "block" : "none";
