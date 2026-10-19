@@ -155,11 +155,11 @@ body.locked #pinGate{display:flex}
         <div class="box">
           <label>VHM core</label>
           <input id="baseVhmQty" type="number" value="25000" readonly>
-          <div class="unit">25.000 cp @ 65,209</div>
+          <div class="unit">25.000 cp @ 64,618</div>
         </div>
         <div class="box">
           <label>Giá VHM hiện tại</label>
-          <input id="vhmPrice" type="number" value="60.6" step="0.1" min="0" inputmode="decimal">
+          <input id="vhmPrice" type="number" value="60.3" step="0.1" min="0" inputmode="decimal">
           <div id="vhmLive" class="live">chưa tải giá</div>
         </div>
         <div class="box">
@@ -169,12 +169,12 @@ body.locked #pinGate{display:flex}
         </div>
         <div class="box">
           <label>Giá FPT hiện tại</label>
-          <input id="fptPrice" type="number" value="58.6" step="0.1" min="0" inputmode="decimal">
+          <input id="fptPrice" type="number" value="57.1" step="0.1" min="0" inputmode="decimal">
           <div id="fptLive" class="live">chưa tải giá</div>
         </div>
         <div class="box">
           <label>Giá VIC hiện tại</label>
-          <input id="vicPrice" type="number" value="217.3" step="0.1" min="0" inputmode="decimal">
+          <input id="vicPrice" type="number" value="207.0" step="0.1" min="0" inputmode="decimal">
           <div id="vicLive" class="live">chưa tải giá</div>
         </div>
       </div>
@@ -203,7 +203,7 @@ body.locked #pinGate{display:flex}
     </div>
     <div class="result">
       <div class="k">Giá vốn VHM mới</div>
-      <div id="avgVhmCostOut" class="v neutral">65,209</div>
+      <div id="avgVhmCostOut" class="v neutral">64,618</div>
     </div>
     <div class="result">
       <div class="k">NAV2</div>
@@ -240,7 +240,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Cập nhật 19/10/2026: đã bán 5.000 VHM @61,4 và 5.000 VHM @60,9; VHM core còn 25.000 cp. Lãi/ngày ước tính theo GT mua còn lại: 1.659.702đ.</div>
+  <div id="source" class="footer">Mốc đầu ngày 20/10/2026: NAV2 tham chiếu 763.024.167đ (đã trừ thêm 1 ngày lãi Kho 1.653.050đ); tổng GT mua chính thức 3.673.443.627đ; VHM core 25.000 cp @64,618; FPT core 35.000 cp @58,642.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -340,20 +340,20 @@ function initPinGate(){
 
 document.addEventListener("DOMContentLoaded", initPinGate);
 
-const NAV1 = 976194797;
-const REALIZED_PNL = -336905659;
+const NAV1 = 958133377;
+const REALIZED_PNL = -354967080;
 const NET_DEPOSIT_CAPITAL = 1313100457;
 
 // Core cố định
 const BASE_VHM_QTY = 25000;
-const BASE_VHM_GROSS_COST = 1630221429;
+const BASE_VHM_GROSS_COST = 1615460000;
 const BASE_FPT_QTY = 35000;
 const BASE_FPT_GROSS_COST = 2052481714;
 
 const BUY_FEE = 0.0015;
 const SELL_NET_FACTOR = 0.9975 * 0.9991;
-const ACCRUED_INTEREST = 16376910; // hiệu chỉnh để khớp NAV thực tế đầu ngày 19/10/2026 = 819.993.000đ
-const DAILY_INTEREST = 1659702; // 0,045%/ngày theo GT mua còn lại sau khi bán 10.000 VHM
+const ACCRUED_INTEREST = 15753072; // mốc đầu ngày 20/10/2026: đã cộng thêm 1 ngày lãi Kho để NAV2 tham chiếu = 763.024.167đ tại VHM 60,3 và FPT 57,1
+const DAILY_INTEREST = 1653050; // 0,045%/ngày theo tổng GT mua chính thức 3.673.443.627đ
 const REQUIRED_RATIO = 0.20;
 const AUTO_REFRESH_MS = 5000;
 const FPT_SELL_LEVEL = 66.0;
@@ -600,7 +600,7 @@ async function loadPrices(){
   const t=new Date().toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   $("source").textContent=
     (ok?("Đã tải "+ok+"/3 mã lúc "+t+" ("+details.join(", ")+"). "):"Không tải được nguồn công khai. ")
-    +"Lãi/ngày mới: "+fmtMoney(DAILY_INTEREST)+". Đã bán 10.000 VHM (5.000 @61,4 + 5.000 @60,9); core VHM còn 25.000 cp.";
+    +"Lãi/ngày: "+fmtMoney(DAILY_INTEREST)+". Mốc đầu 20/10/2026 đã trừ thêm 1 ngày lãi; VHM core 25.000 cp, FPT core 35.000 cp.";
 
   btn.disabled=false;
   btn.textContent="↻ Refresh";
