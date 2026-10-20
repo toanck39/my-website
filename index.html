@@ -154,12 +154,12 @@ body.locked #pinGate{display:flex}
       <div class="grid">
         <div class="box">
           <label>VHM core</label>
-          <input id="baseVhmQty" type="number" value="25000" readonly>
-          <div class="unit">25.000 cp @ 64,618</div>
+          <input id="baseVhmQty" type="number" value="26000" readonly>
+          <div class="unit">26.000 cp @ 64,127</div>
         </div>
         <div class="box">
           <label>Giá VHM hiện tại</label>
-          <input id="vhmPrice" type="number" value="60.3" step="0.1" min="0" inputmode="decimal">
+          <input id="vhmPrice" type="number" value="57.8" step="0.1" min="0" inputmode="decimal">
           <div id="vhmLive" class="live">chưa tải giá</div>
         </div>
         <div class="box">
@@ -169,7 +169,7 @@ body.locked #pinGate{display:flex}
         </div>
         <div class="box">
           <label>Giá FPT hiện tại</label>
-          <input id="fptPrice" type="number" value="57.1" step="0.1" min="0" inputmode="decimal">
+          <input id="fptPrice" type="number" value="57.4" step="0.1" min="0" inputmode="decimal">
           <div id="fptLive" class="live">chưa tải giá</div>
         </div>
         <div class="box">
@@ -199,11 +199,11 @@ body.locked #pinGate{display:flex}
   <div class="results">
     <div class="result">
       <div class="k">Tổng VHM</div>
-      <div id="totalVhmOut" class="v neutral">25.000 cp</div>
+      <div id="totalVhmOut" class="v neutral">26.000 cp</div>
     </div>
     <div class="result">
       <div class="k">Giá vốn VHM mới</div>
-      <div id="avgVhmCostOut" class="v neutral">64,618</div>
+      <div id="avgVhmCostOut" class="v neutral">64,127</div>
     </div>
     <div class="result">
       <div class="k">NAV2</div>
@@ -340,20 +340,20 @@ function initPinGate(){
 
 document.addEventListener("DOMContentLoaded", initPinGate);
 
-const NAV1 = 958133377;
-const REALIZED_PNL = -354967080;
+const NAV1 = 951806624;
+const REALIZED_PNL = -361293833;
 const NET_DEPOSIT_CAPITAL = 1313100457;
 
 // Core cố định
-const BASE_VHM_QTY = 25000;
-const BASE_VHM_GROSS_COST = 1615460000;
+const BASE_VHM_QTY = 26000;
+const BASE_VHM_GROSS_COST = 1667290000;
 const BASE_FPT_QTY = 35000;
 const BASE_FPT_GROSS_COST = 2052481714;
 
 const BUY_FEE = 0.0015;
 const SELL_NET_FACTOR = 0.9975 * 0.9991;
-const ACCRUED_INTEREST = 15753072; // mốc đầu ngày 20/10/2026: đã cộng thêm 1 ngày lãi Kho để NAV2 tham chiếu = 763.024.167đ tại VHM 60,3 và FPT 57,1
-const DAILY_INTEREST = 1653050; // 0,045%/ngày theo tổng GT mua chính thức 3.673.443.627đ
+const ACCRUED_INTEREST = 17220758; // mốc đầu ngày 21/10/2026: đã cộng thêm 1 ngày lãi Kho; NAV2 tham chiếu ~709.102.276đ tại VHM 57,8 và FPT 57,4
+const DAILY_INTEREST = 1676408; // 0,045%/ngày theo tổng GT mua chính thức 3.725.351.372đ
 const REQUIRED_RATIO = 0.20;
 const AUTO_REFRESH_MS = 5000;
 const FPT_SELL_LEVEL = 66.0;
@@ -600,7 +600,7 @@ async function loadPrices(){
   const t=new Date().toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   $("source").textContent=
     (ok?("Đã tải "+ok+"/3 mã lúc "+t+" ("+details.join(", ")+"). "):"Không tải được nguồn công khai. ")
-    +"Lãi/ngày: "+fmtMoney(DAILY_INTEREST)+". Mốc đầu 20/10/2026 đã trừ thêm 1 ngày lãi; VHM core 25.000 cp, FPT core 35.000 cp.";
+    +"Lãi/ngày: "+fmtMoney(DAILY_INTEREST)+". Mốc đầu 21/10/2026 đã trừ thêm 1 ngày lãi; VHM core 26.000 cp, FPT core 35.000 cp.";
 
   btn.disabled=false;
   btn.textContent="↻ Refresh";
