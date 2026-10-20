@@ -155,7 +155,7 @@ body.locked #pinGate{display:flex}
         <div class="box">
           <label>VHM core</label>
           <input id="baseVhmQty" type="number" value="26000" readonly>
-          <div class="unit">26.000 cp @ 64,127</div>
+          <div class="unit">26.000 @ 64,127</div>
         </div>
         <div class="box">
           <label>Giá VHM hiện tại</label>
@@ -165,7 +165,7 @@ body.locked #pinGate{display:flex}
         <div class="box">
           <label>FPT core</label>
           <input id="fptQty" type="number" value="35000" readonly>
-          <div class="unit">35.000 cp @ 58,642</div>
+          <div class="unit">35.000 @ 58,642</div>
         </div>
         <div class="box">
           <label>Giá FPT hiện tại</label>
@@ -199,7 +199,7 @@ body.locked #pinGate{display:flex}
   <div class="results">
     <div class="result">
       <div class="k">Tổng VHM</div>
-      <div id="totalVhmOut" class="v neutral">26.000 cp</div>
+      <div id="totalVhmOut" class="v neutral">26.000</div>
     </div>
     <div class="result">
       <div class="k">Giá vốn VHM mới</div>
@@ -240,7 +240,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Mốc đầu ngày 20/10/2026: NAV2 tham chiếu 763.024.167đ (đã trừ thêm 1 ngày lãi Kho 1.653.050đ); tổng GT mua chính thức 3.673.443.627đ; VHM core 25.000 cp @64,618; FPT core 35.000 cp @58,642.</div>
+  <div id="source" class="footer">Mốc đầu ngày 21/10/2026: NAV2 tham chiếu 709.102.276đ (đã trừ thêm 1 ngày lãi Kho 1.676.408đ); tổng GT mua chính thức 3.725.351.372đ; VHM core 26.000 @64,127; FPT core 35.000 @58,642.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -372,10 +372,10 @@ applyTheme(localStorage.getItem("theme")||"light");
 function fmtMoney(n){
   const sign=n<0?"-":"",x=Math.abs(n);
   if(x>=1e9)return sign+(x/1e9).toFixed(3).replace(".",",")+" tỷ";
-  if(x>=1e6)return sign+(x/1e6).toFixed(1).replace(".",",")+" tr";
+  if(x>=1e6)return sign+(x/1e6).toFixed(1).replace(".",",");
   return Math.round(n).toLocaleString("vi-VN");
 }
-function fmtShares(n){return Math.max(0,Math.floor(n)).toLocaleString("vi-VN")+" cp"}
+function fmtShares(n){return Math.max(0,Math.floor(n)).toLocaleString("vi-VN")}
 function fmtK(v){return (v/1000).toFixed(3).replace(".",",")}
 
 function makeRows(){
@@ -600,7 +600,7 @@ async function loadPrices(){
   const t=new Date().toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   $("source").textContent=
     (ok?("Đã tải "+ok+"/3 mã lúc "+t+" ("+details.join(", ")+"). "):"Không tải được nguồn công khai. ")
-    +"Lãi/ngày: "+fmtMoney(DAILY_INTEREST)+". Mốc đầu 21/10/2026 đã trừ thêm 1 ngày lãi; VHM core 26.000 cp, FPT core 35.000 cp.";
+    +"Lãi/ngày: "+fmtMoney(DAILY_INTEREST)+". Mốc đầu 21/10/2026 đã trừ thêm 1 ngày lãi; VHM core 26.000, FPT core 35.000.";
 
   btn.disabled=false;
   btn.textContent="↻ Refresh";
