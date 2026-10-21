@@ -154,12 +154,12 @@ body.locked #pinGate{display:flex}
       <div class="grid">
         <div class="box">
           <label>VHM core</label>
-          <input id="baseVhmQty" type="number" value="21300" readonly>
-          <div class="unit">21.300 @ 64,061</div>
+          <input id="baseVhmQty" type="number" value="20000" readonly>
+          <div class="unit">20.000 @ 64,061</div>
         </div>
         <div class="box">
           <label>Giá VHM hiện tại</label>
-          <input id="vhmPrice" type="number" value="58.3" step="0.1" min="0" inputmode="decimal">
+          <input id="vhmPrice" type="number" value="58.4" step="0.1" min="0" inputmode="decimal">
           <div id="vhmLive" class="live">chưa tải giá</div>
         </div>
         <div class="box">
@@ -240,7 +240,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Cập nhật 21/10/2026 sau bán 5.000 VHM @58,0. VHM còn 21.300 @64,061; FPT 35.000 @58,642. NAV1 mô hình 931.036.638đ; tổng GT mua ước tính 3.422.102.997đ. Lãi sáng nay đã được tính.</div>
+  <div id="source" class="footer">Cập nhật 21/10/2026 sau bán thêm 1.300 VHM @58,4. VHM còn 20.000 @64,061; FPT 35.000 @58,642. NAV1 mô hình 923.294.675đ; tổng GT mua ước tính 3.338.698.992đ. Lãi sáng nay đã được tính.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -340,20 +340,20 @@ function initPinGate(){
 
 document.addEventListener("DOMContentLoaded", initPinGate);
 
-const NAV1 = 931036638;
-const REALIZED_PNL = -393063819;
+const NAV1 = 923294675;
+const REALIZED_PNL = -400805782;
 const NET_DEPOSIT_CAPITAL = 1324100457;
 
 // Core cố định
-const BASE_VHM_QTY = 21300;
-const BASE_VHM_GROSS_COST = 1364495817;
+const BASE_VHM_QTY = 20000;
+const BASE_VHM_GROSS_COST = 1281216730;
 const BASE_FPT_QTY = 35000;
 const BASE_FPT_GROSS_COST = 2052481714;
 
 const BUY_FEE = 0.0015;
 const SELL_NET_FACTOR = 0.9975 * 0.9991;
 const ACCRUED_INTEREST = 17220758; // đã gồm lãi sáng 21/10/2026; snapshot Kho sau nạp thêm 11.000.000: NAV2 753.986.753 tại VHM 58,3 và FPT 58,0
-const DAILY_INTEREST = 1539946; // 0,045%/ngày theo tổng GT mua ước tính sau bán 5.000 VHM @58,0: 3.422.102.997đ
+const DAILY_INTEREST = 1502415; // 0,045%/ngày theo tổng GT mua ước tính sau bán thêm 1.300 VHM @58,4: 3.338.698.992đ
 const REQUIRED_RATIO = 0.20;
 const AUTO_REFRESH_MS = 5000;
 const FPT_SELL_LEVEL = 66.0;
@@ -600,7 +600,7 @@ async function loadPrices(){
   const t=new Date().toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   $("source").textContent=
     (ok?("Đã tải "+ok+"/3 mã lúc "+t+" ("+details.join(", ")+"). "):"Không tải được nguồn công khai. ")
-    +"Lãi/ngày: "+fmtMoney(DAILY_INTEREST)+". Cập nhật 21/10/2026 sau bán 5.000 VHM @58,0; lãi sáng nay đã được tính; VHM 21.300, FPT 35.000.";
+    +"Lãi/ngày: "+fmtMoney(DAILY_INTEREST)+". Cập nhật 21/10/2026 sau bán thêm 1.300 VHM @58,4; lãi sáng nay đã được tính; VHM 20.000, FPT 35.000.";
 
   btn.disabled=false;
   btn.textContent="↻ Refresh";
