@@ -220,7 +220,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Cập nhật 21/10/2026: sau khi mua thêm 1.000 VHM @60,8, vị thế 69.100 @~60,917; NAV1 giữ 873.259.659; NAV2 mô hình ~845.025.313 tại VHM 60,8; tổng GT mua mô hình ~4.215.701.552.</div>
+  <div id="source" class="footer">Cập nhật 21/10/2026: sau khi mua thêm 200 VHM @60,8, vị thế 69.300 @~60,917; NAV1 giữ 873.259.659; NAV2 mô hình ~844.965.756 tại VHM 60,8; tổng GT mua mô hình ~4.227.879.792.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -325,15 +325,15 @@ const NET_DEPOSIT_CAPITAL = 1324100457;
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
 // Vị thế gốc theo báo cáo Kho 21/10/2026
-const BASE_VHM_QTY = 69100;
-const BASE_VHM_GROSS_COST = 4209387471; // đã cộng thêm 1.000 VHM @60,8 ngày 21/10/2026
+const BASE_VHM_QTY = 69300;
+const BASE_VHM_GROSS_COST = 4221547471; // đã cộng thêm 200 VHM @60,8 ngày 21/10/2026
 const SNAPSHOT_VHM_PRICE_K = 60.8;      // mốc neo mô hình sau giao dịch mới
-const SNAPSHOT_NAV2 = 845025313;        // mô hình sau khi mua thêm 1.000 @60,8; chờ Kho chốt chính thức
-const SNAPSHOT_OPEN_PNL = -28234347;    // mô hình sau giao dịch mới
+const SNAPSHOT_NAV2 = 844965756;        // mô hình sau khi mua thêm 200 @60,8; chờ Kho chốt chính thức
+const SNAPSHOT_OPEN_PNL = -28293904;    // mô hình sau giao dịch mới
 
 const BUY_FEE = 0.0015;
 const SELL_NET_FACTOR = 0.9975 * 0.9991;
-const DAILY_INTEREST = 1897066; // 0,045%/ngày trên ~4.215.701.552
+const DAILY_INTEREST = 1902546; // 0,045%/ngày trên ~4.227.879.792
 const REQUIRED_RATIO = 0.20;
 const AUTO_REFRESH_MS = 5000;
 
@@ -536,7 +536,7 @@ async function loadPrices(){
   const t=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   $('source').textContent=
     (ok?('Đã tải VHM lúc '+t+' ('+details.join(', ')+'). '):'Không tải được nguồn công khai. ')
-    +'Lãi/ngày tham chiếu: '+fmtMoney(DAILY_INTEREST)+'. Sau mua thêm 1.000 VHM @60,8: 69.100 @~60,917; NAV2 mô hình ~845.025.313 tại giá 60,8.';
+    +'Lãi/ngày tham chiếu: '+fmtMoney(DAILY_INTEREST)+'. Sau mua thêm 200 VHM @60,8: 69.300 @~60,917; NAV2 mô hình ~844.965.756 tại giá 60,8.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
