@@ -154,35 +154,19 @@ body.locked #pinGate{display:flex}
       <div class="grid">
         <div class="box">
           <label>VHM core</label>
-          <input id="baseVhmQty" type="number" value="20000" readonly>
-          <div class="unit">20.000 @ 64,061</div>
+          <input id="baseVhmQty" type="number" value="63100" readonly>
+          <div class="unit">63.100 @ 60,976</div>
         </div>
         <div class="box">
           <label>Giá VHM hiện tại</label>
-          <input id="vhmPrice" type="number" value="58.4" step="0.1" min="0" inputmode="decimal">
+          <input id="vhmPrice" type="number" value="60.2" step="0.1" min="0" inputmode="decimal">
           <div id="vhmLive" class="live">chưa tải giá</div>
         </div>
-        <div class="box">
-          <label>FPT core</label>
-          <input id="fptQty" type="number" value="35000" readonly>
-          <div class="unit">35.000 @ 58,642</div>
-        </div>
-        <div class="box">
-          <label>Giá FPT hiện tại</label>
-          <input id="fptPrice" type="number" value="58.0" step="0.1" min="0" inputmode="decimal">
-          <div id="fptLive" class="live">chưa tải giá</div>
-        </div>
-        <div class="box">
-          <label>Giá VIC hiện tại</label>
-          <input id="vicPrice" type="number" value="207.0" step="0.1" min="0" inputmode="decimal">
-          <div id="vicLive" class="live">chưa tải giá</div>
-        </div>
       </div>
-      <div id="fptAlert">FPT ĐÃ ĐẠT 66,0 — MỐC BÁN CORE THEO KẾ HOẠCH</div>
     </div>
 
     <div class="panel">
-      <div class="section">5 LÔ VHM + 5 LÔ VIC MUA THÊM</div>
+      <div class="section">10 LÔ VHM MUA THÊM</div>
       <table class="buytable">
         <thead>
           <tr>
@@ -199,11 +183,11 @@ body.locked #pinGate{display:flex}
   <div class="results">
     <div class="result">
       <div class="k">Tổng VHM</div>
-      <div id="totalVhmOut" class="v neutral">21.300</div>
+      <div id="totalVhmOut" class="v neutral">63.100</div>
     </div>
     <div class="result">
       <div class="k">Giá vốn VHM mới</div>
-      <div id="avgVhmCostOut" class="v neutral">64,061</div>
+      <div id="avgVhmCostOut" class="v neutral">60,976</div>
     </div>
     <div class="result">
       <div class="k">NAV2</div>
@@ -233,14 +217,10 @@ body.locked #pinGate{display:flex}
       <div class="k">Mua thêm VHM tối đa</div>
       <div id="vhmBuyOut" class="v">-</div>
     </div>
-    <div class="result">
-      <div class="k">Mua thêm VIC tối đa</div>
-      <div id="vicBuyOut" class="v">-</div>
-    </div>
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Cập nhật 21/10/2026 sau bán thêm 1.300 VHM @58,4. VHM còn 20.000 @64,061; FPT 35.000 @58,642. NAV1 mô hình 923.294.675đ; tổng GT mua ước tính 3.338.698.992đ. Lãi sáng nay đã được tính.</div>
+  <div id="source" class="footer">Cập nhật 21/10/2026 theo báo cáo Kho: VHM 63.100 @60,976; NAV1 873.259.659; NAV2 806.076.151; tổng GT mua 3.853.358.852; cọc 20,92%.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -340,23 +320,22 @@ function initPinGate(){
 
 document.addEventListener("DOMContentLoaded", initPinGate);
 
-const NAV1 = 923294675;
-const REALIZED_PNL = -400805782;
+const NAV1 = 873259659;
 const NET_DEPOSIT_CAPITAL = 1324100457;
+const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
-// Core cố định
-const BASE_VHM_QTY = 20000;
-const BASE_VHM_GROSS_COST = 1281216730;
-const BASE_FPT_QTY = 35000;
-const BASE_FPT_GROSS_COST = 2052481714;
+// Vị thế gốc theo báo cáo Kho 21/10/2026
+const BASE_VHM_QTY = 63100;
+const BASE_VHM_GROSS_COST = 3847587471; // suy ra từ tổng GT mua chính thức / 1,0015
+const SNAPSHOT_VHM_PRICE_K = 60.2;      // mốc neo để NAV2 khớp báo cáo Kho
+const SNAPSHOT_NAV2 = 806076151;        // NAV2 chính thức của Kho tại snapshot
+const SNAPSHOT_OPEN_PNL = -67183509;    // lãi/lỗ dự kiến chính thức của Kho tại snapshot
 
 const BUY_FEE = 0.0015;
 const SELL_NET_FACTOR = 0.9975 * 0.9991;
-const ACCRUED_INTEREST = 17220758; // đã gồm lãi sáng 21/10/2026; snapshot Kho sau nạp thêm 11.000.000: NAV2 753.986.753 tại VHM 58,3 và FPT 58,0
-const DAILY_INTEREST = 1502415; // 0,045%/ngày theo tổng GT mua ước tính sau bán thêm 1.300 VHM @58,4: 3.338.698.992đ
+const DAILY_INTEREST = 1734011; // 0,045%/ngày trên 3.853.358.852
 const REQUIRED_RATIO = 0.20;
 const AUTO_REFRESH_MS = 5000;
-const FPT_SELL_LEVEL = 66.0;
 
 const $ = id => document.getElementById(id);
 let loading=false;
@@ -383,8 +362,7 @@ function makeRows(){
   tb.innerHTML="";
 
   const groups=[
-    {symbol:"VHM", prefix:"vhm", count:5},
-    {symbol:"VIC", prefix:"vic", count:5}
+    {symbol:"VHM", prefix:"vhm", count:10}
   ];
 
   for(const g of groups){
@@ -405,39 +383,28 @@ function makeRows(){
 }
 
 function calc(){
-  const vpK=+$("vhmPrice").value||0, vp=vpK*1000;
-  const fpK=+$("fptPrice").value||0, fp=fpK*1000;
-  const vicPriceK=+$("vicPrice").value||0, vicPrice=vicPriceK*1000;
+  const vpK=+$('vhmPrice').value||0, vp=vpK*1000;
 
   let extraVhmQty=0;
   let extraVhmGrossCost=0;
-  let extraVicQty=0;
-  let extraVicGrossCost=0;
-
-  for(let i=1;i<=5;i++){
-    const vhmQ=+$("vhmBuyQty"+i).value||0;
-    const vhmPK=+$("vhmBuyPrice"+i).value||0;
-    extraVhmQty+=vhmQ;
-    extraVhmGrossCost+=vhmQ*vhmPK*1000;
-
-    const vicQ=+$("vicBuyQty"+i).value||0;
-    const vicPK=+$("vicBuyPrice"+i).value||0;
-    extraVicQty+=vicQ;
-    extraVicGrossCost+=vicQ*vicPK*1000;
+  for(let i=1;i<=10;i++){
+    const q=+$('vhmBuyQty'+i).value||0;
+    const pK=+$('vhmBuyPrice'+i).value||0;
+    extraVhmQty+=q;
+    extraVhmGrossCost+=q*pK*1000;
   }
 
   const totalVhmQty=BASE_VHM_QTY+extraVhmQty;
-  const totalVicQty=extraVicQty;
   const vhmGrossCost=BASE_VHM_GROSS_COST+extraVhmGrossCost;
-  const vicGrossCost=extraVicGrossCost;
-  const grossCost=vhmGrossCost+BASE_FPT_GROSS_COST+vicGrossCost;
-  const totalBuy=grossCost*(1+BUY_FEE);
+  const totalBuy=vhmGrossCost*(1+BUY_FEE);
 
-  // VIC chỉ tham gia NAV/tỷ lệ cọc khi có nhập các lô mua thêm VIC.
-  const marketValue=totalVhmQty*vp+BASE_FPT_QTY*fp+totalVicQty*vicPrice;
-  const netSell=marketValue*SELL_NET_FACTOR;
-  const nav2=NAV1+netSell-totalBuy-ACCRUED_INTEREST;
-  const openPnl=nav2-NAV1;
+  // Neo NAV2 theo snapshot chính thức của Kho; sau đó chỉ cập nhật theo biến động giá và các lô mua thêm.
+  const basePrice=SNAPSHOT_VHM_PRICE_K*1000;
+  const baseMovePnl=BASE_VHM_QTY*(vp-basePrice)*SELL_NET_FACTOR;
+  const extraPnl=extraVhmQty*vp*SELL_NET_FACTOR-extraVhmGrossCost*(1+BUY_FEE);
+  const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+extraPnl;
+  const nav2=SNAPSHOT_NAV2+baseMovePnl+extraPnl;
+
   const totalPnl=REALIZED_PNL+openPnl;
   const netWorth=NET_DEPOSIT_CAPITAL+totalPnl;
   const ratio=totalBuy>0?nav2/totalBuy:0;
@@ -445,36 +412,30 @@ function calc(){
 
   const avgVhmCost=totalVhmQty>0?vhmGrossCost/totalVhmQty:0;
   const costPerNewVhm=vp*(1+BUY_FEE);
-  const costPerNewVic=vicPrice*(1+BUY_FEE);
   const canBuyVhm=(buyingPower>0&&costPerNewVhm>0)?Math.floor(buyingPower/costPerNewVhm):0;
-  const canBuyVic=(buyingPower>0&&costPerNewVic>0)?Math.floor(buyingPower/costPerNewVic):0;
 
-  $("totalVhmOut").textContent=fmtShares(totalVhmQty);
-  $("avgVhmCostOut").textContent=fmtK(avgVhmCost);
-  $("nav2Out").textContent=fmtMoney(nav2);
-  $("openPnlOut").textContent=fmtMoney(openPnl);
-  $("totalPnlOut").textContent=fmtMoney(totalPnl);
-  $("netWorthOut").textContent=fmtMoney(netWorth);
-  $("openPnlOut").className="v stressLow "+(openPnl>=0?"positive":"negative");
-  $("totalPnlOut").className="v stressLow "+(totalPnl>=0?"positive":"negative");
-  $("ratioOut").textContent=(ratio*100).toFixed(2).replace(".",",")+"%";
-  $("bpOut").textContent=fmtMoney(buyingPower);
-  $("vhmBuyOut").textContent=fmtShares(canBuyVhm);
-  $("vicBuyOut").textContent=fmtShares(canBuyVic);
+  $('totalVhmOut').textContent=fmtShares(totalVhmQty);
+  $('avgVhmCostOut').textContent=fmtK(avgVhmCost);
+  $('nav2Out').textContent=fmtMoney(nav2);
+  $('openPnlOut').textContent=fmtMoney(openPnl);
+  $('totalPnlOut').textContent=fmtMoney(totalPnl);
+  $('netWorthOut').textContent=fmtMoney(netWorth);
+  $('openPnlOut').className='v stressLow '+(openPnl>=0?'positive':'negative');
+  $('totalPnlOut').className='v stressLow '+(totalPnl>=0?'positive':'negative');
+  $('ratioOut').textContent=(ratio*100).toFixed(2).replace('.',',')+'%';
+  $('bpOut').textContent=fmtMoney(buyingPower);
+  $('vhmBuyOut').textContent=fmtShares(canBuyVhm);
 
-  $("ratioOut").className="v "+(ratio>=REQUIRED_RATIO?"positive":"negative");
-  $("bpOut").className="v "+(buyingPower>=0?"positive":"negative");
-  $("vhmBuyOut").className="v "+(canBuyVhm>0?"positive":"negative");
-  $("vicBuyOut").className="v "+(canBuyVic>0?"positive":"negative");
+  $('ratioOut').className='v '+(ratio>=REQUIRED_RATIO?'positive':'negative');
+  $('bpOut').className='v '+(buyingPower>=0?'positive':'negative');
+  $('vhmBuyOut').className='v '+(canBuyVhm>0?'positive':'negative');
 
   if(ratio<REQUIRED_RATIO){
     const shortfall=REQUIRED_RATIO*totalBuy-nav2;
-    $("status").innerHTML='Thiếu khoảng <b>'+fmtMoney(shortfall)+'</b> để cọc đạt 20%.';
+    $('status').innerHTML='Thiếu khoảng <b>'+fmtMoney(shortfall)+'</b> để cọc đạt 20%.';
   }else{
-    $("status").innerHTML='Có thể mua thêm khoảng <b>'+fmtShares(canBuyVhm)+'</b> VHM hoặc <b>'+fmtShares(canBuyVic)+'</b> VIC tại giá hiện tại.';
+    $('status').innerHTML='Có thể mua thêm khoảng <b>'+fmtShares(canBuyVhm)+'</b> VHM tại giá hiện tại.';
   }
-
-  $("fptAlert").style.display = fpK>=FPT_SELL_LEVEL ? "block" : "none";
 }
 
 async function fetchJson(url){
@@ -528,14 +489,14 @@ function readPrice(obj){
   return null;
 }
 async function fetchCafeFPair(){
-  const url="https://cafef.vn/du-lieu/Ajax/PageNew/RealtimePricesHeader.ashx?symbols=VHM;FPT;VIC&_="+Date.now();
+  const url="https://cafef.vn/du-lieu/Ajax/PageNew/RealtimePricesHeader.ashx?symbols=VHM&_="+Date.now();
   const j=await fetchJson(url);
   const objs=collectObjects(j),ans={};
   for(const o of objs){
     const s=readSymbol(o),p=readPrice(o);
-    if((s==="VHM"||s==="FPT"||s==="VIC")&&p)ans[s]=p;
+    if(s==="VHM"&&p)ans[s]=p;
   }
-  if(!ans.VHM&&!ans.FPT&&!ans.VIC)throw new Error("CafeF parse fail");
+  if(!ans.VHM)throw new Error("CafeF parse fail");
   return ans;
 }
 async function getPrice(symbol){
@@ -550,65 +511,40 @@ async function getPrice(symbol){
 async function loadPrices(){
   if(loading)return;
   loading=true;
-  const btn=$("refreshBtn");
+  const btn=$('refreshBtn');
   btn.disabled=true;
-  btn.textContent="Loading...";
+  btn.textContent='Loading...';
 
   let ok=0;
   const details=[];
-  const results=await Promise.allSettled([getPrice("VHM"),getPrice("FPT"),getPrice("VIC")]);
+  const result=await Promise.allSettled([getPrice('VHM')]);
 
-  if(results[0].status==="fulfilled"){
-    const x=results[0].value;
-    $("vhmPrice").value=x.price.toFixed(1);
-    $("vhmLive").textContent="✓ "+x.source+" "+x.price.toFixed(1);
-    $("vhmLive").className="live positive";
-    ok++;details.push("VHM "+x.source);
+  if(result[0].status==='fulfilled'){
+    const x=result[0].value;
+    $('vhmPrice').value=x.price.toFixed(1);
+    $('vhmLive').textContent='✓ '+x.source+' '+x.price.toFixed(1);
+    $('vhmLive').className='live positive';
+    ok=1; details.push('VHM '+x.source);
   }else{
-    $("vhmLive").textContent="⚠ dùng giá nhập tay";
-    $("vhmLive").className="live warning";
+    $('vhmLive').textContent='⚠ dùng giá nhập tay';
+    $('vhmLive').className='live warning';
   }
 
-  if(results[1].status==="fulfilled"){
-    const x=results[1].value;
-    $("fptPrice").value=x.price.toFixed(1);
-    $("fptLive").textContent="✓ "+x.source+" "+x.price.toFixed(1);
-    $("fptLive").className="live positive";
-    ok++;details.push("FPT "+x.source);
-  }else{
-    $("fptLive").textContent="⚠ dùng giá nhập tay";
-    $("fptLive").className="live warning";
-  }
-
-  if(results[2].status==="fulfilled"){
-    const x=results[2].value;
-    $("vicPrice").value=x.price.toFixed(1);
-    $("vicLive").textContent="✓ "+x.source+" "+x.price.toFixed(1);
-    $("vicLive").className="live positive";
-    ok++;details.push("VIC "+x.source);
-  }else{
-    $("vicLive").textContent="⚠ dùng giá nhập tay";
-    $("vicLive").className="live warning";
-  }
-
-  const essentialOk =
-    results[0].status==="fulfilled" &&
-    results[1].status==="fulfilled";
-  $("errorBanner").style.display=essentialOk?"none":"block";
+  $('errorBanner').style.display=ok?'none':'block';
   calc();
 
-  const t=new Date().toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
-  $("source").textContent=
-    (ok?("Đã tải "+ok+"/3 mã lúc "+t+" ("+details.join(", ")+"). "):"Không tải được nguồn công khai. ")
-    +"Lãi/ngày: "+fmtMoney(DAILY_INTEREST)+". Cập nhật 21/10/2026 sau bán thêm 1.300 VHM @58,4; lãi sáng nay đã được tính; VHM 20.000, FPT 35.000.";
+  const t=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  $('source').textContent=
+    (ok?('Đã tải VHM lúc '+t+' ('+details.join(', ')+'). '):'Không tải được nguồn công khai. ')
+    +'Lãi/ngày tham chiếu: '+fmtMoney(DAILY_INTEREST)+'. Snapshot Kho 21/10/2026: 63.100 @60,976; NAV1 873.259.659; NAV2 806.076.151; cọc 20,92%.';
 
   btn.disabled=false;
-  btn.textContent="↻ Refresh";
+  btn.textContent='↻ Refresh';
   loading=false;
 }
 
 makeRows();
-["vhmPrice","fptPrice","vicPrice"].forEach(id=>{
+["vhmPrice"].forEach(id=>{
   $(id).addEventListener("input",calc);
   $(id).addEventListener("focus",e=>e.target.select());
 });
