@@ -154,12 +154,12 @@ body.locked #pinGate{display:flex}
       <div class="grid">
         <div class="box">
           <label>VHM core</label>
-          <input id="baseVhmQty" type="number" value="69300" readonly>
-          <div class="unit">69.300 @ 60,917</div>
+          <input id="baseVhmQty" type="number" value="74300" readonly>
+          <div class="unit">74.300 @ 60,970</div>
         </div>
         <div class="box">
           <label>Giá VHM hiện tại</label>
-          <input id="vhmPrice" type="number" value="60.8" step="0.1" min="0" inputmode="decimal">
+          <input id="vhmPrice" type="number" value="61.5" step="0.1" min="0" inputmode="decimal">
           <div id="vhmLive" class="live">chưa tải giá</div>
         </div>
       </div>
@@ -183,11 +183,11 @@ body.locked #pinGate{display:flex}
   <div class="results">
     <div class="result">
       <div class="k">Tổng VHM</div>
-      <div id="totalVhmOut" class="v neutral">69.300</div>
+      <div id="totalVhmOut" class="v neutral">74.300</div>
     </div>
     <div class="result">
       <div class="k">Giá vốn VHM mới</div>
-      <div id="avgVhmCostOut" class="v neutral">60,917</div>
+      <div id="avgVhmCostOut" class="v neutral">60,970</div>
     </div>
     <div class="result">
       <div class="k">NAV2</div>
@@ -220,7 +220,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Cập nhật 21/10/2026: sau khi mua thêm 200 VHM @60,8, vị thế 69.300 @~60,917; NAV1 giữ 873.259.659; NAV2 mô hình ~844.965.756 tại VHM 60,8; tổng GT mua mô hình ~4.227.879.792.</div>
+  <div id="source" class="footer">Cập nhật theo báo cáo Kho 21/10/2026: 74.300 @60,970; NAV1 873.259.659; NAV2 891.612.000; tổng GT mua 4.536.842.542; phí mua 0,15%; phí bán 0,25%.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -325,15 +325,16 @@ const NET_DEPOSIT_CAPITAL = 1324100457;
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
 // Vị thế gốc theo báo cáo Kho 21/10/2026
-const BASE_VHM_QTY = 69300;
-const BASE_VHM_GROSS_COST = 4221547471; // đã cộng thêm 200 VHM @60,8 ngày 21/10/2026
-const SNAPSHOT_VHM_PRICE_K = 60.8;      // mốc neo mô hình sau giao dịch mới
-const SNAPSHOT_NAV2 = 844965756;        // mô hình sau khi mua thêm 200 @60,8; chờ Kho chốt chính thức
-const SNAPSHOT_OPEN_PNL = -28293904;    // mô hình sau giao dịch mới
+const BASE_VHM_QTY = 74300;
+const BASE_VHM_GROSS_COST = 4530047471; // đã cộng thêm 5.000 VHM @61,7 ngày 21/10/2026
+const SNAPSHOT_VHM_PRICE_K = 61.5;      // mốc giá neo theo snapshot Kho gần nhất
+const SNAPSHOT_NAV2 = 891612000;        // NAV2 chính thức theo báo cáo Kho
+const SNAPSHOT_OPEN_PNL = 18352341;     // lãi/lỗ dự kiến chính thức theo báo cáo Kho
 
-const BUY_FEE = 0.0015;
-const SELL_NET_FACTOR = 0.9975 * 0.9991;
-const DAILY_INTEREST = 1902546; // 0,045%/ngày trên ~4.227.879.792
+const BUY_FEE = 0.0015;                 // 0,15%
+const SELL_FEE = 0.0025;                // 0,25%
+const SELL_NET_FACTOR = 1 - SELL_FEE;
+const DAILY_INTEREST = 2041579; // 0,045%/ngày trên ~4.536.842.542
 const REQUIRED_RATIO = 0.20;
 const AUTO_REFRESH_MS = 5000;
 
@@ -536,7 +537,7 @@ async function loadPrices(){
   const t=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   $('source').textContent=
     (ok?('Đã tải VHM lúc '+t+' ('+details.join(', ')+'). '):'Không tải được nguồn công khai. ')
-    +'Lãi/ngày tham chiếu: '+fmtMoney(DAILY_INTEREST)+'. Sau mua thêm 200 VHM @60,8: 69.300 @~60,917; NAV2 mô hình ~844.965.756 tại giá 60,8.';
+    +'Lãi/ngày tham chiếu: '+fmtMoney(DAILY_INTEREST)+'. Phí mua 0,15%; phí bán 0,25%. Snapshot Kho: 74.300 @60,970; NAV2 891.612.000.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
