@@ -154,8 +154,8 @@ body.locked #pinGate{display:flex}
       <div class="grid">
         <div class="box">
           <label>VHM core</label>
-          <input id="baseVhmQty" type="number" value="63100" readonly>
-          <div class="unit">63.100 @ 60,976</div>
+          <input id="baseVhmQty" type="number" value="68100" readonly>
+          <div class="unit">68.100 @ 60,919</div>
         </div>
         <div class="box">
           <label>Giá VHM hiện tại</label>
@@ -183,11 +183,11 @@ body.locked #pinGate{display:flex}
   <div class="results">
     <div class="result">
       <div class="k">Tổng VHM</div>
-      <div id="totalVhmOut" class="v neutral">63.100</div>
+      <div id="totalVhmOut" class="v neutral">68.100</div>
     </div>
     <div class="result">
       <div class="k">Giá vốn VHM mới</div>
-      <div id="avgVhmCostOut" class="v neutral">60,976</div>
+      <div id="avgVhmCostOut" class="v neutral">60,919</div>
     </div>
     <div class="result">
       <div class="k">NAV2</div>
@@ -220,7 +220,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Cập nhật 21/10/2026 theo báo cáo Kho: VHM 63.100 @60,976; NAV1 873.259.659; NAV2 806.076.151; tổng GT mua 3.853.358.852; cọc 20,92%.</div>
+  <div id="source" class="footer">Cập nhật 21/10/2026: sau khi mua thêm 5.000 VHM @60,2, vị thế 68.100 @~60,919; NAV1 giữ 873.259.659; NAV2 mô hình ~804.601.928 tại VHM 60,2; tổng GT mua mô hình ~4.154.810.352.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -325,15 +325,15 @@ const NET_DEPOSIT_CAPITAL = 1324100457;
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
 // Vị thế gốc theo báo cáo Kho 21/10/2026
-const BASE_VHM_QTY = 63100;
-const BASE_VHM_GROSS_COST = 3847587471; // suy ra từ tổng GT mua chính thức / 1,0015
+const BASE_VHM_QTY = 68100;
+const BASE_VHM_GROSS_COST = 4148587471; // đã cộng 5.000 VHM @60,2 ngày 21/10/2026
 const SNAPSHOT_VHM_PRICE_K = 60.2;      // mốc neo để NAV2 khớp báo cáo Kho
-const SNAPSHOT_NAV2 = 806076151;        // NAV2 chính thức của Kho tại snapshot
-const SNAPSHOT_OPEN_PNL = -67183509;    // lãi/lỗ dự kiến chính thức của Kho tại snapshot
+const SNAPSHOT_NAV2 = 804601928;        // mô hình sau khi mua thêm 5.000 @60,2; chờ Kho chốt chính thức
+const SNAPSHOT_OPEN_PNL = -68657732;    // mô hình sau giao dịch mới
 
 const BUY_FEE = 0.0015;
 const SELL_NET_FACTOR = 0.9975 * 0.9991;
-const DAILY_INTEREST = 1734011; // 0,045%/ngày trên 3.853.358.852
+const DAILY_INTEREST = 1869665; // 0,045%/ngày trên ~4.154.810.352
 const REQUIRED_RATIO = 0.20;
 const AUTO_REFRESH_MS = 5000;
 
@@ -536,7 +536,7 @@ async function loadPrices(){
   const t=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   $('source').textContent=
     (ok?('Đã tải VHM lúc '+t+' ('+details.join(', ')+'). '):'Không tải được nguồn công khai. ')
-    +'Lãi/ngày tham chiếu: '+fmtMoney(DAILY_INTEREST)+'. Snapshot Kho 21/10/2026: 63.100 @60,976; NAV1 873.259.659; NAV2 806.076.151; cọc 20,92%.';
+    +'Lãi/ngày tham chiếu: '+fmtMoney(DAILY_INTEREST)+'. Sau mua thêm 5.000 VHM @60,2: 68.100 @~60,919; NAV2 mô hình ~804.601.928 tại giá 60,2.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
