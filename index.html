@@ -544,24 +544,23 @@ function readPrice(obj){
   }
   return null;
 }
-async function fetchCafeFPair(){
-  const url="https://cafef.vn/du-lieu/Ajax/PageNew/RealtimePricesHeader.ashx?symbols=VHM,VIC&_="+Date.now();
+async function fetchCafeFSymbol(symbol){
+  const sym=String(symbol||'').toUpperCase();
+  const url="https://cafef.vn/du-lieu/Ajax/PageNew/RealtimePricesHeader.ashx?symbols="
+    +encodeURIComponent(sym)+"&_="+Date.now();
   const j=await fetchJson(url);
-  const objs=collectObjects(j),ans={};
+  const objs=collectObjects(j);
   for(const o of objs){
     const s=readSymbol(o),p=readPrice(o);
-    if((s==="VHM"||s==="VIC")&&p)ans[s]=p;
+    if(s===sym&&p)return p;
   }
-  if(!ans.VHM&&!ans.VIC)throw new Error("CafeF parse fail");
-  return ans;
+  throw new Error("CafeF parse fail for "+sym);
 }
+
 async function getPrice(symbol){
   try{return {price:await fetchKBS(symbol),source:"KBS"}}catch(e){}
-  try{
-    const pair=await fetchCafeFPair();
-    if(pair[symbol])return {price:pair[symbol],source:"CafeF"};
-  }catch(e){}
-  throw new Error("No public price source");
+  try{return {price:await fetchCafeFSymbol(symbol),source:"CafeF"}}catch(e){}
+  throw new Error("No public price source for "+symbol);
 }
 
 async function loadPrices(){
@@ -571,38 +570,52 @@ async function loadPrices(){
   btn.disabled=true;
   btn.textContent='Loading...';
 
-  let ok=0;
+  let vhmOk=false;
+  let vicOk=false;
   const details=[];
-  const result=await Promise.allSettled([getPrice('VHM'),getPrice('VIC')]);
 
-  if(result[0].status==='fulfilled'){
-    const x=result[0].value;
+  // IMPORTANT: keep the original VHM connection path intact and load it first.
+  // The page-level DATA CONNECTION ERROR is based only on VHM, because VHM drives NAV.
+  try{
+    const x=await getPrice('VHM');
     $('vhmPrice').value=x.price.toFixed(1);
     $('vhmLive').textContent='✓ '+x.source+' '+x.price.toFixed(1);
     $('vhmLive').className='live positive';
-    ok++; details.push('VHM '+x.source);
-  }else{
+    vhmOk=true;
+    details.push('VHM '+x.source);
+  }catch(e){
     $('vhmLive').textContent='⚠ using manual price';
     $('vhmLive').className='live warning';
   }
 
-  if(result[1].status==='fulfilled'){
-    const x=result[1].value;
+  // VIC is informational only. Load it after VHM so it cannot break or rate-limit
+  // the VHM request. A VIC failure never triggers the page-level connection error.
+  try{
+    const x=await getPrice('VIC');
     $('vicPrice').value=x.price.toFixed(1);
     $('vicLive').textContent='✓ '+x.source+' '+x.price.toFixed(1);
     $('vicLive').className='live positive';
-    ok++; details.push('VIC '+x.source);
-  }else{
+    vicOk=true;
+    details.push('VIC '+x.source);
+  }catch(e){
     $('vicLive').textContent='⚠ using manual price';
     $('vicLive').className='live warning';
   }
 
-  $('errorBanner').style.display=ok?'none':'block';
+  $('errorBanner').style.display=vhmOk?'none':'block';
   calc();
 
   const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  let priceStatus='';
+  if(vhmOk){
+    priceStatus='Prices checked at '+t+' ('+details.join(', ')+'). ';
+    if(!vicOk)priceStatus+='VIC public feed unavailable; manual VIC entry remains enabled. ';
+  }else{
+    priceStatus='VHM public data source unavailable; enter VHM manually. ';
+    if(vicOk)priceStatus+='VIC loaded successfully. ';
+  }
   $('source').textContent=
-    (ok?('Prices loaded at '+t+' ('+details.join(', ')+'). '):'Public data source unavailable. ')
+    priceStatus
     +'MegaBot reference daily interest: '+fmtMoney(DAILY_INTEREST)+'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Opening snapshot for 22/10/2026: 74,300 @ 60.970; price anchor 61.8; NAV2 904,379,930.';
 
   btn.disabled=false;
