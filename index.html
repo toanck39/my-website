@@ -377,7 +377,7 @@ const DAILY_INTEREST = 2041579.1438073525;
 const REQUIRED_RATIO = 0.20;
 const TARGET_RATIO = 0.205;
 const TARGET_RATIO_21 = 0.21;
-const AUTO_REFRESH_MS = 5000;
+const AUTO_REFRESH_MS = 10000;
 
 const $ = id => document.getElementById(id);
 let loading=false;
@@ -521,8 +521,25 @@ function calc(){
   }
 }
 
+async function fetchTextWithTimeout(url, timeoutMs=4000){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try{
+    const r=await fetch(url,{
+      cache:"no-store",
+      headers:{"Accept":"application/json,text/plain,*/*"},
+      signal:controller.signal
+    });
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return await r.text();
+  }finally{
+    clearTimeout(timer);
+  }
+}
+
 async function fetchJson(url){
-  const options={cache:"no-store",headers:{"Accept":"application/json,text/plain,*/*"}};
+  // Keep the direct route first, then use only two CORS fallbacks.
+  // Each route has a short timeout so Chrome Android cannot leave the refresh hanging.
   const attempts=[
     url,
     "https://api.allorigins.win/raw?url="+encodeURIComponent(url),
@@ -531,14 +548,11 @@ async function fetchJson(url){
   let lastErr=null;
   for(const target of attempts){
     try{
-      const r=await fetch(target,options);
-      if(!r.ok)throw new Error("HTTP "+r.status);
-      const text=await r.text();
-      try{return JSON.parse(text)}catch(e){
-        // Some proxies may wrap JSON as plain text with BOM/whitespace.
-        return JSON.parse(text.replace(/^\uFEFF/,"").trim());
-      }
-    }catch(e){lastErr=e}
+      const text=await fetchTextWithTimeout(target,4000);
+      return JSON.parse(text.replace(/^\uFEFF/,"").trim());
+    }catch(e){
+      lastErr=e;
+    }
   }
   throw lastErr||new Error("All data routes failed");
 }
@@ -600,8 +614,11 @@ function readPrice(obj){
 }
 async function fetchCafeFPrices(symbols){
   const syms=[...new Set(symbols.map(s=>String(s||'').toUpperCase()).filter(Boolean))];
+  // CafeF's realtime header endpoint uses semicolons between symbols.
+  // This matches the older mobile-friendly version that successfully returned VHM/FPT/VIC together.
+  const symbolParam=syms.join(';');
   const url="https://cafef.vn/du-lieu/Ajax/PageNew/RealtimePricesHeader.ashx?symbols="
-    +encodeURIComponent(syms.join(','))+"&_="+Date.now();
+    +symbolParam+"&_="+Date.now();
   const j=await fetchJson(url);
   const objs=collectObjects(j);
   const found={};
@@ -609,6 +626,7 @@ async function fetchCafeFPrices(symbols){
     const sym=readSymbol(o),p=readPrice(o);
     if(sym&&p&&syms.includes(sym)&&found[sym]==null)found[sym]=p;
   }
+  if(Object.keys(found).length===0)throw new Error("CafeF parse fail");
   return found;
 }
 
@@ -638,23 +656,29 @@ async function loadPrices(){
   const prices={};
   const sources={};
 
-  // First choice: one combined CafeF request for both symbols.
-  // This avoids two near-simultaneous public-feed calls every refresh cycle.
+  // Primary route: ONE CafeF request for VHM and VIC together.
+  // Important: CafeF expects VHM;VIC (semicolon), not VHM,VIC.
   try{
     const batch=await fetchCafeFPrices(['VHM','VIC']);
     if(batch.VHM){prices.VHM=batch.VHM;sources.VHM='CafeF';}
     if(batch.VIC){prices.VIC=batch.VIC;sources.VIC='CafeF';}
   }catch(e){}
 
-  // Fallback only for the symbol that is still missing.
+  // Fallback only for a missing symbol. These calls never block a symbol already obtained from CafeF.
+  const fallbackJobs=[];
   if(!prices.VHM){
-    try{prices.VHM=await fetchKBS('VHM');sources.VHM='KBS';}catch(e){}
+    fallbackJobs.push((async()=>{
+      try{prices.VHM=await fetchKBS('VHM');sources.VHM='KBS';}catch(e){}
+    })());
   }
   if(!prices.VIC){
-    try{prices.VIC=await fetchKBS('VIC');sources.VIC='KBS';}catch(e){}
+    fallbackJobs.push((async()=>{
+      try{prices.VIC=await fetchKBS('VIC');sources.VIC='KBS';}catch(e){}
+    })());
   }
+  if(fallbackJobs.length)await Promise.allSettled(fallbackJobs);
 
-  // Final single-symbol CafeF fallback in case the batch response omitted one symbol.
+  // Last lightweight CafeF retry only for a symbol still missing.
   if(!prices.VHM){
     try{prices.VHM=await fetchCafeFSymbol('VHM');sources.VHM='CafeF';}catch(e){}
   }
@@ -694,7 +718,7 @@ async function loadPrices(){
     }
   }
 
-  // Only VHM controls the page-level error banner because VIC quantity is zero.
+  // VIC quantity is zero, so a VIC feed issue must never break NAV or trigger the page-level error.
   $('errorBanner').style.display=vhmOk?'none':'block';
   calc();
 
@@ -702,7 +726,7 @@ async function loadPrices(){
   let priceStatus='';
   if(vhmOk){
     priceStatus='Prices checked at '+t+' ('+details.join(', ')+'). ';
-    if(!vicOk)priceStatus+='VIC feed unavailable; manual VIC entry remains enabled and VIC quantity is 0, so NAV is unaffected. ';
+    if(!vicOk)priceStatus+='VIC live feed unavailable; cached/manual VIC price is used and VIC quantity is 0, so NAV is unaffected. ';
   }else{
     priceStatus='VHM public data source unavailable; enter VHM manually. ';
     if(vicOk)priceStatus+='VIC loaded successfully; VIC quantity is 0 and does not affect NAV. ';
