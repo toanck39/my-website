@@ -172,7 +172,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">DATA CONNECTION ERROR – ENTER MANUALLY</div>
-  <div id="versionLine">Last updated: 22/10/2026 11:27 | Version: Day 22-10 hour 11:27</div>
+  <div id="versionLine">Last updated: 22/10/2026 11:33 | Version: Day 22-10 hour 11:33</div>
 
   <div class="layout">
     <div class="panel">
@@ -249,13 +249,13 @@ body.locked #pinGate{display:flex}
       <div class="k">Max additional VHM</div>
       <div id="vhmBuyOut" class="v">-</div>
     </div>
+    <div class="result">
+      <div class="k">Max VHM at 20.25% collateral</div>
+      <div id="vhmBuy2025Out" class="v">-</div>
+    </div>
     <div class="result" id="vhmBuy205Card">
       <div class="k">Max VHM at 20.5% collateral</div>
       <div id="vhmBuy205Out" class="v">-</div>
-    </div>
-    <div class="result">
-      <div class="k">Buying power at 21% collateral</div>
-      <div id="bp21Out" class="v">-</div>
     </div>
   </div>
 
@@ -380,8 +380,8 @@ const SELL_NET_FACTOR = 1 - SELL_FEE;
 const MARK_TO_LIQUIDATION_FACTOR = SELL_NET_FACTOR * (1 - DAILY_RATE * SETTLEMENT_DAYS);
 const DAILY_INTEREST = 2616730.5789;
 const REQUIRED_RATIO = 0.20;
-const TARGET_RATIO = 0.205;
-const TARGET_RATIO_21 = 0.21;
+const TARGET_RATIO_2025 = 0.2025;
+const TARGET_RATIO_205 = 0.205;
 const AUTO_REFRESH_MS = 5000;
 
 const $ = id => document.getElementById(id);
@@ -480,18 +480,15 @@ function calc(){
   const requiredHeadroom=nav2 - REQUIRED_RATIO*totalBuy;
   const canBuyVhm=(requiredHeadroom>0&&requiredDenomPerShare>0)?Math.floor(requiredHeadroom/requiredDenomPerShare):0;
 
-  // Exact maximum additional VHM while keeping the post-purchase collateral ratio at or above 20.5%.
-  const targetDenomPerShare=immediateDragPerShare + TARGET_RATIO*costPerNewVhm;
-  const targetHeadroom=nav2 - TARGET_RATIO*totalBuy;
-  const canBuyVhm205=(targetHeadroom>0&&targetDenomPerShare>0)?Math.floor(targetHeadroom/targetDenomPerShare):0;
+  // Exact maximum additional VHM while keeping the post-purchase collateral ratio at or above 20.25%.
+  const target2025DenomPerShare=immediateDragPerShare + TARGET_RATIO_2025*costPerNewVhm;
+  const target2025Headroom=nav2 - TARGET_RATIO_2025*totalBuy;
+  const canBuyVhm2025=(target2025Headroom>0&&target2025DenomPerShare>0)?Math.floor(target2025Headroom/target2025DenomPerShare):0;
 
-  // Buying power while keeping collateral at or above 21.0%.
-  // Rounded down to executable 100-share lots, then expressed as total purchase cost including buy fee.
-  const target21DenomPerShare=immediateDragPerShare + TARGET_RATIO_21*costPerNewVhm;
-  const target21Headroom=nav2 - TARGET_RATIO_21*totalBuy;
-  const canBuyVhm21Raw=(target21Headroom>0&&target21DenomPerShare>0)?Math.floor(target21Headroom/target21DenomPerShare):0;
-  const canBuyVhm21=Math.floor(canBuyVhm21Raw/100)*100;
-  const buyingPower21=canBuyVhm21*costPerNewVhm;
+  // Exact maximum additional VHM while keeping the post-purchase collateral ratio at or above 20.5%.
+  const target205DenomPerShare=immediateDragPerShare + TARGET_RATIO_205*costPerNewVhm;
+  const target205Headroom=nav2 - TARGET_RATIO_205*totalBuy;
+  const canBuyVhm205=(target205Headroom>0&&target205DenomPerShare>0)?Math.floor(target205Headroom/target205DenomPerShare):0;
 
   $('totalVhmOut').textContent=fmtShares(totalVhmQty);
   $('avgVhmCostOut').textContent=fmtK(avgVhmCost);
@@ -504,20 +501,20 @@ function calc(){
   $('ratioOut').textContent=(ratio*100).toFixed(2)+'%';
   $('bpOut').textContent=fmtMoney(buyingPower);
   $('vhmBuyOut').textContent=fmtShares(canBuyVhm);
+  $('vhmBuy2025Out').textContent=fmtShares(canBuyVhm2025);
   $('vhmBuy205Out').textContent=fmtShares(canBuyVhm205);
-  $('bp21Out').textContent=fmtMoney(buyingPower21);
 
   $('ratioOut').className='v '+(ratio>=REQUIRED_RATIO?'positive':'negative');
   $('bpOut').className='v '+(buyingPower>=0?'positive':'negative');
   $('vhmBuyOut').className='v '+(canBuyVhm>0?'positive':'negative');
+  $('vhmBuy2025Out').className='v '+(canBuyVhm2025>0?'positive':'negative');
   $('vhmBuy205Out').className='v '+(canBuyVhm205>0?'positive':'negative');
-  $('bp21Out').className='v '+(buyingPower21>0?'positive':'negative');
 
   if(ratio<REQUIRED_RATIO){
     const shortfall=REQUIRED_RATIO*totalBuy-nav2;
     $('status').innerHTML='Approximately <b>'+fmtMoney(shortfall)+'</b> is needed to restore the collateral ratio to 20%.';
   }else{
-    $('status').innerHTML='At the current price, the estimated maximum additional VHM is <b>'+fmtShares(canBuyVhm)+'</b>; to keep collateral at or above 20.5%, the estimated limit is <b>'+fmtShares(canBuyVhm205)+'</b>; buying power while preserving 21% collateral is <b>'+fmtMoney(buyingPower21)+'</b>.';
+    $('status').innerHTML='At the current price, the estimated maximum additional VHM is <b>'+fmtShares(canBuyVhm)+'</b>; at 20.25% collateral the estimated limit is <b>'+fmtShares(canBuyVhm2025)+'</b>; at 20.5% collateral the estimated limit is <b>'+fmtShares(canBuyVhm205)+'</b>.';
   }
 }
 
