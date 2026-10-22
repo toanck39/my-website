@@ -177,7 +177,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 22/10/2026 15:06 | Version: Day 22-10 hour 15:06</div>
+  <div id="versionLine">Last updated: 22/10/2026 16:07 | Version: Day 22-10 hour 16:07</div>
 
   <div class="layout">
     <div class="panel">
@@ -226,7 +226,7 @@ body.locked #pinGate{display:flex}
   <div class="results">
     <div class="result">
       <div class="k">Total VHM</div>
-      <div id="totalVhmOut" class="v neutral">89,000</div>
+      <div id="totalVhmOut" class="v neutral">94,200</div>
     </div>
     <div class="result">
       <div class="k">New VHM average cost</div>
@@ -275,7 +275,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Prepared for 22/10/2026 from official MegaBot snapshot: VHM core 94,200 @ 61.637; model price anchor 65.1; persistent last-valid price; NAV1 873,259,659; NAV2 anchor 1,151,747,640; total purchase value 5,814,956,842; buy fee 0.15%; sell fee 0.25%; interest 0.045% per day.</div>
+  <div id="source" class="footer">Prepared for 23/10/2026 from official MegaBot close on 22/10/2026: VHM core 94,200 @ 61.637; close/model price anchor 64.0; official close NAV2 1,057,867,708; 23/10 opening NAV2 after one financing day 1,055,250,977; NAV1 873,259,659; total purchase value 5,814,956,842; buy fee 0.15%; sell fee 0.25%; interest 0.045% per day.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -379,15 +379,16 @@ const NAV1 = 873259659.3489714;
 const NET_DEPOSIT_CAPITAL = 1324100456.518321;
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
-// MegaBot base position and ledger updated intraday on 22/10/2026.
-// The opening snapshot below is prepared for 22/10/2026 and already deducts one additional day of interest.
+// MegaBot official close snapshot on 22/10/2026, prepared for the 23/10/2026 session.
+// The official close NAV2/Open P/L are reduced by one daily financing charge to form the 23/10 opening anchor.
 const BASE_VHM_QTY = 94200;
 const BASE_VHM_GROSS_COST = 5806247470.793809;
-const MODEL_ANCHOR_VHM_PRICE_K = 65.1;  // NAV anchor only
+const MODEL_ANCHOR_VHM_PRICE_K = 64.0;  // official close / NAV movement anchor
 const INITIAL_LAST_VALID_VHM_PRICE_K = 64.0; // confirmed close on 22/10/2026; bootstrap only
 const INITIAL_LAST_VALID_LABEL = "confirmed close 22/10/2026";
-const SNAPSHOT_NAV2 = 1151747640;
-const SNAPSHOT_OPEN_PNL = 278487981;
+const OFFICIAL_CLOSE_NAV2 = 1057867708;
+const OFFICIAL_CLOSE_OPEN_PNL = 184608049;
+const OPENING_CARRY_DAYS = 1;
 
 const BUY_FEE = 0.0015;                 // 0.15%
 const SELL_FEE = 0.0025;                // 0.25%
@@ -396,6 +397,8 @@ const SETTLEMENT_DAYS = 2;               // MegaBot mark-to-liquidation interest
 const SELL_NET_FACTOR = 1 - SELL_FEE;
 const MARK_TO_LIQUIDATION_FACTOR = SELL_NET_FACTOR * (1 - DAILY_RATE * SETTLEMENT_DAYS);
 const DAILY_INTEREST = 2616730.5789;
+const SNAPSHOT_NAV2 = OFFICIAL_CLOSE_NAV2 - DAILY_INTEREST * OPENING_CARRY_DAYS;
+const SNAPSHOT_OPEN_PNL = OFFICIAL_CLOSE_OPEN_PNL - DAILY_INTEREST * OPENING_CARRY_DAYS;
 const REQUIRED_RATIO = 0.20;
 const TARGET_RATIO_2025 = 0.2025;
 const TARGET_RATIO_205 = 0.205;
@@ -406,9 +409,9 @@ const AUTO_REFRESH_MS = 5000;
 // Priority on feed failure: explicit manual override -> persistent last valid price.
 // The confirmed 64.0 close is used only once to bootstrap an empty cache;
 // every successful LIVE quote permanently replaces it, including tomorrow's close.
-const VHM_CACHE_KEY = "megabot_vhm_last_valid_v3_k";
-const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v3_ts";
-const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v3_source";
+const VHM_CACHE_KEY = "megabot_vhm_last_valid_v4_k";
+const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v4_ts";
+const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v4_source";
 let sessionLastValidVhm = null;
 let vhmManualOverride = false;
 
@@ -421,35 +424,28 @@ function safeStorageGet(key){
 function safeStorageSet(key,value){
   try{localStorage.setItem(key,String(value));return true}catch(e){return false}
 }
-// Remove obsolete cache formats once. The v2 cache, when present, contains only a successful LIVE quote,
-// so migrate it into the persistent v3 store instead of discarding useful last-valid data.
+// Start a fresh persistent cache from the confirmed 22/10 close.
+// This deliberately ignores older cache namespaces so Android cannot resurrect a stale intraday price.
 function bootstrapPersistentVhmPrice(){
   let p=Number(safeStorageGet(VHM_CACHE_KEY));
   let ts=Number(safeStorageGet(VHM_CACHE_TS_KEY));
   let source=safeStorageGet(VHM_CACHE_SOURCE_KEY);
 
   if(!(Number.isFinite(p)&&p>0)){
-    const oldP=Number(safeStorageGet("megabot_vhm_last_good_v2_k"));
-    const oldTs=Number(safeStorageGet("megabot_vhm_last_good_v2_ts"));
-    if(Number.isFinite(oldP)&&oldP>0){
-      p=oldP;
-      ts=Number.isFinite(oldTs)&&oldTs>0?oldTs:Date.now();
-      source='migrated last live';
-    }else{
-      p=INITIAL_LAST_VALID_VHM_PRICE_K;
-      ts=Date.now();
-      source=INITIAL_LAST_VALID_LABEL;
-    }
+    p=INITIAL_LAST_VALID_VHM_PRICE_K;
+    ts=Date.now();
+    source=INITIAL_LAST_VALID_LABEL;
     safeStorageSet(VHM_CACHE_KEY,p.toFixed(1));
     safeStorageSet(VHM_CACHE_TS_KEY,ts);
     safeStorageSet(VHM_CACHE_SOURCE_KEY,source);
   }
   sessionLastValidVhm={price:p,ts,source};
   try{
-    localStorage.removeItem("megabot_vhm_last_good_k");
-    localStorage.removeItem("megabot_vhm_last_good_ts");
-    localStorage.removeItem("megabot_vhm_last_good_v2_k");
-    localStorage.removeItem("megabot_vhm_last_good_v2_ts");
+    [
+      "megabot_vhm_last_good_k","megabot_vhm_last_good_ts",
+      "megabot_vhm_last_good_v2_k","megabot_vhm_last_good_v2_ts",
+      "megabot_vhm_last_valid_v3_k","megabot_vhm_last_valid_v3_ts","megabot_vhm_last_valid_v3_source"
+    ].forEach(k=>localStorage.removeItem(k));
   }catch(e){}
 }
 function saveLastGoodVhm(priceK,source='live'){
@@ -559,7 +555,7 @@ function calc(){
 
   // MegaBot mark-to-liquidation logic:
   // sell fee 0.25%, plus a two-day interest reserve on net sale proceeds.
-  // The 22/10 opening snapshot already includes one additional day of interest on the existing position.
+  // The 23/10 opening anchor already deducts one financing day from the official 22/10 close snapshot.
   const basePrice=MODEL_ANCHOR_VHM_PRICE_K*1000;
   const baseMovePnl=BASE_VHM_QTY*(vp-basePrice)*MARK_TO_LIQUIDATION_FACTOR;
 
@@ -858,7 +854,7 @@ async function loadPrices(){
   const vnindexText=vnindexOk ? 'VNINDEX '+vnindexSource+' '+$('vnindexPrice').value : 'VNINDEX reference unavailable';
   $('source').textContent='Checked '+t+' | '+vhmText+' | '+vicText+' | '+vnindexText
     +' | MegaBot daily interest: '+fmtMoney(DAILY_INTEREST)
-    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Updated core for 22/10/2026 from official MegaBot snapshot: 94,200 @ 61.637; model anchor 65.1; persistent last-valid price; NAV2 anchor 1,151,747,640; total purchase value 5,814,956,842.';
+    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for 23/10/2026 from official MegaBot close 22/10: 94,200 @ 61.637; close/model anchor 64.0; official close NAV2 1,057,867,708; opening NAV2 after one financing day 1,055,250,977; total purchase value 5,814,956,842.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
