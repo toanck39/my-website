@@ -341,7 +341,12 @@ const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 // The opening snapshot below is prepared for 22/10/2026 and already deducts one additional day of interest.
 const BASE_VHM_QTY = 74300;
 const BASE_VHM_GROSS_COST = 4530047470.588236;
+// VIC is part of the same pricing/portfolio engine, but its position is intentionally zero.
+// Therefore VIC price updates can never change NAV unless BASE_VIC_QTY is changed later.
+const BASE_VIC_QTY = 0;
+const BASE_VIC_GROSS_COST = 0;
 const SNAPSHOT_VHM_PRICE_K = 61.8;
+const SNAPSHOT_VIC_PRICE_K = 0;
 const SNAPSHOT_NAV2 = 904379930.3157802;
 const SNAPSHOT_OPEN_PNL = 31120270.966808904;
 
@@ -404,6 +409,7 @@ function makeRows(){
 
 function calc(){
   const vpK=+$('vhmPrice').value||0, vp=vpK*1000;
+  const vicK=+$('vicPrice').value||0, vic=vicK*1000;
 
   let extraVhmQty=0;
   let extraVhmGrossCost=0;
@@ -416,13 +422,17 @@ function calc(){
 
   const totalVhmQty=BASE_VHM_QTY+extraVhmQty;
   const vhmGrossCost=BASE_VHM_GROSS_COST+extraVhmGrossCost;
-  const totalBuy=vhmGrossCost*(1+BUY_FEE);
+  const totalVicQty=BASE_VIC_QTY;
+  const vicGrossCost=BASE_VIC_GROSS_COST;
+  const totalBuy=(vhmGrossCost+vicGrossCost)*(1+BUY_FEE);
 
   // MegaBot mark-to-liquidation logic:
   // sell fee 0.25%, plus a two-day interest reserve on net sale proceeds.
   // The 22/10 opening snapshot already includes one additional day of interest on the existing position.
   const basePrice=SNAPSHOT_VHM_PRICE_K*1000;
   const baseMovePnl=BASE_VHM_QTY*(vp-basePrice)*MARK_TO_LIQUIDATION_FACTOR;
+  const vicBasePrice=SNAPSHOT_VIC_PRICE_K*1000;
+  const vicMovePnl=totalVicQty*(vic-vicBasePrice)*MARK_TO_LIQUIDATION_FACTOR; // = 0 while VIC quantity is 0
 
   // A new buy lot entered during the session is treated like MegaBot: buy fee,
   // one current-day financing charge, sell fee, and two-day settlement interest reserve.
@@ -432,8 +442,8 @@ function calc(){
   const extraSettlementInterest=extraSellNet*DAILY_RATE*SETTLEMENT_DAYS;
   const extraPnl=extraSellNet-extraBuyCost-extraDayInterest-extraSettlementInterest;
 
-  const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+extraPnl;
-  const nav2=SNAPSHOT_NAV2+baseMovePnl+extraPnl;
+  const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+vicMovePnl+extraPnl;
+  const nav2=SNAPSHOT_NAV2+baseMovePnl+vicMovePnl+extraPnl;
 
   const totalPnl=REALIZED_PNL+openPnl;
   const netWorth=NET_DEPOSIT_CAPITAL+totalPnl;
@@ -544,16 +554,24 @@ function readPrice(obj){
   }
   return null;
 }
-async function fetchCafeFSymbol(symbol){
-  const sym=String(symbol||'').toUpperCase();
+async function fetchCafeFPrices(symbols){
+  const syms=[...new Set(symbols.map(s=>String(s||'').toUpperCase()).filter(Boolean))];
   const url="https://cafef.vn/du-lieu/Ajax/PageNew/RealtimePricesHeader.ashx?symbols="
-    +encodeURIComponent(sym)+"&_="+Date.now();
+    +encodeURIComponent(syms.join(','))+"&_="+Date.now();
   const j=await fetchJson(url);
   const objs=collectObjects(j);
+  const found={};
   for(const o of objs){
-    const s=readSymbol(o),p=readPrice(o);
-    if(s===sym&&p)return p;
+    const sym=readSymbol(o),p=readPrice(o);
+    if(sym&&p&&syms.includes(sym)&&found[sym]==null)found[sym]=p;
   }
+  return found;
+}
+
+async function fetchCafeFSymbol(symbol){
+  const sym=String(symbol||'').toUpperCase();
+  const found=await fetchCafeFPrices([sym]);
+  if(found[sym])return found[sym];
   throw new Error("CafeF parse fail for "+sym);
 }
 
@@ -573,35 +591,56 @@ async function loadPrices(){
   let vhmOk=false;
   let vicOk=false;
   const details=[];
+  const prices={};
+  const sources={};
 
-  // IMPORTANT: keep the original VHM connection path intact and load it first.
-  // The page-level DATA CONNECTION ERROR is based only on VHM, because VHM drives NAV.
+  // First choice: one combined CafeF request for both symbols.
+  // This avoids two near-simultaneous public-feed calls every refresh cycle.
   try{
-    const x=await getPrice('VHM');
-    $('vhmPrice').value=x.price.toFixed(1);
-    $('vhmLive').textContent='✓ '+x.source+' '+x.price.toFixed(1);
+    const batch=await fetchCafeFPrices(['VHM','VIC']);
+    if(batch.VHM){prices.VHM=batch.VHM;sources.VHM='CafeF';}
+    if(batch.VIC){prices.VIC=batch.VIC;sources.VIC='CafeF';}
+  }catch(e){}
+
+  // Fallback only for the symbol that is still missing.
+  if(!prices.VHM){
+    try{prices.VHM=await fetchKBS('VHM');sources.VHM='KBS';}catch(e){}
+  }
+  if(!prices.VIC){
+    try{prices.VIC=await fetchKBS('VIC');sources.VIC='KBS';}catch(e){}
+  }
+
+  // Final single-symbol CafeF fallback in case the batch response omitted one symbol.
+  if(!prices.VHM){
+    try{prices.VHM=await fetchCafeFSymbol('VHM');sources.VHM='CafeF';}catch(e){}
+  }
+  if(!prices.VIC){
+    try{prices.VIC=await fetchCafeFSymbol('VIC');sources.VIC='CafeF';}catch(e){}
+  }
+
+  if(prices.VHM){
+    $('vhmPrice').value=prices.VHM.toFixed(1);
+    $('vhmLive').textContent='✓ '+sources.VHM+' '+prices.VHM.toFixed(1);
     $('vhmLive').className='live positive';
     vhmOk=true;
-    details.push('VHM '+x.source);
-  }catch(e){
+    details.push('VHM '+sources.VHM);
+  }else{
     $('vhmLive').textContent='⚠ using manual price';
     $('vhmLive').className='live warning';
   }
 
-  // VIC is informational only. Load it after VHM so it cannot break or rate-limit
-  // the VHM request. A VIC failure never triggers the page-level connection error.
-  try{
-    const x=await getPrice('VIC');
-    $('vicPrice').value=x.price.toFixed(1);
-    $('vicLive').textContent='✓ '+x.source+' '+x.price.toFixed(1);
+  if(prices.VIC){
+    $('vicPrice').value=prices.VIC.toFixed(1);
+    $('vicLive').textContent='✓ '+sources.VIC+' '+prices.VIC.toFixed(1);
     $('vicLive').className='live positive';
     vicOk=true;
-    details.push('VIC '+x.source);
-  }catch(e){
+    details.push('VIC '+sources.VIC);
+  }else{
     $('vicLive').textContent='⚠ using manual price';
     $('vicLive').className='live warning';
   }
 
+  // Only VHM controls the page-level error banner because VIC quantity is zero.
   $('errorBanner').style.display=vhmOk?'none':'block';
   calc();
 
@@ -609,10 +648,10 @@ async function loadPrices(){
   let priceStatus='';
   if(vhmOk){
     priceStatus='Prices checked at '+t+' ('+details.join(', ')+'). ';
-    if(!vicOk)priceStatus+='VIC public feed unavailable; manual VIC entry remains enabled. ';
+    if(!vicOk)priceStatus+='VIC feed unavailable; manual VIC entry remains enabled and VIC quantity is 0, so NAV is unaffected. ';
   }else{
     priceStatus='VHM public data source unavailable; enter VHM manually. ';
-    if(vicOk)priceStatus+='VIC loaded successfully. ';
+    if(vicOk)priceStatus+='VIC loaded successfully; VIC quantity is 0 and does not affect NAV. ';
   }
   $('source').textContent=
     priceStatus
@@ -624,11 +663,8 @@ async function loadPrices(){
 }
 
 makeRows();
-["vhmPrice"].forEach(id=>{
+["vhmPrice","vicPrice"].forEach(id=>{
   $(id).addEventListener("input",calc);
-  $(id).addEventListener("focus",e=>e.target.select());
-});
-["vicPrice"].forEach(id=>{
   $(id).addEventListener("focus",e=>e.target.select());
 });
 calc();
