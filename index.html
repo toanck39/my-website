@@ -177,7 +177,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 22/10/2026 16:07 | Version: Day 22-10 hour 16:07</div>
+  <div id="versionLine">Last updated: 22/10/2026 16:50 | Version: Day 22-10 hour 16:50</div>
 
   <div class="layout">
     <div class="panel">
@@ -231,6 +231,10 @@ body.locked #pinGate{display:flex}
     <div class="result">
       <div class="k">New VHM average cost</div>
       <div id="avgVhmCostOut" class="v neutral">61.637</div>
+    </div>
+    <div class="result">
+      <div class="k">Total MegaBot Purchase Value</div>
+      <div id="megaBotTotalBuyOut" class="v neutral">5,814,956,842</div>
     </div>
     <div class="result">
       <div class="k">NAV2</div>
@@ -510,6 +514,7 @@ function fmtMoney(n){
   return Math.round(n).toLocaleString("en-US");
 }
 function fmtShares(n){return Math.max(0,Math.floor(n)).toLocaleString("en-US")}
+function fmtMoneyFull(n){return Math.round(n).toLocaleString("en-US")}
 function fmtK(v){return (v/1000).toFixed(3)}
 
 function makeRows(){
@@ -605,6 +610,7 @@ function calc(){
 
   $('totalVhmOut').textContent=fmtShares(totalVhmQty);
   $('avgVhmCostOut').textContent=fmtK(avgVhmCost);
+  $('megaBotTotalBuyOut').textContent=fmtMoneyFull(totalBuy);
   $('nav2Out').textContent=fmtMoney(nav2);
   $('openPnlOut').textContent=fmtMoney(openPnl);
   $('totalPnlOut').textContent=fmtMoney(totalPnl);
