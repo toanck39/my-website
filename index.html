@@ -177,7 +177,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">DATA CONNECTION ERROR – ENTER MANUALLY</div>
-  <div id="versionLine">Last updated: 22/10/2026 13:25 | Version: Day 22-10 hour 13:25</div>
+  <div id="versionLine">Last updated: 22/10/2026 13:31 | Version: Day 22-10 hour 13:31</div>
 
   <div class="layout">
     <div class="panel">
@@ -611,13 +611,69 @@ async function fetchCafeFSymbol(symbol){
   throw new Error("CafeF parse fail for "+sym);
 }
 
+function normalizeVNIndexValue(v){
+  if(typeof v==='string'){
+    v=v.trim().replace(/\s/g,'').replace(/,/g,'');
+  }
+  let n=Number(v);
+  if(!Number.isFinite(n)||n<=0)return null;
+  if(n>=500&&n<=5000)return n;
+  if(n>=500000&&n<=5000000)return n/1000;
+  return null;
+}
+
+function parseVNIndexPayload(payload){
+  const preferredKeys=[
+    'indexValue','IndexValue','currentIndex','CurrentIndex','currentValue','CurrentValue',
+    'value','Value','price','Price','last','Last','close','Close','closePrice','ClosePrice',
+    'point','Point','index','Index','vnindex','VNINDEX'
+  ];
+  const objs=collectObjects(payload);
+
+  // First pass: prefer semantically relevant index/value fields.
+  for(const o of objs){
+    for(const k of preferredKeys){
+      if(Object.prototype.hasOwnProperty.call(o,k)){
+        const n=normalizeVNIndexValue(o[k]);
+        if(n)return n;
+      }
+    }
+  }
+
+  // Second pass: tolerate CafeF field-name changes while rejecting timestamps/volumes.
+  for(const o of objs){
+    for(const [k,v] of Object.entries(o)){
+      const lk=String(k).toLowerCase();
+      if(!/(index|point|price|close|value|last)/.test(lk))continue;
+      if(/(time|date|volume|qty|quantity|change|percent|pct)/.test(lk))continue;
+      const n=normalizeVNIndexValue(v);
+      if(n)return n;
+    }
+  }
+  throw new Error('CafeF VNINDEX parse fail');
+}
+
+async function fetchVNIndex(){
+  const urls=[
+    'https://cafef.vn/du-lieu/Ajax/PageNew/RealtimeChartHeader.ashx?index=1&type=chart&_='+Date.now(),
+    'https://msh-datacenter.cafef.vn/price/api/v1/CompanyCompac/RealTimeChartHeader?index=1&_='+Date.now()
+  ];
+  let lastErr=null;
+  for(const url of urls){
+    try{
+      const j=await fetchJson(url);
+      return parseVNIndexPayload(j);
+    }catch(e){
+      lastErr=e;
+    }
+  }
+  throw lastErr||new Error('VNINDEX feed unavailable');
+}
+
 async function getPrice(symbol){
   const sym=String(symbol||'').toUpperCase();
-  // VNINDEX uses CafeF directly because stock-price scaling on the KBS trade endpoint
-  // is not suitable for an index level.
   if(sym==='VNINDEX'){
-    try{return {price:await fetchCafeFSymbol(sym),source:"CafeF"}}catch(e){}
-    throw new Error("No public index source for "+sym);
+    return {price:await fetchVNIndex(),source:'CafeF Index'};
   }
   try{return {price:await fetchKBS(sym),source:"KBS"}}catch(e){}
   try{return {price:await fetchCafeFSymbol(sym),source:"CafeF"}}catch(e){}
