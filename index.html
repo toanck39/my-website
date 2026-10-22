@@ -172,7 +172,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">DATA CONNECTION ERROR – ENTER MANUALLY</div>
-  <div id="versionLine">Last updated: 22/10/2026 10:24 | Version: Day 22-10 hour 10:24</div>
+  <div id="versionLine">Last updated: 22/10/2026 10:45 | Version: Day 22-10 hour 10:45</div>
 
   <div class="layout">
     <div class="panel">
@@ -180,8 +180,8 @@ body.locked #pinGate{display:flex}
       <div class="grid">
         <div class="box">
           <label>VHM core</label>
-          <input id="baseVhmQty" type="number" value="86000" readonly>
-          <div class="unit">86,000 @ 61.291</div>
+          <input id="baseVhmQty" type="number" value="88000" readonly>
+          <div class="unit">88,000 @ 61.359</div>
         </div>
         <div class="box">
           <label>Current VHM price</label>
@@ -219,7 +219,7 @@ body.locked #pinGate{display:flex}
     </div>
     <div class="result">
       <div class="k">New VHM average cost</div>
-      <div id="avgVhmCostOut" class="v neutral">61.291</div>
+      <div id="avgVhmCostOut" class="v neutral">61.359</div>
     </div>
     <div class="result">
       <div class="k">NAV2</div>
@@ -366,11 +366,11 @@ const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
 // MegaBot base position and ledger updated intraday on 22/10/2026.
 // The opening snapshot below is prepared for 22/10/2026 and already deducts one additional day of interest.
-const BASE_VHM_QTY = 86000;
-const BASE_VHM_GROSS_COST = 5271057470.588236;
+const BASE_VHM_QTY = 88000;
+const BASE_VHM_GROSS_COST = 5399557470.588236;
 const SNAPSHOT_VHM_PRICE_K = 61.8;
-const SNAPSHOT_NAV2 = 882527683.5190301;
-const SNAPSHOT_OPEN_PNL = 9268024.170058902;
+const SNAPSHOT_NAV2 = 876957059.88153;
+const SNAPSHOT_OPEN_PNL = 3697400.532558902;
 
 const BUY_FEE = 0.0015;                 // 0.15%
 const SELL_FEE = 0.0025;                // 0.25%
@@ -378,7 +378,7 @@ const DAILY_RATE = 0.00045;              // 0.045% per day
 const SETTLEMENT_DAYS = 2;               // MegaBot mark-to-liquidation interest reserve
 const SELL_NET_FACTOR = 1 - SELL_FEE;
 const MARK_TO_LIQUIDATION_FACTOR = SELL_NET_FACTOR * (1 - DAILY_RATE * SETTLEMENT_DAYS);
-const DAILY_INTEREST = 2375533.8255573534;
+const DAILY_INTEREST = 2433445.5630573533;
 const REQUIRED_RATIO = 0.20;
 const TARGET_RATIO = 0.205;
 const TARGET_RATIO_21 = 0.21;
@@ -636,7 +636,7 @@ async function loadPrices(){
   const vicText=vicOk ? 'VIC '+vicSource+' '+$('vicPrice').value : 'VIC reference unavailable';
   $('source').textContent='Checked '+t+' | '+vhmText+' | '+vicText
     +' | MegaBot daily interest: '+fmtMoney(DAILY_INTEREST)
-    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Updated core for 22/10/2026: 85,000 @ 61.291; price anchor 61.8; NAV2 anchor 882,419,916; total purchase value 5,217,580,754.';
+    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Updated core for 22/10/2026: 88,000 @ 61.359; price anchor 61.8; NAV2 anchor 876,957,060; total purchase value 5,407,656,807.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
