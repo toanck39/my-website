@@ -68,6 +68,19 @@ body.dark #errorBanner{background:#3f0b0b;color:#fecaca}
   border-radius:8px;padding:6px;text-align:center;font-size:11px;font-weight:900
 }
 body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
+#vhmBuy205Card{
+  border-width:2px;
+}
+#vhmBuy205Card .k{
+  font-size:14px;
+  font-weight:900;
+  line-height:1.15;
+}
+#vhmBuy205Card #vhmBuy205Out{
+  font-size:clamp(24px,4.2vw,34px);
+  font-weight:900;
+  line-height:1.05;
+}
 @media(max-width:820px){
   .layout{grid-template-columns:1fr}
   .results{grid-template-columns:1fr 1fr}
@@ -77,6 +90,8 @@ body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
   #Hanoi_z40a{font-size:34px}
   .actions{flex-direction:column}
   h1{font-size:18px}
+  #vhmBuy205Card .k{font-size:16px}
+  #vhmBuy205Card #vhmBuy205Out{font-size:32px}
 }
 
 /* PIN lock */
@@ -222,7 +237,7 @@ body.locked #pinGate{display:flex}
       <div class="k">Max additional VHM</div>
       <div id="vhmBuyOut" class="v">-</div>
     </div>
-    <div class="result">
+    <div class="result" id="vhmBuy205Card">
       <div class="k">Max VHM at 20.5% collateral</div>
       <div id="vhmBuy205Out" class="v">-</div>
     </div>
@@ -345,6 +360,8 @@ const BASE_VHM_GROSS_COST = 4530047470.588236;
 // Therefore VIC price updates can never change NAV unless BASE_VIC_QTY is changed later.
 const BASE_VIC_QTY = 0;
 const BASE_VIC_GROSS_COST = 0;
+const VIC_CACHE_KEY = "pcm_last_vic_price_k";
+const VIC_CACHE_TS_KEY = "pcm_last_vic_price_ts";
 const SNAPSHOT_VHM_PRICE_K = 61.8;
 const SNAPSHOT_VIC_PRICE_K = 0;
 const SNAPSHOT_NAV2 = 904379930.3157802;
@@ -506,16 +523,43 @@ function calc(){
 
 async function fetchJson(url){
   const options={cache:"no-store",headers:{"Accept":"application/json,text/plain,*/*"}};
-  try{
-    const r=await fetch(url,options);
-    if(!r.ok)throw new Error("HTTP "+r.status);
-    return await r.json();
-  }catch(e1){
-    const p="https://api.allorigins.win/raw?url="+encodeURIComponent(url);
-    const r=await fetch(p,{cache:"no-store"});
-    if(!r.ok)throw new Error("Proxy HTTP "+r.status);
-    return await r.json();
+  const attempts=[
+    url,
+    "https://api.allorigins.win/raw?url="+encodeURIComponent(url),
+    "https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(url)
+  ];
+  let lastErr=null;
+  for(const target of attempts){
+    try{
+      const r=await fetch(target,options);
+      if(!r.ok)throw new Error("HTTP "+r.status);
+      const text=await r.text();
+      try{return JSON.parse(text)}catch(e){
+        // Some proxies may wrap JSON as plain text with BOM/whitespace.
+        return JSON.parse(text.replace(/^\uFEFF/,"").trim());
+      }
+    }catch(e){lastErr=e}
   }
+  throw lastErr||new Error("All data routes failed");
+}
+
+function saveVicCache(price){
+  if(Number.isFinite(price)&&price>0){
+    try{
+      localStorage.setItem(VIC_CACHE_KEY,String(price));
+      localStorage.setItem(VIC_CACHE_TS_KEY,String(Date.now()));
+    }catch(e){}
+  }
+}
+function readVicCache(maxAgeMs=12*60*60*1000){
+  try{
+    const p=Number(localStorage.getItem(VIC_CACHE_KEY));
+    const ts=Number(localStorage.getItem(VIC_CACHE_TS_KEY));
+    if(Number.isFinite(p)&&p>0&&Number.isFinite(ts)&&Date.now()-ts<=maxAgeMs){
+      return {price:p,ts};
+    }
+  }catch(e){}
+  return null;
 }
 
 async function fetchKBS(symbol){
@@ -633,11 +677,21 @@ async function loadPrices(){
     $('vicPrice').value=prices.VIC.toFixed(1);
     $('vicLive').textContent='✓ '+sources.VIC+' '+prices.VIC.toFixed(1);
     $('vicLive').className='live positive';
+    saveVicCache(prices.VIC);
     vicOk=true;
     details.push('VIC '+sources.VIC);
   }else{
-    $('vicLive').textContent='⚠ using manual price';
-    $('vicLive').className='live warning';
+    const cachedVic=readVicCache();
+    if(cachedVic){
+      $('vicPrice').value=cachedVic.price.toFixed(1);
+      const ageMin=Math.max(1,Math.round((Date.now()-cachedVic.ts)/60000));
+      $('vicLive').textContent='⚠ cached '+cachedVic.price.toFixed(1)+' ('+ageMin+'m old)';
+      $('vicLive').className='live warning';
+      details.push('VIC cached');
+    }else{
+      $('vicLive').textContent='⚠ using manual price';
+      $('vicLive').className='live warning';
+    }
   }
 
   // Only VHM controls the page-level error banner because VIC quantity is zero.
@@ -663,6 +717,12 @@ async function loadPrices(){
 }
 
 makeRows();
+const cachedVicOnLoad=readVicCache();
+if(cachedVicOnLoad && Number($('vicPrice').value)<=0){
+  $('vicPrice').value=cachedVicOnLoad.price.toFixed(1);
+  $('vicLive').textContent='⚠ cached '+cachedVicOnLoad.price.toFixed(1);
+  $('vicLive').className='live warning';
+}
 ["vhmPrice","vicPrice"].forEach(id=>{
   $(id).addEventListener("input",calc);
   $(id).addEventListener("focus",e=>e.target.select());
