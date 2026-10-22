@@ -68,15 +68,19 @@ body.dark #errorBanner{background:#3f0b0b;color:#fecaca}
   border-radius:8px;padding:6px;text-align:center;font-size:11px;font-weight:900
 }
 body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
-#vhmBuy205Card{
+.maxVhmCard{
   border-width:2px;
+  min-height:92px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
-#vhmBuy205Card .k{
+.maxVhmCard .k{
   font-size:14px;
   font-weight:900;
   line-height:1.15;
 }
-#vhmBuy205Card #vhmBuy205Out{
+.maxVhmCard .v{
   font-size:clamp(24px,4.2vw,34px);
   font-weight:900;
   line-height:1.05;
@@ -90,8 +94,9 @@ body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
   #Hanoi_z40a{font-size:34px}
   .actions{flex-direction:column}
   h1{font-size:18px}
-  #vhmBuy205Card .k{font-size:16px}
-  #vhmBuy205Card #vhmBuy205Out{font-size:32px}
+  .maxVhmCard{min-height:104px}
+  .maxVhmCard .k{font-size:16px}
+  .maxVhmCard .v{font-size:32px}
 }
 
 /* PIN lock */
@@ -172,7 +177,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">DATA CONNECTION ERROR – ENTER MANUALLY</div>
-  <div id="versionLine">Last updated: 22/10/2026 11:33 | Version: Day 22-10 hour 11:33</div>
+  <div id="versionLine">Last updated: 22/10/2026 11:37 | Version: Day 22-10 hour 11:37</div>
 
   <div class="layout">
     <div class="panel">
@@ -245,15 +250,15 @@ body.locked #pinGate{display:flex}
       <div class="k">Buying power</div>
       <div id="bpOut" class="v">-</div>
     </div>
-    <div class="result">
+    <div class="result maxVhmCard" id="vhmBuyCard">
       <div class="k">Max additional VHM</div>
       <div id="vhmBuyOut" class="v">-</div>
     </div>
-    <div class="result">
+    <div class="result maxVhmCard" id="vhmBuy2025Card">
       <div class="k">Max VHM at 20.25% collateral</div>
       <div id="vhmBuy2025Out" class="v">-</div>
     </div>
-    <div class="result" id="vhmBuy205Card">
+    <div class="result maxVhmCard" id="vhmBuy205Card">
       <div class="k">Max VHM at 20.5% collateral</div>
       <div id="vhmBuy205Out" class="v">-</div>
     </div>
