@@ -177,7 +177,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">DATA CONNECTION ERROR – ENTER MANUALLY</div>
-  <div id="versionLine">Last updated: 22/10/2026 11:37 | Version: Day 22-10 hour 11:37</div>
+  <div id="versionLine">Last updated: 22/10/2026 13:25 | Version: Day 22-10 hour 13:25</div>
 
   <div class="layout">
     <div class="panel">
@@ -198,6 +198,12 @@ body.locked #pinGate{display:flex}
           <input id="vicPrice" type="number" value="0" step="0.1" min="0" inputmode="decimal">
           <div id="vicLive" class="live">price not loaded</div>
           <div class="unit">Independent reference; excluded from NAV</div>
+        </div>
+        <div class="box">
+          <label>Current VNINDEX (reference only)</label>
+          <input id="vnindexPrice" type="number" value="0" step="0.01" min="0" inputmode="decimal">
+          <div id="vnindexLive" class="live">index not loaded</div>
+          <div class="unit">Market reference only; excluded from NAV</div>
         </div>
       </div>
     </div>
@@ -261,6 +267,10 @@ body.locked #pinGate{display:flex}
     <div class="result maxVhmCard" id="vhmBuy205Card">
       <div class="k">Max VHM at 20.5% collateral</div>
       <div id="vhmBuy205Out" class="v">-</div>
+    </div>
+    <div class="result maxVhmCard" id="vhmBuy21Card">
+      <div class="k">Max VHM at 21% collateral</div>
+      <div id="vhmBuy21Out" class="v">-</div>
     </div>
   </div>
 
@@ -387,6 +397,7 @@ const DAILY_INTEREST = 2616730.5789;
 const REQUIRED_RATIO = 0.20;
 const TARGET_RATIO_2025 = 0.2025;
 const TARGET_RATIO_205 = 0.205;
+const TARGET_RATIO_21 = 0.21;
 const AUTO_REFRESH_MS = 5000;
 
 const $ = id => document.getElementById(id);
@@ -495,6 +506,11 @@ function calc(){
   const target205Headroom=nav2 - TARGET_RATIO_205*totalBuy;
   const canBuyVhm205=(target205Headroom>0&&target205DenomPerShare>0)?Math.floor(target205Headroom/target205DenomPerShare):0;
 
+  // Exact maximum additional VHM while keeping the post-purchase collateral ratio at or above 21.0%.
+  const target21DenomPerShare=immediateDragPerShare + TARGET_RATIO_21*costPerNewVhm;
+  const target21Headroom=nav2 - TARGET_RATIO_21*totalBuy;
+  const canBuyVhm21=(target21Headroom>0&&target21DenomPerShare>0)?Math.floor(target21Headroom/target21DenomPerShare):0;
+
   $('totalVhmOut').textContent=fmtShares(totalVhmQty);
   $('avgVhmCostOut').textContent=fmtK(avgVhmCost);
   $('nav2Out').textContent=fmtMoney(nav2);
@@ -508,18 +524,20 @@ function calc(){
   $('vhmBuyOut').textContent=fmtShares(canBuyVhm);
   $('vhmBuy2025Out').textContent=fmtShares(canBuyVhm2025);
   $('vhmBuy205Out').textContent=fmtShares(canBuyVhm205);
+  $('vhmBuy21Out').textContent=fmtShares(canBuyVhm21);
 
   $('ratioOut').className='v '+(ratio>=REQUIRED_RATIO?'positive':'negative');
   $('bpOut').className='v '+(buyingPower>=0?'positive':'negative');
   $('vhmBuyOut').className='v '+(canBuyVhm>0?'positive':'negative');
   $('vhmBuy2025Out').className='v '+(canBuyVhm2025>0?'positive':'negative');
   $('vhmBuy205Out').className='v '+(canBuyVhm205>0?'positive':'negative');
+  $('vhmBuy21Out').className='v '+(canBuyVhm21>0?'positive':'negative');
 
   if(ratio<REQUIRED_RATIO){
     const shortfall=REQUIRED_RATIO*totalBuy-nav2;
     $('status').innerHTML='Approximately <b>'+fmtMoney(shortfall)+'</b> is needed to restore the collateral ratio to 20%.';
   }else{
-    $('status').innerHTML='At the current price, the estimated maximum additional VHM is <b>'+fmtShares(canBuyVhm)+'</b>; at 20.25% collateral the estimated limit is <b>'+fmtShares(canBuyVhm2025)+'</b>; at 20.5% collateral the estimated limit is <b>'+fmtShares(canBuyVhm205)+'</b>.';
+    $('status').innerHTML='At the current price, the estimated maximum additional VHM is <b>'+fmtShares(canBuyVhm)+'</b>; at 20.25% collateral the estimated limit is <b>'+fmtShares(canBuyVhm2025)+'</b>; at 20.5% collateral the estimated limit is <b>'+fmtShares(canBuyVhm205)+'</b>; at 21% collateral the estimated limit is <b>'+fmtShares(canBuyVhm21)+'</b>.';
   }
 }
 
@@ -560,14 +578,20 @@ function readSymbol(obj){
   for(const k of keys)if(obj[k]!=null)return String(obj[k]).toUpperCase();
   return "";
 }
-function readPrice(obj){
+function readPrice(obj,isIndex=false){
   const keys=["price","Price","matchPrice","MatchPrice","currentPrice","CurrentPrice","lastPrice","LastPrice","closePrice","ClosePrice","close","Close","GiaKhop","giaKhop"];
   for(const k of keys){
     if(obj[k]!=null){
       let v=typeof obj[k]==="string"?Number(obj[k].replace(/,/g,"")):Number(obj[k]);
       if(Number.isFinite(v)&&v>0){
-        if(v<1000)v*=1000;
-        if(v>=10000&&v<=300000)return v/1000;
+        if(isIndex){
+          // VNINDEX is an index level, not a stock price in thousands of VND.
+          if(v>=500&&v<=5000)return v;
+          if(v>=500000&&v<=5000000)return v/1000;
+        }else{
+          if(v<1000)v*=1000;
+          if(v>=10000&&v<=300000)return v/1000;
+        }
       }
     }
   }
@@ -579,17 +603,25 @@ async function fetchCafeFSymbol(symbol){
     +encodeURIComponent(sym)+"&_="+Date.now();
   const j=await fetchJson(url);
   const objs=collectObjects(j);
+  const isIndex=sym==='VNINDEX';
   for(const o of objs){
-    const ss=readSymbol(o),p=readPrice(o);
+    const ss=readSymbol(o),p=readPrice(o,isIndex);
     if(ss===sym&&p)return p;
   }
   throw new Error("CafeF parse fail for "+sym);
 }
 
 async function getPrice(symbol){
-  try{return {price:await fetchKBS(symbol),source:"KBS"}}catch(e){}
-  try{return {price:await fetchCafeFSymbol(symbol),source:"CafeF"}}catch(e){}
-  throw new Error("No public price source for "+symbol);
+  const sym=String(symbol||'').toUpperCase();
+  // VNINDEX uses CafeF directly because stock-price scaling on the KBS trade endpoint
+  // is not suitable for an index level.
+  if(sym==='VNINDEX'){
+    try{return {price:await fetchCafeFSymbol(sym),source:"CafeF"}}catch(e){}
+    throw new Error("No public index source for "+sym);
+  }
+  try{return {price:await fetchKBS(sym),source:"KBS"}}catch(e){}
+  try{return {price:await fetchCafeFSymbol(sym),source:"CafeF"}}catch(e){}
+  throw new Error("No public price source for "+sym);
 }
 
 async function loadPrices(){
@@ -629,14 +661,30 @@ async function loadPrices(){
     $('vicLive').className='live warning';
   }
 
-  // Only a VHM failure can trigger the main data-connection warning.
+  // VNINDEX is completely independent: market reference only, excluded from calc()/NAV.
+  let vnindexOk=false;
+  let vnindexSource='';
+  try{
+    const x=await getPrice('VNINDEX');
+    $('vnindexPrice').value=x.price.toFixed(2);
+    $('vnindexLive').textContent='✓ '+x.source+' '+x.price.toFixed(2);
+    $('vnindexLive').className='live positive';
+    vnindexSource=x.source;
+    vnindexOk=true;
+  }catch(e){
+    $('vnindexLive').textContent='⚠ reference feed unavailable';
+    $('vnindexLive').className='live warning';
+  }
+
+  // Only a VHM failure can trigger the main data-connection warning. VIC/VNINDEX never affect NAV.
   $('errorBanner').style.display=vhmOk?'none':'block';
   calc();
 
   const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const vhmText=vhmOk ? 'VHM '+vhmSource+' '+$('vhmPrice').value : 'VHM manual';
   const vicText=vicOk ? 'VIC '+vicSource+' '+$('vicPrice').value : 'VIC reference unavailable';
-  $('source').textContent='Checked '+t+' | '+vhmText+' | '+vicText
+  const vnindexText=vnindexOk ? 'VNINDEX '+vnindexSource+' '+$('vnindexPrice').value : 'VNINDEX reference unavailable';
+  $('source').textContent='Checked '+t+' | '+vhmText+' | '+vicText+' | '+vnindexText
     +' | MegaBot daily interest: '+fmtMoney(DAILY_INTEREST)
     +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Updated core for 22/10/2026 from official MegaBot snapshot: 94,200 @ 61.637; price anchor 65.1; NAV2 anchor 1,151,747,640; total purchase value 5,814,956,842.';
 
@@ -650,6 +698,8 @@ $('vhmPrice').addEventListener("input",calc);
 $('vhmPrice').addEventListener("focus",e=>e.target.select());
 $('vicPrice').addEventListener("focus",e=>e.target.select());
 $('vicPrice').addEventListener("input",()=>{ $('vicLive').textContent='manual reference'; $('vicLive').className='live neutral'; });
+$('vnindexPrice').addEventListener("focus",e=>e.target.select());
+$('vnindexPrice').addEventListener("input",()=>{ $('vnindexLive').textContent='manual reference'; $('vnindexLive').className='live neutral'; });
 calc();
 loadPrices();
 setInterval(loadPrices,AUTO_REFRESH_MS);
