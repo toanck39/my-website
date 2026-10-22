@@ -136,14 +136,19 @@ body.locked #pinGate{display:flex}
   opacity:.78;
 }
 #versionLine{
-  font-size:11px;
-  font-weight:800;
+  font-size:clamp(17px,2.4vw,22px);
+  line-height:1.25;
+  font-weight:900;
   color:var(--blue);
   text-align:center;
-  padding:4px 6px;
-  border:1px solid var(--line);
-  border-radius:8px;
+  padding:9px 10px;
+  border:2px solid var(--blue);
+  border-radius:10px;
   background:var(--card);
+  letter-spacing:.2px;
+}
+@media (max-width:430px){
+  #versionLine{font-size:18px;padding:9px 7px;}
 }
 
 </style>
@@ -177,7 +182,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 22/10/2026 16:50 | Version: Day 22-10 hour 16:50</div>
+  <div id="versionLine">Last updated: 22/10/2026 17:26</div>
 
   <div class="layout">
     <div class="panel">
