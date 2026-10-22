@@ -172,7 +172,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">DATA CONNECTION ERROR – ENTER MANUALLY</div>
-  <div id="versionLine">Last updated: 22/10/2026 10:18 | Version: Day 22-10 hour 10:18</div>
+  <div id="versionLine">Last updated: 22/10/2026 10:24 | Version: Day 22-10 hour 10:24</div>
 
   <div class="layout">
     <div class="panel">
@@ -180,8 +180,8 @@ body.locked #pinGate{display:flex}
       <div class="grid">
         <div class="box">
           <label>VHM core</label>
-          <input id="baseVhmQty" type="number" value="84500" readonly>
-          <div class="unit">84.500 @ 61,248</div>
+          <input id="baseVhmQty" type="number" value="86000" readonly>
+          <div class="unit">86,000 @ 61.291</div>
         </div>
         <div class="box">
           <label>Current VHM price</label>
@@ -215,11 +215,11 @@ body.locked #pinGate{display:flex}
   <div class="results">
     <div class="result">
       <div class="k">Total VHM</div>
-      <div id="totalVhmOut" class="v neutral">84.500</div>
+      <div id="totalVhmOut" class="v neutral">85,000</div>
     </div>
     <div class="result">
       <div class="k">New VHM average cost</div>
-      <div id="avgVhmCostOut" class="v neutral">61,248</div>
+      <div id="avgVhmCostOut" class="v neutral">61.291</div>
     </div>
     <div class="result">
       <div class="k">NAV2</div>
@@ -636,7 +636,7 @@ async function loadPrices(){
   const vicText=vicOk ? 'VIC '+vicSource+' '+$('vicPrice').value : 'VIC reference unavailable';
   $('source').textContent='Checked '+t+' | '+vhmText+' | '+vicText
     +' | MegaBot daily interest: '+fmtMoney(DAILY_INTEREST)
-    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Updated core for 22/10/2026: 83,000 @ 61.207; price anchor 61.8; NAV2 anchor 889,030,010; total purchase value 5,087,777,707.';
+    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Updated core for 22/10/2026: 85,000 @ 61.291; price anchor 61.8; NAV2 anchor 882,419,916; total purchase value 5,217,580,754.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
