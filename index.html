@@ -177,7 +177,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 22/10/2026 15:01 | Version: Day 22-10 hour 15:01</div>
+  <div id="versionLine">Last updated: 22/10/2026 15:06 | Version: Day 22-10 hour 15:06</div>
 
   <div class="layout">
     <div class="panel">
@@ -190,7 +190,7 @@ body.locked #pinGate{display:flex}
         </div>
         <div class="box">
           <label>Current VHM price</label>
-          <input id="vhmPrice" type="number" value="64.0" step="0.1" min="0" inputmode="decimal">
+          <input id="vhmPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
           <div id="vhmLive" class="live">price not loaded</div>
         </div>
         <div class="box">
@@ -275,7 +275,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Prepared for 22/10/2026 from official MegaBot snapshot: VHM core 94,200 @ 61.637; model price anchor 65.1; last-price fallback 64.0; NAV1 873,259,659; NAV2 anchor 1,151,747,640; total purchase value 5,814,956,842; buy fee 0.15%; sell fee 0.25%; interest 0.045% per day.</div>
+  <div id="source" class="footer">Prepared for 22/10/2026 from official MegaBot snapshot: VHM core 94,200 @ 61.637; model price anchor 65.1; persistent last-valid price; NAV1 873,259,659; NAV2 anchor 1,151,747,640; total purchase value 5,814,956,842; buy fee 0.15%; sell fee 0.25%; interest 0.045% per day.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -384,7 +384,8 @@ const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 const BASE_VHM_QTY = 94200;
 const BASE_VHM_GROSS_COST = 5806247470.793809;
 const MODEL_ANCHOR_VHM_PRICE_K = 65.1;  // NAV anchor only
-const LAST_PRICE_FALLBACK_K = 64.0;     // latest confirmed VHM last/close price
+const INITIAL_LAST_VALID_VHM_PRICE_K = 64.0; // confirmed close on 22/10/2026; bootstrap only
+const INITIAL_LAST_VALID_LABEL = "confirmed close 22/10/2026";
 const SNAPSHOT_NAV2 = 1151747640;
 const SNAPSHOT_OPEN_PNL = 278487981;
 
@@ -401,10 +402,14 @@ const TARGET_RATIO_205 = 0.205;
 const TARGET_RATIO_21 = 0.21;
 const AUTO_REFRESH_MS = 5000;
 
-// Android-safe VHM last-good-price fallback. Never fall back to the old 61.8 value.
-const VHM_CACHE_KEY = "megabot_vhm_last_good_v2_k";
-const VHM_CACHE_TS_KEY = "megabot_vhm_last_good_v2_ts";
-const VHM_CACHE_MAX_AGE_MS = 15 * 60 * 1000;
+// Persistent VHM last-valid-price memory for Android/desktop.
+// Priority on feed failure: explicit manual override -> persistent last valid price.
+// The confirmed 64.0 close is used only once to bootstrap an empty cache;
+// every successful LIVE quote permanently replaces it, including tomorrow's close.
+const VHM_CACHE_KEY = "megabot_vhm_last_valid_v3_k";
+const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v3_ts";
+const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v3_source";
+let sessionLastValidVhm = null;
 let vhmManualOverride = false;
 
 const $ = id => document.getElementById(id);
@@ -416,42 +421,80 @@ function safeStorageGet(key){
 function safeStorageSet(key,value){
   try{localStorage.setItem(key,String(value));return true}catch(e){return false}
 }
-// Remove legacy VHM cache keys so old 65.1 values can never be restored by this version.
-try{
-  localStorage.removeItem("megabot_vhm_last_good_k");
-  localStorage.removeItem("megabot_vhm_last_good_ts");
-}catch(e){}
-function saveLastGoodVhm(priceK){
+// Remove obsolete cache formats once. The v2 cache, when present, contains only a successful LIVE quote,
+// so migrate it into the persistent v3 store instead of discarding useful last-valid data.
+function bootstrapPersistentVhmPrice(){
+  let p=Number(safeStorageGet(VHM_CACHE_KEY));
+  let ts=Number(safeStorageGet(VHM_CACHE_TS_KEY));
+  let source=safeStorageGet(VHM_CACHE_SOURCE_KEY);
+
+  if(!(Number.isFinite(p)&&p>0)){
+    const oldP=Number(safeStorageGet("megabot_vhm_last_good_v2_k"));
+    const oldTs=Number(safeStorageGet("megabot_vhm_last_good_v2_ts"));
+    if(Number.isFinite(oldP)&&oldP>0){
+      p=oldP;
+      ts=Number.isFinite(oldTs)&&oldTs>0?oldTs:Date.now();
+      source='migrated last live';
+    }else{
+      p=INITIAL_LAST_VALID_VHM_PRICE_K;
+      ts=Date.now();
+      source=INITIAL_LAST_VALID_LABEL;
+    }
+    safeStorageSet(VHM_CACHE_KEY,p.toFixed(1));
+    safeStorageSet(VHM_CACHE_TS_KEY,ts);
+    safeStorageSet(VHM_CACHE_SOURCE_KEY,source);
+  }
+  sessionLastValidVhm={price:p,ts,source};
+  try{
+    localStorage.removeItem("megabot_vhm_last_good_k");
+    localStorage.removeItem("megabot_vhm_last_good_ts");
+    localStorage.removeItem("megabot_vhm_last_good_v2_k");
+    localStorage.removeItem("megabot_vhm_last_good_v2_ts");
+  }catch(e){}
+}
+function saveLastGoodVhm(priceK,source='live'){
   const p=Number(priceK);
   if(!Number.isFinite(p)||p<=0)return;
+  const ts=Date.now();
+  sessionLastValidVhm={price:p,ts,source};
   safeStorageSet(VHM_CACHE_KEY,p.toFixed(1));
-  safeStorageSet(VHM_CACHE_TS_KEY,Date.now());
+  safeStorageSet(VHM_CACHE_TS_KEY,ts);
+  safeStorageSet(VHM_CACHE_SOURCE_KEY,source);
 }
 function getLastGoodVhm(){
   const p=Number(safeStorageGet(VHM_CACHE_KEY));
   const ts=Number(safeStorageGet(VHM_CACHE_TS_KEY));
-  if(!Number.isFinite(p)||p<=0||!Number.isFinite(ts)||ts<=0)return null;
-  const age=Math.max(0,Date.now()-ts);
-  if(age>VHM_CACHE_MAX_AGE_MS)return null;
-  return {price:p,ts,age};
+  const source=safeStorageGet(VHM_CACHE_SOURCE_KEY)||'last valid';
+  if(Number.isFinite(p)&&p>0){
+    const validTs=Number.isFinite(ts)&&ts>0?ts:Date.now();
+    sessionLastValidVhm={price:p,ts:validTs,source};
+    return {price:p,ts:validTs,age:Math.max(0,Date.now()-validTs),source};
+  }
+  if(sessionLastValidVhm && Number.isFinite(sessionLastValidVhm.price) && sessionLastValidVhm.price>0){
+    return {...sessionLastValidVhm,age:Math.max(0,Date.now()-sessionLastValidVhm.ts)};
+  }
+  return null;
 }
 function formatCacheAge(ms){
   const sec=Math.floor(ms/1000);
   if(sec<60)return sec+'s old';
   const min=Math.floor(sec/60);
   if(min<60)return min+'m old';
-  return Math.floor(min/60)+'h '+(min%60)+'m old';
+  const hr=Math.floor(min/60);
+  if(hr<24)return hr+'h '+(min%60)+'m old';
+  const day=Math.floor(hr/24);
+  return day+'d '+(hr%24)+'h old';
 }
 function restoreLastGoodVhm(){
+  bootstrapPersistentVhmPrice();
   const cached=getLastGoodVhm();
   if(cached){
     $('vhmPrice').value=cached.price.toFixed(1);
-    $('vhmLive').textContent='LAST LIVE '+cached.price.toFixed(1)+' · '+formatCacheAge(cached.age);
+    $('vhmLive').textContent='LAST VALID '+cached.price.toFixed(1)+' · '+cached.source+' · '+formatCacheAge(cached.age);
     $('vhmLive').className='live neutral';
     return true;
   }
-  $('vhmPrice').value=LAST_PRICE_FALLBACK_K.toFixed(1);
-  $('vhmLive').textContent='LAST PRICE '+LAST_PRICE_FALLBACK_K.toFixed(1)+' · waiting for live feed';
+  $('vhmLive').textContent='NO LAST VALID PRICE · enter manual price';
   $('vhmLive').className='live warning';
   return false;
 }
@@ -746,7 +789,7 @@ async function loadPrices(){
   try{
     const x=await getPrice('VHM');
     $('vhmPrice').value=x.price.toFixed(1);
-    saveLastGoodVhm(x.price);
+    saveLastGoodVhm(x.price,'LIVE '+x.source);
     vhmManualOverride=false;
     $('vhmLive').textContent='LIVE '+x.source+' '+x.price.toFixed(1);
     $('vhmLive').className='live positive';
@@ -760,11 +803,10 @@ async function loadPrices(){
       $('vhmLive').className='live warning';
     }else if(cached){
       $('vhmPrice').value=cached.price.toFixed(1);
-      $('vhmLive').textContent='LAST LIVE '+cached.price.toFixed(1)+' · '+formatCacheAge(cached.age);
+      $('vhmLive').textContent='LAST VALID '+cached.price.toFixed(1)+' · '+cached.source+' · '+formatCacheAge(cached.age);
       $('vhmLive').className='live neutral';
     }else{
-      $('vhmPrice').value=LAST_PRICE_FALLBACK_K.toFixed(1);
-      $('vhmLive').textContent='LAST PRICE '+LAST_PRICE_FALLBACK_K.toFixed(1)+' · live feed unavailable';
+      $('vhmLive').textContent='NO LAST VALID PRICE · enter manual price';
       $('vhmLive').className='live warning';
     }
   }
@@ -810,13 +852,13 @@ async function loadPrices(){
     : (vhmManualOverride
       ? 'VHM MANUAL '+$('vhmPrice').value
       : (cachedNow
-        ? 'VHM LAST LIVE '+$('vhmPrice').value+' ('+formatCacheAge(cachedNow.age)+')'
-        : 'VHM LAST PRICE '+$('vhmPrice').value));
+        ? 'VHM LAST VALID '+$('vhmPrice').value+' ('+cachedNow.source+', '+formatCacheAge(cachedNow.age)+')'
+        : 'VHM NO LAST VALID'));
   const vicText=vicOk ? 'VIC '+vicSource+' '+$('vicPrice').value : 'VIC reference unavailable';
   const vnindexText=vnindexOk ? 'VNINDEX '+vnindexSource+' '+$('vnindexPrice').value : 'VNINDEX reference unavailable';
   $('source').textContent='Checked '+t+' | '+vhmText+' | '+vicText+' | '+vnindexText
     +' | MegaBot daily interest: '+fmtMoney(DAILY_INTEREST)
-    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Updated core for 22/10/2026 from official MegaBot snapshot: 94,200 @ 61.637; model anchor 65.1; last-price fallback 64.0; NAV2 anchor 1,151,747,640; total purchase value 5,814,956,842.';
+    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Updated core for 22/10/2026 from official MegaBot snapshot: 94,200 @ 61.637; model anchor 65.1; persistent last-valid price; NAV2 anchor 1,151,747,640; total purchase value 5,814,956,842.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
