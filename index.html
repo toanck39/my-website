@@ -130,6 +130,16 @@ body.locked #pinGate{display:flex}
   font-weight:500;
   opacity:.78;
 }
+#versionLine{
+  font-size:11px;
+  font-weight:800;
+  color:var(--blue);
+  text-align:center;
+  padding:4px 6px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:var(--card);
+}
 
 </style>
 </head>
@@ -162,6 +172,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">DATA CONNECTION ERROR – ENTER MANUALLY</div>
+  <div id="versionLine">Last updated: 22/10/2026 08:54 | Version: Day 22-10 hour 08:54</div>
 
   <div class="layout">
     <div class="panel">
@@ -176,6 +187,12 @@ body.locked #pinGate{display:flex}
           <label>Current VHM price</label>
           <input id="vhmPrice" type="number" value="61.8" step="0.1" min="0" inputmode="decimal">
           <div id="vhmLive" class="live">price not loaded</div>
+        </div>
+        <div class="box">
+          <label>Current VIC price (reference only)</label>
+          <input id="vicPrice" type="number" value="0" step="0.1" min="0" inputmode="decimal">
+          <div id="vicLive" class="live">price not loaded</div>
+          <div class="unit">Independent reference; excluded from NAV</div>
         </div>
       </div>
     </div>
@@ -580,28 +597,46 @@ async function loadPrices(){
   btn.disabled=true;
   btn.textContent='Loading...';
 
+  // VHM is the only live price used by the MegaBot/NAV model.
   let vhmOk=false;
-  let sourceName='';
+  let vhmSource='';
   try{
     const x=await getPrice('VHM');
     $('vhmPrice').value=x.price.toFixed(1);
     $('vhmLive').textContent='✓ '+x.source+' '+x.price.toFixed(1);
     $('vhmLive').className='live positive';
-    sourceName=x.source;
+    vhmSource=x.source;
     vhmOk=true;
   }catch(e){
     $('vhmLive').textContent='⚠ using manual price';
     $('vhmLive').className='live warning';
   }
 
+  // VIC is completely independent: reference-only, quantity = 0, excluded from calc()/NAV.
+  let vicOk=false;
+  let vicSource='';
+  try{
+    const x=await getPrice('VIC');
+    $('vicPrice').value=x.price.toFixed(1);
+    $('vicLive').textContent='✓ '+x.source+' '+x.price.toFixed(1);
+    $('vicLive').className='live positive';
+    vicSource=x.source;
+    vicOk=true;
+  }catch(e){
+    $('vicLive').textContent='⚠ reference feed unavailable';
+    $('vicLive').className='live warning';
+  }
+
+  // Only a VHM failure can trigger the main data-connection warning.
   $('errorBanner').style.display=vhmOk?'none':'block';
   calc();
 
   const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  $('source').textContent=(vhmOk
-    ? 'VHM checked at '+t+' ('+sourceName+'). '
-    : 'VHM public data source unavailable; enter VHM manually. ')
-    +'MegaBot reference daily interest: '+fmtMoney(DAILY_INTEREST)+'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Opening snapshot for 22/10/2026: 74,300 @ 60.970; price anchor 61.8; NAV2 904,379,930.';
+  const vhmText=vhmOk ? 'VHM '+vhmSource+' '+$('vhmPrice').value : 'VHM manual';
+  const vicText=vicOk ? 'VIC '+vicSource+' '+$('vicPrice').value : 'VIC reference unavailable';
+  $('source').textContent='Checked '+t+' | '+vhmText+' | '+vicText
+    +' | MegaBot daily interest: '+fmtMoney(DAILY_INTEREST)
+    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Opening snapshot for 22/10/2026: 74,300 @ 60.970; price anchor 61.8; NAV2 904,379,930.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
@@ -611,6 +646,8 @@ async function loadPrices(){
 makeRows();
 $('vhmPrice').addEventListener("input",calc);
 $('vhmPrice').addEventListener("focus",e=>e.target.select());
+$('vicPrice').addEventListener("focus",e=>e.target.select());
+$('vicPrice').addEventListener("input",()=>{ $('vicLive').textContent='manual reference'; $('vicLive').className='live neutral'; });
 calc();
 loadPrices();
 setInterval(loadPrices,AUTO_REFRESH_MS);
