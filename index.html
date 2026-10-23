@@ -86,15 +86,11 @@ body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
   line-height:1.05;
 }
 #collateralCashCard{
-  border-width:2px;
-  min-height:92px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
+  border-width:1px;
 }
-#collateralCashCard .k{font-size:13px;font-weight:900;line-height:1.15}
-#collateralCashCard .v{font-size:clamp(22px,3.6vw,31px);font-weight:900;line-height:1.05}
-#collateralCashAction{margin-top:5px;font-size:11px;font-weight:900}
+#collateralCashCard .k{font-size:10px;font-weight:800;line-height:normal}
+#collateralCashCard .v{margin-top:4px;font-size:clamp(16px,2.8vw,23px);font-weight:900;line-height:1}
+#collateralCashAction{margin-top:5px;font-size:10px;font-weight:900}
 @media(max-width:820px){
   .layout{grid-template-columns:1fr}
   .results{grid-template-columns:1fr 1fr}
@@ -107,10 +103,9 @@ body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
   .maxVhmCard{min-height:104px}
   .maxVhmCard .k{font-size:16px}
   .maxVhmCard .v{font-size:32px}
-  #collateralCashCard{min-height:104px}
-  #collateralCashCard .k{font-size:15px}
-  #collateralCashCard .v{font-size:30px}
-  #collateralCashAction{font-size:12px}
+  #collateralCashCard .k{font-size:10px}
+  #collateralCashCard .v{font-size:clamp(16px,2.8vw,23px)}
+  #collateralCashAction{font-size:10px}
 }
 
 /* PIN lock */
@@ -196,7 +191,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 23/10/2026 14:20</div>
+  <div id="versionLine">Last updated: 23/10/2026 14:27</div>
 
   <div class="layout">
     <div class="panel">
@@ -276,7 +271,7 @@ body.locked #pinGate{display:flex}
       <div id="ratioOut" class="v">-</div>
     </div>
     <div class="result" id="collateralCashCard">
-      <div class="k">Tiền cọc phải đóng thêm / có thể rút ra</div>
+      <div class="k">Collateral to add / available to withdraw</div>
       <div id="collateralCashOut" class="v">-</div>
       <div id="collateralCashAction" class="neutral">-</div>
     </div>
