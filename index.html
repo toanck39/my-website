@@ -189,7 +189,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 23/10/2026 16:25</div>
+  <div id="versionLine">Last updated: 27/10/2026 07:08</div>
 
   <div class="layout">
     <div class="panel">
@@ -300,7 +300,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Prepared for Monday 26/10/2026 from the official MegaBot snapshot on 23/10/2026: VHM core 94,200 @ 61.637; model price anchor 64.3; official NAV2 1,083,414,957; Monday opening NAV2 after 3 financing days 1,075,564,765; NAV1 873,259,659; total purchase value 5,814,956,842; buy fee 0.15%; sell fee 0.25%; interest 0.045% per day.</div>
+  <div id="source" class="footer">Prepared for Tuesday 27/10/2026 from the official MegaBot snapshot on Monday 26/10/2026: VHM core 94,200 @ 61.637; model price anchor 63.9; official NAV2 1,038,012,793; Tuesday opening NAV2 after 1 financing day 1,035,396,062; NAV1 873,259,659; total purchase value 5,814,956,842; buy fee 0.15%; sell fee 0.25%; interest 0.045% per day.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -404,16 +404,16 @@ const NAV1 = 873259659.3489714;
 const NET_DEPOSIT_CAPITAL = 1324100456.518321;
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
-// MegaBot official snapshot on 23/10/2026, prepared for Monday 26/10/2026.
-// Deduct exactly 3 financing days for Sat/Sun/Mon from this official Friday snapshot.
+// MegaBot official snapshot on Monday 26/10/2026, prepared for Tuesday 27/10/2026.
+// No trades on Monday; deduct exactly 1 financing day for Tuesday morning.
 const BASE_VHM_QTY = 94200;
 const BASE_VHM_GROSS_COST = 5806247470.793809;
-const MODEL_ANCHOR_VHM_PRICE_K = 64.3;  // official MegaBot snapshot / NAV movement anchor
-const INITIAL_LAST_VALID_VHM_PRICE_K = 64.3; // official MegaBot snapshot on 23/10/2026; bootstrap only
-const INITIAL_LAST_VALID_LABEL = "official MegaBot snapshot 23/10/2026";
-const OFFICIAL_CLOSE_NAV2 = 1083414957;
-const OFFICIAL_CLOSE_OPEN_PNL = 210155298;
-const OPENING_CARRY_DAYS = 3;
+const MODEL_ANCHOR_VHM_PRICE_K = 63.9;  // official MegaBot snapshot / NAV movement anchor
+const INITIAL_LAST_VALID_VHM_PRICE_K = 63.9; // official MegaBot snapshot on 26/10/2026; bootstrap only
+const INITIAL_LAST_VALID_LABEL = "official MegaBot snapshot 26/10/2026";
+const OFFICIAL_CLOSE_NAV2 = 1038012793;
+const OFFICIAL_CLOSE_OPEN_PNL = 164753133;
+const OPENING_CARRY_DAYS = 1;
 
 const BUY_FEE = 0.0015;                 // 0.15%
 const SELL_FEE = 0.0025;                // 0.25%
@@ -432,10 +432,10 @@ const AUTO_REFRESH_MS = 5000;
 
 // Persistent VHM last-valid-price memory for Android/desktop.
 // Priority on feed failure: explicit manual override -> persistent last valid price.
-// The official 64.3 MegaBot snapshot is used only once to bootstrap an empty cache;
+// The official 63.9 MegaBot snapshot is used only once to bootstrap an empty cache;
 // every successful LIVE quote permanently replaces it, including tomorrow's close.
-const VHM_CACHE_KEY = "megabot_vhm_last_valid_v5_k";
-const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v5_ts";
+const VHM_CACHE_KEY = "megabot_vhm_last_valid_v6_k";
+const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v6_ts";
 const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v5_source";
 let sessionLastValidVhm = null;
 let vhmManualOverride = false;
@@ -582,7 +582,7 @@ function calc(){
 
   // MegaBot mark-to-liquidation logic:
   // sell fee 0.25%, plus a two-day interest reserve on net sale proceeds.
-  // The Monday 26/10 opening anchor deducts exactly 3 financing days from the official 23/10 snapshot.
+  // The Tuesday 27/10 opening anchor deducts exactly 1 financing day from the official Monday 26/10 snapshot.
   const basePrice=MODEL_ANCHOR_VHM_PRICE_K*1000;
   const baseMovePnl=BASE_VHM_QTY*(vp-basePrice)*MARK_TO_LIQUIDATION_FACTOR;
 
@@ -898,7 +898,7 @@ async function loadPrices(){
   const vnindexText=vnindexOk ? 'VNINDEX '+vnindexSource+' '+$('vnindexPrice').value : 'VNINDEX reference unavailable';
   $('source').textContent='Checked '+t+' | '+vhmText+' | '+vicText+' | '+vnindexText
     +' | MegaBot daily interest: '+fmtMoney(DAILY_INTEREST)
-    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Monday 26/10/2026 from official MegaBot snapshot 23/10: 94,200 @ 61.637; model anchor 64.3; official NAV2 1,083,414,957; Monday opening NAV2 after 3 financing days 1,075,564,765; total purchase value 5,814,956,842.';
+    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Tuesday 27/10/2026 from official MegaBot snapshot Monday 26/10: 94,200 @ 61.637; model anchor 63.9; official NAV2 1,038,012,793; Tuesday opening NAV2 after 1 financing day 1,035,396,062; total purchase value 5,814,956,842.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
