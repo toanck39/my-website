@@ -189,7 +189,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 30/10/2026 10:36</div>
+  <div id="versionLine">Monday opening snapshot: 02/11/2026 · 3 days interest deducted</div>
 
   <div class="layout">
     <div class="panel">
@@ -246,7 +246,7 @@ body.locked #pinGate{display:flex}
     </div>
     <div class="result">
       <div class="k">Total MegaBot Purchase Value</div>
-      <div id="megaBotTotalBuyOut" class="v neutral">4,814,932,417</div>
+      <div id="megaBotTotalBuyOut" class="v neutral">3,700,769,948</div>
     </div>
     <div class="result">
       <div class="k">Current Value</div>
@@ -400,20 +400,20 @@ function initPinGate(){
 
 document.addEventListener("DOMContentLoaded", initPinGate);
 
-const NAV1 = 796408664;
+const NAV1 = 804288714;
 const NET_DEPOSIT_CAPITAL = 1324100456.518321;
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
-// Official MegaBot snapshot on Friday 30/10/2026.
-// This snapshot supersedes earlier trade-by-trade estimates.
-// Core quantity is estimated at 60,000 VHM after the additional 8,000-share defensive sale.
+// Official MegaBot snapshot on Friday 30/10/2026, carried into Monday 02/11/2026.
+// Monday opening NAV1/NAV2 already deduct 3 days of interest (Sat + Sun + Mon) on the full MegaBot Purchase Value.
+// Core quantity remains 60,000 VHM.
 const BASE_VHM_QTY = 60000;
 const BASE_VHM_GROSS_COST = 3695227107.280256;
-const MODEL_ANCHOR_VHM_PRICE_K = 60.4;
-const INITIAL_LAST_VALID_VHM_PRICE_K = 60.4; // latest executed defensive-sale price; bootstrap only
-const INITIAL_LAST_VALID_LABEL = "latest VHM sale 30/10/2026 @60.4";
-const POST_TRADE_ANCHOR_NAV2 = 705136299;
-const POST_TRADE_ANCHOR_OPEN_PNL = -91272365;
+const MODEL_ANCHOR_VHM_PRICE_K = 63.0;
+const INITIAL_LAST_VALID_VHM_PRICE_K = 63.0; // latest snapshot price 30/10/2026; bootstrap only
+const INITIAL_LAST_VALID_LABEL = "latest MegaBot snapshot 30/10/2026 @63.0";
+const POST_TRADE_ANCHOR_NAV2 = 868634749;
+const POST_TRADE_ANCHOR_OPEN_PNL = 64346035;
 
 const BUY_FEE = 0.0015;                 // 0.15%
 const SELL_FEE = 0.0025;                // 0.25%
