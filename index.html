@@ -189,7 +189,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 30/10/2026 09:38</div>
+  <div id="versionLine">Last updated: 30/10/2026 10:19</div>
 
   <div class="layout">
     <div class="panel">
@@ -197,8 +197,8 @@ body.locked #pinGate{display:flex}
       <div class="grid">
         <div class="box">
           <label>VHM core</label>
-          <input id="baseVhmQty" type="number" value="82000" readonly>
-          <div class="unit">82,000 @ 61.637</div>
+          <input id="baseVhmQty" type="number" value="68000" readonly>
+          <div class="unit">60,000 @ 61.587</div>
         </div>
         <div class="box">
           <label>Current VHM price</label>
@@ -238,15 +238,15 @@ body.locked #pinGate{display:flex}
   <div class="results">
     <div class="result">
       <div class="k">Total VHM</div>
-      <div id="totalVhmOut" class="v neutral">82,000</div>
+      <div id="totalVhmOut" class="v neutral">60,000</div>
     </div>
     <div class="result">
       <div class="k">New VHM average cost</div>
-      <div id="avgVhmCostOut" class="v neutral">61.637</div>
+      <div id="avgVhmCostOut" class="v neutral">61.587</div>
     </div>
     <div class="result">
       <div class="k">Total MegaBot Purchase Value</div>
-      <div id="megaBotTotalBuyOut" class="v neutral">5,061,852,028</div>
+      <div id="megaBotTotalBuyOut" class="v neutral">4,814,932,417</div>
     </div>
     <div class="result">
       <div class="k">Current Value</div>
@@ -300,7 +300,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Updated after defensive sales on Friday 30/10/2026: sold 7,200 VHM @ 62.0, 3,000 VHM @ 61.7, and 2,000 VHM @ 62.0; remaining core 82,000 @ 61.637. Estimated post-sale model anchor at 62.1: NAV2 856,449,197; NAV1 869,243,343; total purchase value 5,061,852,028; buy fee 0.15%; sell fee 0.25%; interest 0.045% per day.</div>
+  <div id="source" class="footer">Official MegaBot snapshot 30/10/2026 used as base, then updated for sale of 8,000 VHM @60.4. Estimated core 60,000 VHM; total purchase value about 3,700,769,948; NAV1 about 796,408,664; NAV2 model anchor about 705,136,299 at VHM 60.4. Buy fee 0.15%; sell fee 0.25%; interest 0.045% per day. Replace with the next official MegaBot snapshot when available.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -400,20 +400,20 @@ function initPinGate(){
 
 document.addEventListener("DOMContentLoaded", initPinGate);
 
-const NAV1 = 869243343.0991904;
+const NAV1 = 796408664;
 const NET_DEPOSIT_CAPITAL = 1324100456.518321;
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
-// Post-sale model state on Friday 30/10/2026.
-// Defensive sales executed: 7,200 VHM @ 62.0, 3,000 VHM @ 61.7, and 2,000 VHM @ 62.0.
-// The 62.1 model anchor is retained only so live-price NAV moves remain comparable with the pre-trade dashboard.
-const BASE_VHM_QTY = 82000;
-const BASE_VHM_GROSS_COST = 5054270622.134738;
-const MODEL_ANCHOR_VHM_PRICE_K = 62.1;
-const INITIAL_LAST_VALID_VHM_PRICE_K = 62.0; // latest user-reported execution price; bootstrap only
-const INITIAL_LAST_VALID_LABEL = "user trade 30/10/2026 09:38";
-const POST_TRADE_ANCHOR_NAV2 = 856449196.6511;
-const POST_TRADE_ANCHOR_OPEN_PNL = -12794146.448090304;
+// Official MegaBot snapshot on Friday 30/10/2026.
+// This snapshot supersedes earlier trade-by-trade estimates.
+// Core quantity is estimated at 60,000 VHM after the additional 8,000-share defensive sale.
+const BASE_VHM_QTY = 60000;
+const BASE_VHM_GROSS_COST = 3695227107.280256;
+const MODEL_ANCHOR_VHM_PRICE_K = 60.4;
+const INITIAL_LAST_VALID_VHM_PRICE_K = 60.4; // latest executed defensive-sale price; bootstrap only
+const INITIAL_LAST_VALID_LABEL = "latest VHM sale 30/10/2026 @60.4";
+const POST_TRADE_ANCHOR_NAV2 = 705136299;
+const POST_TRADE_ANCHOR_OPEN_PNL = -91272365;
 
 const BUY_FEE = 0.0015;                 // 0.15%
 const SELL_FEE = 0.0025;                // 0.25%
@@ -421,7 +421,7 @@ const DAILY_RATE = 0.00045;              // 0.045% per day
 const SETTLEMENT_DAYS = 2;               // MegaBot mark-to-liquidation interest reserve
 const SELL_NET_FACTOR = 1 - SELL_FEE;
 const MARK_TO_LIQUIDATION_FACTOR = SELL_NET_FACTOR * (1 - DAILY_RATE * SETTLEMENT_DAYS);
-const DAILY_INTEREST = 2277833.4126305734;
+const DAILY_INTEREST = 1665346.4765735294;
 const SNAPSHOT_NAV2 = POST_TRADE_ANCHOR_NAV2;
 const SNAPSHOT_OPEN_PNL = POST_TRADE_ANCHOR_OPEN_PNL;
 const REQUIRED_RATIO = 0.20;
@@ -434,9 +434,9 @@ const AUTO_REFRESH_MS = 5000;
 // Priority on feed failure: explicit manual override -> persistent last valid price.
 // The latest user-reported execution price 62.0 is used only once to bootstrap an empty cache;
 // every successful LIVE quote permanently replaces it, including tomorrow's close.
-const VHM_CACHE_KEY = "megabot_vhm_last_valid_v11_k";
-const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v11_ts";
-const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v11_source";
+const VHM_CACHE_KEY = "megabot_vhm_last_valid_v14_k";
+const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v14_ts";
+const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v14_source";
 let sessionLastValidVhm = null;
 let vhmManualOverride = false;
 
@@ -583,7 +583,7 @@ function calc(){
 
   // MegaBot mark-to-liquidation logic:
   // sell fee 0.25%, plus a two-day interest reserve on net sale proceeds.
-  // Post-sale anchor reflects the three defensive sales executed on 30/10; no extra financing day is added here.
+  // Official MegaBot snapshot anchor; no extra financing day is added here.
   const basePrice=MODEL_ANCHOR_VHM_PRICE_K*1000;
   const baseMovePnl=BASE_VHM_QTY*(vp-basePrice)*MARK_TO_LIQUIDATION_FACTOR;
 
@@ -899,7 +899,7 @@ async function loadPrices(){
   const vnindexText=vnindexOk ? 'VNINDEX '+vnindexSource+' '+$('vnindexPrice').value : 'VNINDEX reference unavailable';
   $('source').textContent='Checked '+t+' | '+vhmText+' | '+vicText+' | '+vnindexText
     +' | MegaBot daily interest: '+fmtMoney(DAILY_INTEREST)
-    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Friday 30/10/2026 and updated after defensive sales: 82,000 @ 61.637; model anchor 62.1; estimated post-sale NAV2 anchor 856,449,197; total purchase value 5,061,852,028.';
+    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Updated after sale 8,000 VHM @60.4: core approx. 60,000; model anchor 60.4; NAV2 approx. 705,136,299; total purchase value approx. 3,700,769,948.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
