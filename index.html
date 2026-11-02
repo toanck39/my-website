@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 2-11-2026 time 15-25</title>
+<title>Last updated: 2-11-2026 time 16-17</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -193,7 +193,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 2-11-2026 time 15-25</div>
+  <div id="versionLine">Last updated: 2-11-2026 time 16-17</div>
 
   <div class="layout">
     <div class="panel">
@@ -304,7 +304,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Latest MegaBot asset/collateral snapshot on 02/11/2026: 75,000 VHM @ average cost 61.901; reported total purchase value 4,649,536,993; NAV1 794,352,753; open P/L -36,762,364; NAV2 757,590,389 at VHM 62.0; current collateral ratio about 16.29%; required collateral ratio 20%. The prior 15,000,000 VND collateral withdrawal is already reflected in the account history. Buy fee 0.15%; sell fee 0.25%; interest 0.045% per day.</div>
+  <div id="source" class="footer">MegaBot snapshot 02/11/2026: 75,000 VHM @ average cost 61.901; total purchase value 4,649,536,993; NAV1 794,352,753; reported NAV2 757,590,389 at VHM 62.0. Prepared for the morning session of 03/11/2026 by deducting one full day of financing interest at 0.045% on the full total purchase value (collateral is not deducted from the interest base): 2,092,291.65 VND. Prepared NAV2 / Current net assets at VHM 62.0: 755,498,097. Buy fee 0.15%; sell fee 0.25%.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -410,21 +410,23 @@ const NAV1 = 794352753; // latest MegaBot reported NAV1
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
 // Latest MegaBot snapshot supplied on 02/11/2026.
-// This snapshot supersedes the prior model anchor and already includes all confirmed trades and the collateral withdrawal.
 // Reported: 75,000 VHM; average cost 61.901; total purchase value 4,649,536,993; VHM 62.0; open P/L -36,762,364; NAV2 757,590,389.
+// PREPARED FOR MORNING 03/11/2026: deduct one full day of financing interest on the FULL total purchase value.
+// Collateral is security only and is NOT subtracted from the interest base.
 const BASE_VHM_QTY = 75000;
 // Internal gross cost chosen so gross*(1+0.15%) reproduces the reported total purchase value exactly.
 const BASE_VHM_GROSS_COST = 4649536993 / 1.0015;
 const MODEL_ANCHOR_VHM_PRICE_K = 62.0;
 const INITIAL_LAST_VALID_VHM_PRICE_K = 62.0; // latest user-supplied MegaBot snapshot price
 const INITIAL_LAST_VALID_LABEL = "latest MegaBot snapshot 02/11/2026 @62.0";
-// Fractional internal anchors preserve the report after display rounding, including buying power -861,585,049.
-const POST_TRADE_ANCHOR_NAV2 = 757590388.8;
-const POST_TRADE_ANCHOR_OPEN_PNL = POST_TRADE_ANCHOR_NAV2 - NAV1;
-
+const REPORTED_SNAPSHOT_NAV2 = 757590388.8;
 const BUY_FEE = 0.0015;                 // 0.15%
 const SELL_FEE = 0.0025;                // 0.25%
 const DAILY_RATE = 0.00045;              // 0.045% per day
+const MORNING_INTEREST_DAYS = 1;
+const MORNING_INTEREST_DEDUCTION = 4649536993 * DAILY_RATE * MORNING_INTEREST_DAYS;
+const POST_TRADE_ANCHOR_NAV2 = REPORTED_SNAPSHOT_NAV2 - MORNING_INTEREST_DEDUCTION;
+const POST_TRADE_ANCHOR_OPEN_PNL = POST_TRADE_ANCHOR_NAV2 - NAV1;
 const SETTLEMENT_DAYS = 2;               // MegaBot mark-to-liquidation interest reserve
 const SELL_NET_FACTOR = 1 - SELL_FEE;
 const MARK_TO_LIQUIDATION_FACTOR = SELL_NET_FACTOR * (1 - DAILY_RATE * SETTLEMENT_DAYS);
@@ -656,10 +658,10 @@ function calc(){
   $('avgVhmCostOut').textContent=fmtK(avgVhmCost);
   $('megaBotTotalBuyOut').textContent=fmtMoneyFull(totalBuy);
   $('currentValueOut').textContent=fmtMoneyFull(currentValue);
-  $('nav2Out').textContent=fmtMoney(nav2);
+  $('nav2Out').textContent=fmtMoneyFull(nav2);
   $('openPnlOut').textContent=fmtMoney(openPnl);
   $('totalPnlOut').textContent=fmtMoney(totalPnl);
-  $('netWorthOut').textContent=fmtMoney(netWorth);
+  $('netWorthOut').textContent=fmtMoneyFull(netWorth);
   $('openPnlOut').className='v stressLow '+(openPnl>=0?'positive':'negative');
   $('totalPnlOut').className='v stressLow '+(totalPnl>=0?'positive':'negative');
   $('ratioOut').textContent=(ratio*100).toFixed(2)+'%';
@@ -917,7 +919,7 @@ async function loadPrices(){
     +' | Core/total VHM: '+fmtShares(lastComputedTotalVhm)
     +' | MegaBot purchase value: '+fmtMoneyFull(lastComputedTotalBuy)
     +' | Daily interest at 0.045%: '+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Latest MegaBot snapshot: 75,000 VHM @61.901; model anchor VHM 62.0; NAV1 794,352,753; NAV2 757,590,389; open P/L -36,762,364; required collateral ratio 20%.';
+    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Reported snapshot NAV2 757,590,389; prepared morning 03/11 NAV2 deducts 1 day interest '+fmtMoneyFull(MORNING_INTEREST_DEDUCTION)+' on the full purchase value (collateral not deducted from interest base).';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
