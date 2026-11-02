@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 2-11-2026 time 8-36</title>
+<title>Last updated: 2-11-2026 time 10-16</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -194,7 +194,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 2-11-2026 time 8-36</div>
+  <div id="versionLine">Last updated: 2-11-2026 time 10-16</div>
 
   <div class="layout">
     <div class="panel">
@@ -305,7 +305,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Official MegaBot snapshot 30/10/2026 used as base. Monday 02/11/2026 opening values include 3 days of interest (Sat + Sun + Mon). Collateral withdrawal: 15,000,000 VND. Core 60,000 VHM; NAV1 after withdrawal 789,288,714; NAV2 model anchor after withdrawal 853,634,749 at VHM 63.0. Buy fee 0.15%; sell fee 0.25%; interest 0.045% per day. Replace with the next official MegaBot snapshot when available.</div>
+  <div id="source" class="footer">Official MegaBot snapshot 30/10/2026 used as base. Monday 02/11/2026 opening values include 3 days of interest (Sat + Sun + Mon). Collateral withdrawal: 15,000,000 VND. Base core 60,000 VHM. Confirmed buys on 02/11/2026: 5,000 VHM @64.3; 3,000 VHM @63.8; 2,000 VHM @63.7. Confirmed total quantity: 70,000 VHM. Buy fee 0.15%; sell fee 0.25%; interest 0.045% per day. Replace with the next official MegaBot snapshot when available.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -415,7 +415,7 @@ const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 // Official MegaBot snapshot on Friday 30/10/2026, carried into Monday 02/11/2026.
 // Monday opening NAV1/NAV2 already deduct 3 days of interest (Sat + Sun + Mon) on the full MegaBot Purchase Value.
 // A 15,000,000 VND collateral withdrawal on 02/11/2026 reduces NAV1, NAV2 and current net assets by the same amount; P/L is unchanged.
-// Core quantity remains 60,000 VHM.
+// Base core quantity remains 60,000 VHM; confirmed same-day buys are loaded separately in VHM_CONFIRMED_BUYS.
 const BASE_VHM_QTY = 60000;
 const BASE_VHM_GROSS_COST = 3695227107.280256;
 const MODEL_ANCHOR_VHM_PRICE_K = 63.0;
@@ -439,6 +439,15 @@ const TARGET_RATIO_2025 = 0.2025;
 const TARGET_RATIO_205 = 0.205;
 const TARGET_RATIO_21 = 0.21;
 const AUTO_REFRESH_MS = 5000;
+
+// Confirmed VHM buys on 02/11/2026. These load automatically and remain part of the account model after refresh.
+const VHM_CONFIRMED_BUYS = [
+  {qty:5000, price:64.3},
+  {qty:3000, price:63.8},
+  {qty:2000, price:63.7}
+];
+let lastComputedTotalBuy = 0;
+let lastComputedTotalVhm = BASE_VHM_QTY;
 
 // Persistent VHM last-valid-price memory for Android/desktop.
 // Priority on feed failure: explicit manual override -> persistent last valid price.
@@ -559,11 +568,12 @@ function makeRows(){
 
   for(const g of groups){
     for(let i=1;i<=g.count;i++){
+      const preset = g.prefix==="vhm" ? (VHM_CONFIRMED_BUYS[i-1] || {qty:0,price:0}) : {qty:0,price:0};
       const tr=document.createElement("tr");
       tr.innerHTML=`
         <td class="n">${g.symbol} ${i}</td>
-        <td><input class="buyQty" id="${g.prefix}BuyQty${i}" type="number" value="0" min="0" step="100" inputmode="numeric"></td>
-        <td><input class="buyPrice" id="${g.prefix}BuyPrice${i}" type="number" value="0" min="0" step="0.1" inputmode="decimal"></td>`;
+        <td><input class="buyQty" id="${g.prefix}BuyQty${i}" type="number" value="${preset.qty}" min="0" step="100" inputmode="numeric"></td>
+        <td><input class="buyPrice" id="${g.prefix}BuyPrice${i}" type="number" value="${preset.price}" min="0" step="0.1" inputmode="decimal"></td>`;
       tb.appendChild(tr);
     }
   }
@@ -590,6 +600,8 @@ function calc(){
   const vhmGrossCost=BASE_VHM_GROSS_COST+extraVhmGrossCost;
   const totalBuy=vhmGrossCost*(1+BUY_FEE);
   const currentValue=totalVhmQty*vp;
+  lastComputedTotalBuy=totalBuy;
+  lastComputedTotalVhm=totalVhmQty;
 
   // MegaBot mark-to-liquidation logic:
   // sell fee 0.25%, plus a two-day interest reserve on net sale proceeds.
@@ -908,8 +920,10 @@ async function loadPrices(){
   const vicText=vicOk ? 'VIC '+vicSource+' '+$('vicPrice').value : 'VIC reference unavailable';
   const vnindexText=vnindexOk ? 'VNINDEX '+vnindexSource+' '+$('vnindexPrice').value : 'VNINDEX reference unavailable';
   $('source').textContent='Checked '+t+' | '+vhmText+' | '+vicText+' | '+vnindexText
-    +' | MegaBot daily interest: '+fmtMoney(DAILY_INTEREST)
-    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Monday 02/11/2026 opening values already include 3 days of interest (Sat + Sun + Mon). Collateral withdrawal 15,000,000 VND: NAV1 '+fmtMoneyFull(NAV1)+', NAV2 anchor '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
+    +' | Confirmed VHM: '+fmtShares(lastComputedTotalVhm)
+    +' | MegaBot purchase value: '+fmtMoneyFull(lastComputedTotalBuy)
+    +' | Daily interest at 0.045%: '+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
+    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Monday 02/11/2026 opening values already include 3 days of interest (Sat + Sun + Mon). Collateral withdrawal 15,000,000 VND already reflected. New buys 02/11/2026: 5,000 @64.3; 3,000 @63.8; 2,000 @63.7.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
