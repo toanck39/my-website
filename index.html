@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 2-11-2026 time 10-35</title>
+<title>Last updated: 2-11-2026 time 15-25</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -25,7 +25,7 @@ body{display:flex;justify-content:center;transition:background .2s,color .2s}
   border:1px solid var(--line);background:var(--card);border-radius:10px;
   padding:4px 10px;white-space:nowrap;
 }
-#time_is_link{color:var(--muted);text-decoration:none;font-size:24px;font-weight:900;animation:timeBlink 1s ease-in-out infinite}
+#time_is_link{color:var(--muted);text-decoration:none;font-size:18px;font-weight:900;animation:timeBlink 1s ease-in-out infinite}
 #Hanoi_z40a{color:var(--text);font-size:clamp(50px,7vw,72px);font-weight:900;letter-spacing:1px;line-height:1;animation:timeBlink 1s ease-in-out infinite}
 h1{margin:0;font-size:clamp(17px,3vw,25px);font-weight:800}
 button{
@@ -193,7 +193,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 2-11-2026 time 10-35</div>
+  <div id="versionLine">Last updated: 2-11-2026 time 15-25</div>
 
   <div class="layout">
     <div class="panel">
@@ -201,8 +201,8 @@ body.locked #pinGate{display:flex}
       <div class="grid">
         <div class="box">
           <label>VHM core</label>
-          <input id="baseVhmQty" type="number" value="70000" readonly>
-          <div class="unit">70,000 @ 61.936</div>
+          <input id="baseVhmQty" type="number" value="75000" readonly>
+          <div class="unit">75,000 @ 61.901</div>
         </div>
         <div class="box">
           <label>Current VHM price</label>
@@ -304,7 +304,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Official MegaBot snapshot 30/10/2026 used as base. Monday 02/11/2026 opening values include 3 days of interest (Sat + Sun + Mon). Collateral withdrawal: 15,000,000 VND. Base core 60,000 VHM. Confirmed buys on 02/11/2026: 5,000 VHM @64.3; 3,000 VHM @63.8; 2,000 VHM @63.7. Confirmed total quantity: 70,000 VHM. Buy fee 0.15%; sell fee 0.25%; interest 0.045% per day. Replace with the next official MegaBot snapshot when available.</div>
+  <div id="source" class="footer">Latest MegaBot asset/collateral snapshot on 02/11/2026: 75,000 VHM @ average cost 61.901; reported total purchase value 4,649,536,993; NAV1 794,352,753; open P/L -36,762,364; NAV2 757,590,389 at VHM 62.0; current collateral ratio about 16.29%; required collateral ratio 20%. The prior 15,000,000 VND collateral withdrawal is already reflected in the account history. Buy fee 0.15%; sell fee 0.25%; interest 0.045% per day.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -404,28 +404,23 @@ function initPinGate(){
 
 document.addEventListener("DOMContentLoaded", initPinGate);
 
-const COLLATERAL_WITHDRAWAL = 15000000; // withdrawn collateral on 02/11/2026
-const PRE_WITHDRAWAL_NAV1 = 804288714;
-const PRE_WITHDRAWAL_NET_DEPOSIT_CAPITAL = 1324100456.518321;
-const NAV1 = PRE_WITHDRAWAL_NAV1 - COLLATERAL_WITHDRAWAL;
-const NET_DEPOSIT_CAPITAL = PRE_WITHDRAWAL_NET_DEPOSIT_CAPITAL - COLLATERAL_WITHDRAWAL;
+const COLLATERAL_WITHDRAWAL = 15000000; // historical withdrawal already reflected in the latest account snapshot
+const NET_DEPOSIT_CAPITAL = 1309100456.518321; // net deposited capital after the 15,000,000 VND withdrawal
+const NAV1 = 794352753; // latest MegaBot reported NAV1
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
-// Official MegaBot snapshot on Friday 30/10/2026, carried into Monday 02/11/2026.
-// Monday opening NAV1/NAV2 already deduct 3 days of interest (Sat + Sun + Mon) on the full MegaBot Purchase Value.
-// A 15,000,000 VND collateral withdrawal on 02/11/2026 reduces NAV1, NAV2 and current net assets by the same amount; P/L is unchanged.
-// Base core now includes the confirmed 02/11/2026 buys: 5,000 @64.3; 3,000 @63.8; 2,000 @63.7.
-// The former 10,000-share extra-lot effect has been rolled into the snapshot anchors so NAV2/P&L remain mathematically identical and shares are not double-counted.
-const BASE_VHM_QTY = 70000;
-const BASE_VHM_GROSS_COST = 4335527107.280256;
-const MODEL_ANCHOR_VHM_PRICE_K = 63.0;
-const INITIAL_LAST_VALID_VHM_PRICE_K = 63.0; // latest snapshot price 30/10/2026; bootstrap only
-const INITIAL_LAST_VALID_LABEL = "latest MegaBot snapshot 30/10/2026 @63.0";
-const PRE_WITHDRAWAL_POST_TRADE_ANCHOR_NAV2 = 868634749;
-const POST_WITHDRAWAL_PRE_BUY_ANCHOR_NAV2 = PRE_WITHDRAWAL_POST_TRADE_ANCHOR_NAV2 - COLLATERAL_WITHDRAWAL;
-const CONFIRMED_BUYS_ANCHOR_PNL = -13689599.7025; // exact effect of the 10,000 confirmed shares at the 63.0 model anchor
-const POST_TRADE_ANCHOR_NAV2 = POST_WITHDRAWAL_PRE_BUY_ANCHOR_NAV2 + CONFIRMED_BUYS_ANCHOR_PNL;
-const POST_TRADE_ANCHOR_OPEN_PNL = 64346035 + CONFIRMED_BUYS_ANCHOR_PNL;
+// Latest MegaBot snapshot supplied on 02/11/2026.
+// This snapshot supersedes the prior model anchor and already includes all confirmed trades and the collateral withdrawal.
+// Reported: 75,000 VHM; average cost 61.901; total purchase value 4,649,536,993; VHM 62.0; open P/L -36,762,364; NAV2 757,590,389.
+const BASE_VHM_QTY = 75000;
+// Internal gross cost chosen so gross*(1+0.15%) reproduces the reported total purchase value exactly.
+const BASE_VHM_GROSS_COST = 4649536993 / 1.0015;
+const MODEL_ANCHOR_VHM_PRICE_K = 62.0;
+const INITIAL_LAST_VALID_VHM_PRICE_K = 62.0; // latest user-supplied MegaBot snapshot price
+const INITIAL_LAST_VALID_LABEL = "latest MegaBot snapshot 02/11/2026 @62.0";
+// Fractional internal anchors preserve the report after display rounding, including buying power -861,585,049.
+const POST_TRADE_ANCHOR_NAV2 = 757590388.8;
+const POST_TRADE_ANCHOR_OPEN_PNL = POST_TRADE_ANCHOR_NAV2 - NAV1;
 
 const BUY_FEE = 0.0015;                 // 0.15%
 const SELL_FEE = 0.0025;                // 0.25%
@@ -433,7 +428,7 @@ const DAILY_RATE = 0.00045;              // 0.045% per day
 const SETTLEMENT_DAYS = 2;               // MegaBot mark-to-liquidation interest reserve
 const SELL_NET_FACTOR = 1 - SELL_FEE;
 const MARK_TO_LIQUIDATION_FACTOR = SELL_NET_FACTOR * (1 - DAILY_RATE * SETTLEMENT_DAYS);
-const DAILY_INTEREST = 1953913.6790735298;
+const DAILY_INTEREST = 4649536993 * DAILY_RATE;
 const SNAPSHOT_NAV2 = POST_TRADE_ANCHOR_NAV2;
 const SNAPSHOT_OPEN_PNL = POST_TRADE_ANCHOR_OPEN_PNL;
 const REQUIRED_RATIO = 0.20;
@@ -452,9 +447,9 @@ let lastComputedTotalVhm = BASE_VHM_QTY;
 // Priority on feed failure: explicit manual override -> persistent last valid price.
 // The latest user-reported execution price 62.0 is used only once to bootstrap an empty cache;
 // every successful LIVE quote permanently replaces it, including tomorrow's close.
-const VHM_CACHE_KEY = "megabot_vhm_last_valid_v14_k";
-const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v14_ts";
-const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v14_source";
+const VHM_CACHE_KEY = "megabot_vhm_last_valid_v15_k";
+const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v15_ts";
+const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v15_source";
 let sessionLastValidVhm = null;
 let vhmManualOverride = false;
 
@@ -922,7 +917,7 @@ async function loadPrices(){
     +' | Core/total VHM: '+fmtShares(lastComputedTotalVhm)
     +' | MegaBot purchase value: '+fmtMoneyFull(lastComputedTotalBuy)
     +' | Daily interest at 0.045%: '+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Monday 02/11/2026 opening values already include 3 days of interest (Sat + Sun + Mon). Collateral withdrawal 15,000,000 VND already reflected. Base core consolidated to 70,000 VHM @61.936 after buys 02/11/2026: 5,000 @64.3; 3,000 @63.8; 2,000 @63.7.';
+    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Latest MegaBot snapshot: 75,000 VHM @61.901; model anchor VHM 62.0; NAV1 794,352,753; NAV2 757,590,389; open P/L -36,762,364; required collateral ratio 20%.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
