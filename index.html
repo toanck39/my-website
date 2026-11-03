@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 3-11-2026 time 9-54</title>
+<title>Last updated: 3-11-2026 time 15-23</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -193,7 +193,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 3-11-2026 time 9-54</div>
+  <div id="versionLine">Last updated: 3-11-2026 time 15-23</div>
 
   <div class="layout">
     <div class="panel">
@@ -407,13 +407,16 @@ document.addEventListener("DOMContentLoaded", initPinGate);
 const COLLATERAL_WITHDRAWAL = 15000000; // historical withdrawal already reflected in the account base
 const NET_DEPOSIT_CAPITAL = 1309100456.518321; // retained only to preserve historical realized-P/L bookkeeping
 
-// Official MegaBot account snapshot supplied on 03/11/2026.
-// This snapshot supersedes earlier reconstructed sale calculations.
+// Official MegaBot account snapshot supplied on 03/11/2026 at VHM 61.9.
+// Prepared for the morning session of 04/11/2026 by deducting one full day of
+// financing interest at 0.045% on the full MegaBot Purchase Value (collateral is not deducted).
 const NAV1 = 824678534;
 const SNAPSHOT_TOTAL_BUY = 3216847399;
 const BASE_VHM_QTY = 51000;
-const SNAPSHOT_OPEN_PNL = -110579294;
-const SNAPSHOT_NAV2 = 714099240;
+const PRE_INTEREST_NAV2 = 739512597;
+const PREPARED_DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * 0.00045;
+const SNAPSHOT_NAV2 = PRE_INTEREST_NAV2 - PREPARED_DAILY_INTEREST;
+const SNAPSHOT_OPEN_PNL = SNAPSHOT_NAV2 - NAV1;
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
 const BUY_FEE = 0.0015;                 // 0.15%
@@ -423,12 +426,11 @@ const SETTLEMENT_DAYS = 2;              // MegaBot mark-to-liquidation interest 
 const SELL_NET_FACTOR = 1 - SELL_FEE;
 const MARK_TO_LIQUIDATION_FACTOR = SELL_NET_FACTOR * (1 - DAILY_RATE * SETTLEMENT_DAYS);
 
-// Snapshot anchor for subsequent live-price movement. The supplied table does not state the
-// contemporaneous VHM price; 61.1 is used only as the movement anchor so the supplied NAV2
-// remains exact at the snapshot point. Live/manual VHM prices move NAV2 from this anchor.
-const MODEL_ANCHOR_VHM_PRICE_K = 61.1;
-const INITIAL_LAST_VALID_VHM_PRICE_K = 61.1;
-const INITIAL_LAST_VALID_LABEL = "MegaBot snapshot 03/11/2026 @61.1 anchor";
+// Snapshot anchor for subsequent live-price movement. The supplied table states VHM = 61.9.
+// Live/manual VHM prices move NAV2 from this exact prepared-for-04/11 anchor.
+const MODEL_ANCHOR_VHM_PRICE_K = 61.9;
+const INITIAL_LAST_VALID_VHM_PRICE_K = 61.9;
+const INITIAL_LAST_VALID_LABEL = "MegaBot snapshot 03/11/2026 @61.9; one-day interest pre-deducted for 04/11";
 
 // Gross stock cost before the 0.15% buy fee, chosen so Total MegaBot Purchase Value is exact.
 const BASE_VHM_GROSS_COST = SNAPSHOT_TOTAL_BUY / (1 + BUY_FEE);
@@ -448,11 +450,11 @@ let lastComputedTotalVhm = BASE_VHM_QTY;
 
 // Persistent VHM last-valid-price memory for Android/desktop.
 // Priority on feed failure: explicit manual override -> persistent last valid price.
-// The supplied 03/11 snapshot anchor is used only once to bootstrap an empty cache;
+// The supplied 03/11 snapshot at 61.9 is used only once to bootstrap an empty cache;
 // every successful LIVE quote permanently replaces it, including tomorrow's close.
-const VHM_CACHE_KEY = "megabot_vhm_last_valid_v16_k";
-const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v16_ts";
-const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v16_source";
+const VHM_CACHE_KEY = "megabot_vhm_last_valid_v17_k";
+const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v17_ts";
+const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v17_source";
 let sessionLastValidVhm = null;
 let vhmManualOverride = false;
 
@@ -920,7 +922,7 @@ async function loadPrices(){
     +' | Core/total VHM: '+fmtShares(lastComputedTotalVhm)
     +' | MegaBot purchase value: '+fmtMoneyFull(lastComputedTotalBuy)
     +' | Daily interest at 0.045%: '+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Official MegaBot snapshot 03/11/2026: 51,000 VHM; purchase value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; open P/L '+fmtMoneyFull(SNAPSHOT_OPEN_PNL)+'; NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
+    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Official MegaBot snapshot 03/11/2026 @61.9: 51,000 VHM; purchase value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; one-day prepared interest for 04/11 '+fmtMoneyFull(PREPARED_DAILY_INTEREST)+'; prepared open P/L '+fmtMoneyFull(SNAPSHOT_OPEN_PNL)+'; prepared NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
