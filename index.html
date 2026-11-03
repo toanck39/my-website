@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 3-11-2026 time 15-23</title>
+<title>Last updated: 3-11-2026 time 15-59</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -193,7 +193,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 3-11-2026 time 15-23</div>
+  <div id="versionLine">Last updated: 3-11-2026 time 15-59</div>
 
   <div class="layout">
     <div class="panel">
@@ -225,7 +225,7 @@ body.locked #pinGate{display:flex}
     </div>
 
     <div class="panel">
-      <div class="section">6 VHM BUY LOTS</div>
+      <div class="section">5 VHM BUY LOTS</div>
       <table class="buytable">
         <thead>
           <tr>
@@ -235,6 +235,18 @@ body.locked #pinGate{display:flex}
           </tr>
         </thead>
         <tbody id="buyRows"></tbody>
+      </table>
+
+      <div class="section" style="margin-top:8px">5 VHM SELL LOTS</div>
+      <table class="buytable">
+        <thead>
+          <tr>
+            <th>Symbol / lot</th>
+            <th>Sell quantity</th>
+            <th>Sell price (k)</th>
+          </tr>
+        </thead>
+        <tbody id="sellRows"></tbody>
       </table>
     </div>
   </div>
@@ -301,10 +313,26 @@ body.locked #pinGate{display:flex}
       <div class="k">Max VHM at 21% collateral</div>
       <div id="vhmBuy21Out" class="v">-</div>
     </div>
+    <div class="result maxVhmCard" id="vhmBuy22Card">
+      <div class="k">Max VHM at 22% collateral</div>
+      <div id="vhmBuy22Out" class="v">-</div>
+    </div>
+    <div class="result maxVhmCard" id="vhmBuy23Card">
+      <div class="k">Max VHM at 23% collateral</div>
+      <div id="vhmBuy23Out" class="v">-</div>
+    </div>
+    <div class="result maxVhmCard" id="vhmBuy24Card">
+      <div class="k">Max VHM at 24% collateral</div>
+      <div id="vhmBuy24Out" class="v">-</div>
+    </div>
+    <div class="result maxVhmCard" id="vhmBuy25Card">
+      <div class="k">Max VHM at 25% collateral</div>
+      <div id="vhmBuy25Out" class="v">-</div>
+    </div>
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Updated 03/11/2026 after selling 10,000 VHM @61.5 and 5,000 VHM @61.9. Remaining core: 60,000 VHM @ average cost 61.901. Pre-sale morning NAV2 at VHM 62.0 was 755,498,097 after one day financing interest. Total sell fee: 2,311,250 VND; sale-price impact versus the 62.0 anchor: -5,500,000 VND. Post-sale anchor NAV2 / Current net assets at VHM 62.0: 747,686,847. Remaining total purchase value: 3,719,629,594. Buy fee 0.15%; sell fee 0.25%; daily financing rate 0.045%.</div>
+  <div id="source" class="footer">Updated 03/11/2026 after selling 10,000 VHM @61.5 and 5,000 VHM @61.9. Remaining core: 60,000 VHM @ average cost 61.901. Pre-sale morning NAV2 at VHM 62.0 was 755,498,097 after one day financing interest. Total sell fee: 2,311,250 VND; sale-price impact versus the 62.0 anchor: -5,500,000 VND. Post-sale anchor NAV2 / Current net assets at VHM 62.0: 747,686,847. Remaining total purchase value: 3,719,629,594. Buy fee 0.15%; sell fee 0.25%; daily financing rate 0.045%. UI updated with 5 BUY + 5 SELL lots and collateral targets through 25%.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -441,9 +469,13 @@ const REQUIRED_RATIO = 0.20;
 const TARGET_RATIO_2025 = 0.2025;
 const TARGET_RATIO_205 = 0.205;
 const TARGET_RATIO_21 = 0.21;
+const TARGET_RATIO_22 = 0.22;
+const TARGET_RATIO_23 = 0.23;
+const TARGET_RATIO_24 = 0.24;
+const TARGET_RATIO_25 = 0.25;
 const AUTO_REFRESH_MS = 5000;
 
-// The 51,000 VHM are consolidated into BASE CORE. Buy-lot rows remain empty for future buys.
+// The 51,000 VHM are consolidated into BASE CORE. Five BUY and five SELL rows are available for future trades.
 const VHM_CONFIRMED_BUYS = [];
 let lastComputedTotalBuy = SNAPSHOT_TOTAL_BUY;
 let lastComputedTotalVhm = BASE_VHM_QTY;
@@ -558,26 +590,31 @@ function fmtMoneyFull(n){return Math.round(n).toLocaleString("en-US")}
 function fmtK(v){return (v/1000).toFixed(3)}
 
 function makeRows(){
-  const tb=$("buyRows");
-  tb.innerHTML="";
+  const buyTb=$("buyRows");
+  const sellTb=$("sellRows");
+  buyTb.innerHTML="";
+  sellTb.innerHTML="";
 
-  const groups=[
-    {symbol:"VHM", prefix:"vhm", count:6}
-  ];
-
-  for(const g of groups){
-    for(let i=1;i<=g.count;i++){
-      const preset = g.prefix==="vhm" ? (VHM_CONFIRMED_BUYS[i-1] || {qty:0,price:0}) : {qty:0,price:0};
-      const tr=document.createElement("tr");
-      tr.innerHTML=`
-        <td class="n">${g.symbol} ${i}</td>
-        <td><input class="buyQty" id="${g.prefix}BuyQty${i}" type="number" value="${preset.qty}" min="0" step="100" inputmode="numeric"></td>
-        <td><input class="buyPrice" id="${g.prefix}BuyPrice${i}" type="number" value="${preset.price}" min="0" step="0.1" inputmode="decimal"></td>`;
-      tb.appendChild(tr);
-    }
+  for(let i=1;i<=5;i++){
+    const preset=VHM_CONFIRMED_BUYS[i-1] || {qty:0,price:0};
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td class="n">VHM BUY ${i}</td>
+      <td><input class="tradeQty buyQty" id="vhmBuyQty${i}" type="number" value="${preset.qty}" min="0" step="100" inputmode="numeric"></td>
+      <td><input class="tradePrice buyPrice" id="vhmBuyPrice${i}" type="number" value="${preset.price}" min="0" step="0.1" inputmode="decimal"></td>`;
+    buyTb.appendChild(tr);
   }
 
-  document.querySelectorAll(".buyQty,.buyPrice").forEach(el=>{
+  for(let i=1;i<=5;i++){
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td class="n">VHM SELL ${i}</td>
+      <td><input class="tradeQty sellQty" id="vhmSellQty${i}" type="number" value="0" min="0" step="100" inputmode="numeric"></td>
+      <td><input class="tradePrice sellPrice" id="vhmSellPrice${i}" type="number" value="0" min="0" step="0.1" inputmode="decimal"></td>`;
+    sellTb.appendChild(tr);
+  }
+
+  document.querySelectorAll(".tradeQty,.tradePrice").forEach(el=>{
     el.addEventListener("input",calc);
     el.addEventListener("focus",e=>e.target.select());
   });
@@ -586,17 +623,42 @@ function makeRows(){
 function calc(){
   const vpK=+$('vhmPrice').value||0, vp=vpK*1000;
 
+  // 5 future BUY lots.
   let extraVhmQty=0;
   let extraVhmGrossCost=0;
-  for(let i=1;i<=6;i++){
-    const q=+$('vhmBuyQty'+i).value||0;
-    const pK=+$('vhmBuyPrice'+i).value||0;
+  for(let i=1;i<=5;i++){
+    const q=Math.max(0,+$('vhmBuyQty'+i).value||0);
+    const pK=Math.max(0,+$('vhmBuyPrice'+i).value||0);
     extraVhmQty+=q;
     extraVhmGrossCost+=q*pK*1000;
   }
 
-  const totalVhmQty=BASE_VHM_QTY+extraVhmQty;
-  const vhmGrossCost=BASE_VHM_GROSS_COST+extraVhmGrossCost;
+  const preSellQty=BASE_VHM_QTY+extraVhmQty;
+  const preSellGrossCost=BASE_VHM_GROSS_COST+extraVhmGrossCost;
+  const preSellAvgGrossCost=preSellQty>0?preSellGrossCost/preSellQty:0;
+
+  // 5 future SELL lots. Sell quantities are applied sequentially and cannot exceed holdings.
+  let sellQty=0;
+  let sellExecutionAdjustment=0;
+  let remainingSellCapacity=preSellQty;
+  let requestedSellQty=0;
+  for(let i=1;i<=5;i++){
+    const qRequested=Math.max(0,+$('vhmSellQty'+i).value||0);
+    const pK=Math.max(0,+$('vhmSellPrice'+i).value||0);
+    requestedSellQty+=qRequested;
+    const q=Math.min(qRequested,remainingSellCapacity);
+    remainingSellCapacity-=q;
+    sellQty+=q;
+    // The live mark already values these shares at vp. Replace that mark with the actual sell price.
+    if(q>0 && pK>0){
+      sellExecutionAdjustment+=q*((pK*1000)-vp)*MARK_TO_LIQUIDATION_FACTOR;
+    }
+  }
+
+  // Sells reduce financed purchase value at the current weighted-average cost basis.
+  const soldGrossCost=sellQty*preSellAvgGrossCost;
+  const totalVhmQty=Math.max(0,preSellQty-sellQty);
+  const vhmGrossCost=Math.max(0,preSellGrossCost-soldGrossCost);
   const totalBuy=vhmGrossCost*(1+BUY_FEE);
   const currentValue=totalVhmQty*vp;
   lastComputedTotalBuy=totalBuy;
@@ -604,28 +666,25 @@ function calc(){
 
   // MegaBot mark-to-liquidation logic:
   // sell fee 0.25%, plus a two-day interest reserve on net sale proceeds.
-  // Official MegaBot snapshot anchor; no extra financing day is added here.
   const basePrice=MODEL_ANCHOR_VHM_PRICE_K*1000;
   const baseMovePnl=BASE_VHM_QTY*(vp-basePrice)*MARK_TO_LIQUIDATION_FACTOR;
 
-  // A new buy lot entered during the session is treated like MegaBot: buy fee,
-  // one current-day financing charge, sell fee, and two-day settlement interest reserve.
+  // New buys: buy fee + one current-day financing charge + liquidation assumptions.
   const extraBuyCost=extraVhmGrossCost*(1+BUY_FEE);
   const extraSellNet=extraVhmQty*vp*SELL_NET_FACTOR;
   const extraDayInterest=extraBuyCost*DAILY_RATE;
   const extraSettlementInterest=extraSellNet*DAILY_RATE*SETTLEMENT_DAYS;
   const extraPnl=extraSellNet-extraBuyCost-extraDayInterest-extraSettlementInterest;
 
-  const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+extraPnl;
-  const nav2=SNAPSHOT_NAV2+baseMovePnl+extraPnl;
+  // Entered SELL lots replace the live mark for sold shares with their execution prices.
+  const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+extraPnl+sellExecutionAdjustment;
+  const nav2=SNAPSHOT_NAV2+baseMovePnl+extraPnl+sellExecutionAdjustment;
 
   const totalPnl=REALIZED_PNL+openPnl;
   const netWorth=NET_DEPOSIT_CAPITAL+totalPnl;
   const ratio=totalBuy>0?nav2/totalBuy:0;
   const buyingPower=5*nav2-totalBuy;
 
-  // Cash collateral adjustment to land exactly at the required 20% collateral ratio.
-  // Positive headroom = cash can be withdrawn; negative headroom = cash must be deposited.
   const collateralCashHeadroom=nav2-REQUIRED_RATIO*totalBuy;
   const collateralCashAmount=Math.abs(collateralCashHeadroom);
 
@@ -637,25 +696,20 @@ function calc(){
   const pnlPerNewShare=sellNetPerNewVhm-costPerNewVhm-buyDayInterestPerShare-settlementInterestPerShare;
   const immediateDragPerShare=-pnlPerNewShare;
 
-  // Exact maximum additional VHM while keeping the post-purchase collateral ratio at or above 20.0%.
-  const requiredDenomPerShare=immediateDragPerShare + REQUIRED_RATIO*costPerNewVhm;
-  const requiredHeadroom=nav2 - REQUIRED_RATIO*totalBuy;
-  const canBuyVhm=(requiredHeadroom>0&&requiredDenomPerShare>0)?Math.floor(requiredHeadroom/requiredDenomPerShare):0;
+  function maxVhmAtTarget(target){
+    const denom=immediateDragPerShare + target*costPerNewVhm;
+    const headroom=nav2 - target*totalBuy;
+    return (headroom>0&&denom>0)?Math.floor(headroom/denom):0;
+  }
 
-  // Exact maximum additional VHM while keeping the post-purchase collateral ratio at or above 20.25%.
-  const target2025DenomPerShare=immediateDragPerShare + TARGET_RATIO_2025*costPerNewVhm;
-  const target2025Headroom=nav2 - TARGET_RATIO_2025*totalBuy;
-  const canBuyVhm2025=(target2025Headroom>0&&target2025DenomPerShare>0)?Math.floor(target2025Headroom/target2025DenomPerShare):0;
-
-  // Exact maximum additional VHM while keeping the post-purchase collateral ratio at or above 20.5%.
-  const target205DenomPerShare=immediateDragPerShare + TARGET_RATIO_205*costPerNewVhm;
-  const target205Headroom=nav2 - TARGET_RATIO_205*totalBuy;
-  const canBuyVhm205=(target205Headroom>0&&target205DenomPerShare>0)?Math.floor(target205Headroom/target205DenomPerShare):0;
-
-  // Exact maximum additional VHM while keeping the post-purchase collateral ratio at or above 21.0%.
-  const target21DenomPerShare=immediateDragPerShare + TARGET_RATIO_21*costPerNewVhm;
-  const target21Headroom=nav2 - TARGET_RATIO_21*totalBuy;
-  const canBuyVhm21=(target21Headroom>0&&target21DenomPerShare>0)?Math.floor(target21Headroom/target21DenomPerShare):0;
+  const canBuyVhm=maxVhmAtTarget(REQUIRED_RATIO);
+  const canBuyVhm2025=maxVhmAtTarget(TARGET_RATIO_2025);
+  const canBuyVhm205=maxVhmAtTarget(TARGET_RATIO_205);
+  const canBuyVhm21=maxVhmAtTarget(TARGET_RATIO_21);
+  const canBuyVhm22=maxVhmAtTarget(TARGET_RATIO_22);
+  const canBuyVhm23=maxVhmAtTarget(TARGET_RATIO_23);
+  const canBuyVhm24=maxVhmAtTarget(TARGET_RATIO_24);
+  const canBuyVhm25=maxVhmAtTarget(TARGET_RATIO_25);
 
   $('totalVhmOut').textContent=fmtShares(totalVhmQty);
   $('avgVhmCostOut').textContent=fmtK(avgVhmCost);
@@ -683,19 +737,35 @@ function calc(){
   $('vhmBuy2025Out').textContent=fmtShares(canBuyVhm2025);
   $('vhmBuy205Out').textContent=fmtShares(canBuyVhm205);
   $('vhmBuy21Out').textContent=fmtShares(canBuyVhm21);
+  $('vhmBuy22Out').textContent=fmtShares(canBuyVhm22);
+  $('vhmBuy23Out').textContent=fmtShares(canBuyVhm23);
+  $('vhmBuy24Out').textContent=fmtShares(canBuyVhm24);
+  $('vhmBuy25Out').textContent=fmtShares(canBuyVhm25);
 
   $('ratioOut').className='v '+(ratio>=REQUIRED_RATIO?'positive':'negative');
   $('bpOut').className='v '+(buyingPower>=0?'positive':'negative');
-  $('vhmBuyOut').className='v '+(canBuyVhm>0?'positive':'negative');
-  $('vhmBuy2025Out').className='v '+(canBuyVhm2025>0?'positive':'negative');
-  $('vhmBuy205Out').className='v '+(canBuyVhm205>0?'positive':'negative');
-  $('vhmBuy21Out').className='v '+(canBuyVhm21>0?'positive':'negative');
+  [
+    ['vhmBuyOut',canBuyVhm],['vhmBuy2025Out',canBuyVhm2025],['vhmBuy205Out',canBuyVhm205],
+    ['vhmBuy21Out',canBuyVhm21],['vhmBuy22Out',canBuyVhm22],['vhmBuy23Out',canBuyVhm23],
+    ['vhmBuy24Out',canBuyVhm24],['vhmBuy25Out',canBuyVhm25]
+  ].forEach(([id,val])=>$(id).className='v '+(val>0?'positive':'negative'));
+
+  const sellWarning=requestedSellQty>preSellQty
+    ? ' Sell quantity was capped at the available holding of '+fmtShares(preSellQty)+' VHM.'
+    : '';
 
   if(ratio<REQUIRED_RATIO){
     const shortfall=REQUIRED_RATIO*totalBuy-nav2;
-    $('status').innerHTML='Approximately <b>'+fmtMoney(shortfall)+'</b> is needed to restore the collateral ratio to 20%.';
+    $('status').innerHTML='Approximately <b>'+fmtMoney(shortfall)+'</b> is needed to restore the collateral ratio to 20%.'+sellWarning;
   }else{
-    $('status').innerHTML='At the current price, the estimated maximum additional VHM is <b>'+fmtShares(canBuyVhm)+'</b>; at 20.25% collateral the estimated limit is <b>'+fmtShares(canBuyVhm2025)+'</b>; at 20.5% collateral the estimated limit is <b>'+fmtShares(canBuyVhm205)+'</b>; at 21% collateral the estimated limit is <b>'+fmtShares(canBuyVhm21)+'</b>.';
+    $('status').innerHTML='Max additional VHM: <b>'+fmtShares(canBuyVhm)+'</b> at 20%; '
+      +'<b>'+fmtShares(canBuyVhm2025)+'</b> at 20.25%; '
+      +'<b>'+fmtShares(canBuyVhm205)+'</b> at 20.5%; '
+      +'<b>'+fmtShares(canBuyVhm21)+'</b> at 21%; '
+      +'<b>'+fmtShares(canBuyVhm22)+'</b> at 22%; '
+      +'<b>'+fmtShares(canBuyVhm23)+'</b> at 23%; '
+      +'<b>'+fmtShares(canBuyVhm24)+'</b> at 24%; '
+      +'<b>'+fmtShares(canBuyVhm25)+'</b> at 25%.'+sellWarning;
   }
 }
 
