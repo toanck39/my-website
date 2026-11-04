@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 4-11-2026 time 15-38</title>
+<title>Last updated: 4-11-2026 time 15-59</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -106,6 +106,46 @@ body.dark #fptAlert{background:#052e16;color:#bbf7d0;border-color:#166534}
   #collateralCashCard .v{font-size:clamp(16px,2.8vw,23px)}
 }
 
+
+.indexSection{
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden;
+  background:var(--bg);
+}
+.indexTitle{
+  background:#1f2937;
+  color:#ffffff;
+  padding:9px 12px;
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:.8px;
+  text-align:left;
+}
+.indexBody{padding:7px;display:grid;gap:6px}
+.assetTop{display:grid;grid-template-columns:1fr 1.25fr;gap:6px;align-items:start}
+.assetSummary{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.generalResults{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.assetResults{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.maxAssetCard{
+  border-width:2px;
+  min-height:92px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.maxAssetCard .k{font-size:13px;font-weight:900;line-height:1.15}
+.maxAssetCard .v{font-size:clamp(22px,4vw,32px);font-weight:900;line-height:1.05}
+@media(max-width:820px){
+  .assetTop{grid-template-columns:1fr}
+  .assetSummary,.generalResults,.assetResults{grid-template-columns:1fr 1fr}
+}
+@media(max-width:430px){
+  .indexTitle{font-size:14px}
+  .assetSummary,.generalResults,.assetResults{grid-template-columns:1fr 1fr}
+  .maxAssetCard{min-height:100px}
+}
+
 /* PIN lock */
 body.locked .app{display:none}
 #pinGate{
@@ -193,151 +233,132 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 4-11-2026 time 15-38</div>
+  <div id="versionLine">Last updated: 4-11-2026 time 15-59</div>
 
-  <div class="layout">
-    <div class="panel">
-      <div class="section">BASE CORE</div>
-      <div class="grid">
-        <div class="box">
-          <label>VHM core</label>
-          <input id="baseVhmQty" type="number" value="45000" readonly>
-          <div class="unit">45,000 @ 63.416</div>
-        </div>
-        <div class="box">
-          <label>Current VHM price</label>
-          <input id="vhmPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
-          <div id="vhmLive" class="live">price not loaded</div>
-        </div>
-        <div class="box">
-          <label>FPT core</label>
-          <input id="baseFptQty" type="number" value="14000" readonly>
-          <div class="unit">14,000 @ 53.479</div>
-        </div>
-        <div class="box">
-          <label>Current FPT price</label>
-          <input id="fptPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
-          <div id="fptLive" class="live">price not loaded</div>
-        </div>
-        <div class="box">
-          <label>Current VIC price (reference only)</label>
-          <input id="vicPrice" type="number" value="0" step="0.1" min="0" inputmode="decimal">
-          <div id="vicLive" class="live">price not loaded</div>
-          <div class="unit">Independent reference; excluded from NAV</div>
-        </div>
-        <div class="box">
-          <label>Current VNINDEX (reference only)</label>
-          <input id="vnindexPrice" type="number" value="0" step="0.01" min="0" inputmode="decimal">
-          <div id="vnindexLive" class="live">index not loaded</div>
-          <div class="unit">Market reference only; excluded from NAV</div>
+  <div class="indexSection" id="generalIndexSection">
+    <div class="indexTitle">GENERAL INDEX</div>
+    <div class="indexBody">
+      <div class="panel">
+        <div class="section">MARKET REFERENCES</div>
+        <div class="grid">
+          <div class="box">
+            <label>Current VIC price (reference only)</label>
+            <input id="vicPrice" type="number" value="0" step="0.1" min="0" inputmode="decimal">
+            <div id="vicLive" class="live">price not loaded</div>
+            <div class="unit">Independent reference; excluded from NAV</div>
+          </div>
+          <div class="box">
+            <label>Current VNINDEX (reference only)</label>
+            <input id="vnindexPrice" type="number" value="0" step="0.01" min="0" inputmode="decimal">
+            <div id="vnindexLive" class="live">index not loaded</div>
+            <div class="unit">Market reference only; excluded from NAV</div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="panel">
-      <div class="section">5 VHM BUY LOTS</div>
-      <table class="buytable">
-        <thead>
-          <tr>
-            <th>Symbol / lot</th>
-            <th>Buy quantity</th>
-            <th>Buy price (k)</th>
-          </tr>
-        </thead>
-        <tbody id="buyRows"></tbody>
-      </table>
-
-      <div class="section" style="margin-top:8px">5 VHM SELL LOTS</div>
-      <table class="buytable">
-        <thead>
-          <tr>
-            <th>Symbol / lot</th>
-            <th>Sell quantity</th>
-            <th>Sell price (k)</th>
-          </tr>
-        </thead>
-        <tbody id="sellRows"></tbody>
-      </table>
+      <div class="generalResults">
+        <div class="result"><div class="k">Total MegaBot Purchase Value</div><div id="megaBotTotalBuyOut" class="v neutral">3,607,843,660</div></div>
+        <div class="result"><div class="k">Current portfolio value</div><div id="currentValueOut" class="v neutral">-</div></div>
+        <div class="result"><div class="k">NAV2</div><div id="nav2Out" class="v neutral">-</div></div>
+        <div class="result"><div class="k">Current net assets</div><div id="netWorthOut" class="v neutral">-</div></div>
+        <div class="result"><div class="k">Collateral ratio</div><div id="ratioOut" class="v">-</div></div>
+        <div class="result"><div class="k">Open P/L</div><div id="openPnlOut" class="v stressLow">-</div></div>
+        <div class="result"><div class="k">Total account P/L</div><div id="totalPnlOut" class="v stressLow">-</div></div>
+        <div class="result" id="collateralCashCard"><div class="k">Collateral to add / available to withdraw</div><div id="collateralCashOut" class="v">-</div></div>
+        <div class="result"><div class="k">Buying power</div><div id="bpOut" class="v">-</div></div>
+        <div class="result"><div class="k">Daily financing interest 0.045%</div><div id="dailyInterestOut" class="v warning">-</div></div>
+      </div>
     </div>
   </div>
 
-  <div class="results">
-    <div class="result">
-      <div class="k">Total VHM</div>
-      <div id="totalVhmOut" class="v neutral">50,000</div>
+  <div class="indexSection" id="vhmIndexSection">
+    <div class="indexTitle">VHM INDEX</div>
+    <div class="indexBody">
+      <div class="assetTop">
+        <div class="panel">
+          <div class="section">VHM CORE & LIVE PRICE</div>
+          <div class="grid">
+            <div class="box">
+              <label>VHM core</label>
+              <input id="baseVhmQty" type="number" value="45000" readonly>
+              <div class="unit">45,000 @ 63.416</div>
+            </div>
+            <div class="box">
+              <label>Current VHM price</label>
+              <input id="vhmPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
+              <div id="vhmLive" class="live">price not loaded</div>
+            </div>
+          </div>
+          <div class="assetSummary" style="margin-top:6px">
+            <div class="result"><div class="k">Total VHM</div><div id="totalVhmOut" class="v neutral">45,000</div></div>
+            <div class="result"><div class="k">VHM average cost</div><div id="avgVhmCostOut" class="v neutral">63.416</div></div>
+            <div class="result"><div class="k">VHM current value</div><div id="vhmCurrentValueOut" class="v neutral">-</div></div>
+            <div class="result"><div class="k">VHM market P/L</div><div id="vhmMarketPnlOut" class="v">-</div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="section">5 VHM BUY LOTS</div>
+          <table class="buytable">
+            <thead><tr><th>Symbol / lot</th><th>Buy quantity</th><th>Buy price (k)</th></tr></thead>
+            <tbody id="buyRows"></tbody>
+          </table>
+          <div class="section" style="margin-top:8px">5 VHM SELL LOTS</div>
+          <table class="buytable">
+            <thead><tr><th>Symbol / lot</th><th>Sell quantity</th><th>Sell price (k)</th></tr></thead>
+            <tbody id="sellRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="assetResults">
+        <div class="result maxAssetCard"><div class="k">Max additional VHM</div><div id="vhmBuyOut" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max additional VHM at 20,25%</div><div id="vhmBuy2025Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max VHM at 20.5% collateral</div><div id="vhmBuy205Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max VHM at 21% collateral</div><div id="vhmBuy21Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max VHM at 22% collateral</div><div id="vhmBuy22Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max VHM at 23% collateral</div><div id="vhmBuy23Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max VHM at 24% collateral</div><div id="vhmBuy24Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max VHM at 25% collateral</div><div id="vhmBuy25Out" class="v">-</div></div>
+      </div>
     </div>
-    <div class="result">
-      <div class="k">New VHM average cost</div>
-      <div id="avgVhmCostOut" class="v neutral">62.981</div>
-    </div>
-    <div class="result">
-      <div class="k">Total MegaBot Purchase Value</div>
-      <div id="megaBotTotalBuyOut" class="v neutral">3,216,847,399</div>
-    </div>
-    <div class="result">
-      <div class="k">Current Value</div>
-      <div id="currentValueOut" class="v neutral">-</div>
-    </div>
-    <div class="result">
-      <div class="k">NAV2</div>
-      <div id="nav2Out" class="v neutral">-</div>
-    </div>
-    <div class="result">
-      <div class="k">Open P/L</div>
-      <div id="openPnlOut" class="v stressLow">-</div>
-    </div>
-    <div class="result">
-      <div class="k">Total account P/L</div>
-      <div id="totalPnlOut" class="v stressLow">-</div>
-    </div>
-    <div class="result">
-      <div class="k">Current net assets</div>
-      <div id="netWorthOut" class="v neutral">-</div>
-    </div>
-    <div class="result">
-      <div class="k">Collateral ratio</div>
-      <div id="ratioOut" class="v">-</div>
-    </div>
-    <div class="result" id="collateralCashCard">
-      <div class="k">Collateral to add / available to withdraw</div>
-      <div id="collateralCashOut" class="v">-</div>
-      
-    </div>
-    <div class="result">
-      <div class="k">Buying power</div>
-      <div id="bpOut" class="v">-</div>
-    </div>
-    <div class="result maxVhmCard" id="vhmBuyCard">
-      <div class="k">Max additional VHM</div>
-      <div id="vhmBuyOut" class="v">-</div>
-    </div>
-    <div class="result maxVhmCard" id="vhmBuy2025Card">
-      <div class="k">Max additional VHM at 20,25%</div>
-      <div id="vhmBuy2025Out" class="v">-</div>
-    </div>
-    <div class="result maxVhmCard" id="vhmBuy205Card">
-      <div class="k">Max VHM at 20.5% collateral</div>
-      <div id="vhmBuy205Out" class="v">-</div>
-    </div>
-    <div class="result maxVhmCard" id="vhmBuy21Card">
-      <div class="k">Max VHM at 21% collateral</div>
-      <div id="vhmBuy21Out" class="v">-</div>
-    </div>
-    <div class="result maxVhmCard" id="vhmBuy22Card">
-      <div class="k">Max VHM at 22% collateral</div>
-      <div id="vhmBuy22Out" class="v">-</div>
-    </div>
-    <div class="result maxVhmCard" id="vhmBuy23Card">
-      <div class="k">Max VHM at 23% collateral</div>
-      <div id="vhmBuy23Out" class="v">-</div>
-    </div>
-    <div class="result maxVhmCard" id="vhmBuy24Card">
-      <div class="k">Max VHM at 24% collateral</div>
-      <div id="vhmBuy24Out" class="v">-</div>
-    </div>
-    <div class="result maxVhmCard" id="vhmBuy25Card">
-      <div class="k">Max VHM at 25% collateral</div>
-      <div id="vhmBuy25Out" class="v">-</div>
+  </div>
+
+  <div class="indexSection" id="fptIndexSection">
+    <div class="indexTitle">FPT INDEX</div>
+    <div class="indexBody">
+      <div class="panel">
+        <div class="section">FPT CORE & LIVE PRICE</div>
+        <div class="grid">
+          <div class="box">
+            <label>FPT core</label>
+            <input id="baseFptQty" type="number" value="14000" readonly>
+            <div class="unit">14,000 @ 53.479</div>
+          </div>
+          <div class="box">
+            <label>Current FPT price</label>
+            <input id="fptPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
+            <div id="fptLive" class="live">price not loaded</div>
+          </div>
+        </div>
+        <div class="assetSummary" style="margin-top:6px">
+          <div class="result"><div class="k">Total FPT</div><div id="totalFptOut" class="v neutral">14,000</div></div>
+          <div class="result"><div class="k">FPT average cost</div><div id="avgFptCostOut" class="v neutral">53.479</div></div>
+          <div class="result"><div class="k">FPT current value</div><div id="fptCurrentValueOut" class="v neutral">-</div></div>
+          <div class="result"><div class="k">FPT market P/L</div><div id="fptMarketPnlOut" class="v">-</div></div>
+        </div>
+      </div>
+
+      <div class="assetResults">
+        <div class="result maxAssetCard"><div class="k">Max additional FPT</div><div id="fptBuyOut" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max additional FPT at 20,25%</div><div id="fptBuy2025Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max FPT at 20.5% collateral</div><div id="fptBuy205Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max FPT at 21% collateral</div><div id="fptBuy21Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max FPT at 22% collateral</div><div id="fptBuy22Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max FPT at 23% collateral</div><div id="fptBuy23Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max FPT at 24% collateral</div><div id="fptBuy24Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max FPT at 25% collateral</div><div id="fptBuy25Out" class="v">-</div></div>
+      </div>
     </div>
   </div>
 
@@ -738,7 +759,12 @@ function calc(){
   const vhmGrossCost=Math.max(0,preSellGrossCost-soldGrossCost);
   const vhmBuyValue=vhmGrossCost*(1+BUY_FEE);
   const totalBuy=vhmBuyValue+BASE_FPT_BUY_COST;
-  const currentValue=totalVhmQty*vp+BASE_FPT_QTY*fp;
+  const vhmCurrentValue=totalVhmQty*vp;
+  const fptCurrentValue=BASE_FPT_QTY*fp;
+  const currentValue=vhmCurrentValue+fptCurrentValue;
+  const vhmMarketPnl=vhmCurrentValue-vhmGrossCost;
+  const fptMarketPnl=fptCurrentValue-BASE_FPT_GROSS_COST;
+  const avgFptCost=BASE_FPT_QTY>0?BASE_FPT_GROSS_COST/BASE_FPT_QTY:0;
   lastComputedTotalBuy=totalBuy;
   lastComputedTotalVhm=totalVhmQty;
 
@@ -792,8 +818,36 @@ function calc(){
   const canBuyVhm24=maxVhmAtTarget(TARGET_RATIO_24);
   const canBuyVhm25=maxVhmAtTarget(TARGET_RATIO_25);
 
+  const costPerNewFpt=fp*(1+BUY_FEE);
+  const sellNetPerNewFpt=fp*SELL_NET_FACTOR;
+  const buyDayInterestPerFpt=costPerNewFpt*DAILY_RATE;
+  const settlementInterestPerFpt=sellNetPerNewFpt*DAILY_RATE*SETTLEMENT_DAYS;
+  const pnlPerNewFpt=sellNetPerNewFpt-costPerNewFpt-buyDayInterestPerFpt-settlementInterestPerFpt;
+  const immediateDragPerFpt=-pnlPerNewFpt;
+  function maxFptAtTarget(target){
+    const denom=immediateDragPerFpt + target*costPerNewFpt;
+    const headroom=nav2 - target*totalBuy;
+    return (headroom>0&&denom>0)?Math.floor(headroom/denom):0;
+  }
+  const canBuyFpt=maxFptAtTarget(REQUIRED_RATIO);
+  const canBuyFpt2025=maxFptAtTarget(TARGET_RATIO_2025);
+  const canBuyFpt205=maxFptAtTarget(TARGET_RATIO_205);
+  const canBuyFpt21=maxFptAtTarget(TARGET_RATIO_21);
+  const canBuyFpt22=maxFptAtTarget(TARGET_RATIO_22);
+  const canBuyFpt23=maxFptAtTarget(TARGET_RATIO_23);
+  const canBuyFpt24=maxFptAtTarget(TARGET_RATIO_24);
+  const canBuyFpt25=maxFptAtTarget(TARGET_RATIO_25);
+
   $('totalVhmOut').textContent=fmtShares(totalVhmQty);
   $('avgVhmCostOut').textContent=fmtK(avgVhmCost);
+  $('vhmCurrentValueOut').textContent=fmtMoneyFull(vhmCurrentValue);
+  $('vhmMarketPnlOut').textContent=fmtMoneyFull(vhmMarketPnl);
+  $('vhmMarketPnlOut').className='v '+(vhmMarketPnl>=0?'positive':'negative');
+  $('totalFptOut').textContent=fmtShares(BASE_FPT_QTY);
+  $('avgFptCostOut').textContent=fmtK(avgFptCost);
+  $('fptCurrentValueOut').textContent=fmtMoneyFull(fptCurrentValue);
+  $('fptMarketPnlOut').textContent=fmtMoneyFull(fptMarketPnl);
+  $('fptMarketPnlOut').className='v '+(fptMarketPnl>=0?'positive':'negative');
   $('megaBotTotalBuyOut').textContent=fmtMoneyFull(totalBuy);
   $('currentValueOut').textContent=fmtMoneyFull(currentValue);
   $('nav2Out').textContent=fmtMoneyFull(nav2);
@@ -814,6 +868,7 @@ function calc(){
     $('collateralCashOut').className='v neutral';
   }
   $('bpOut').textContent=fmtMoney(buyingPower);
+  $('dailyInterestOut').textContent=fmtMoneyFull(totalBuy*DAILY_RATE);
   $('vhmBuyOut').textContent=fmtShares(canBuyVhm);
   $('vhmBuy2025Out').textContent=fmtShares(canBuyVhm2025);
   $('vhmBuy205Out').textContent=fmtShares(canBuyVhm205);
@@ -822,13 +877,24 @@ function calc(){
   $('vhmBuy23Out').textContent=fmtShares(canBuyVhm23);
   $('vhmBuy24Out').textContent=fmtShares(canBuyVhm24);
   $('vhmBuy25Out').textContent=fmtShares(canBuyVhm25);
+  $('fptBuyOut').textContent=fmtShares(canBuyFpt);
+  $('fptBuy2025Out').textContent=fmtShares(canBuyFpt2025);
+  $('fptBuy205Out').textContent=fmtShares(canBuyFpt205);
+  $('fptBuy21Out').textContent=fmtShares(canBuyFpt21);
+  $('fptBuy22Out').textContent=fmtShares(canBuyFpt22);
+  $('fptBuy23Out').textContent=fmtShares(canBuyFpt23);
+  $('fptBuy24Out').textContent=fmtShares(canBuyFpt24);
+  $('fptBuy25Out').textContent=fmtShares(canBuyFpt25);
 
   $('ratioOut').className='v '+(ratio>=REQUIRED_RATIO?'positive':'negative');
   $('bpOut').className='v '+(buyingPower>=0?'positive':'negative');
   [
     ['vhmBuyOut',canBuyVhm],['vhmBuy2025Out',canBuyVhm2025],['vhmBuy205Out',canBuyVhm205],
     ['vhmBuy21Out',canBuyVhm21],['vhmBuy22Out',canBuyVhm22],['vhmBuy23Out',canBuyVhm23],
-    ['vhmBuy24Out',canBuyVhm24],['vhmBuy25Out',canBuyVhm25]
+    ['vhmBuy24Out',canBuyVhm24],['vhmBuy25Out',canBuyVhm25],
+    ['fptBuyOut',canBuyFpt],['fptBuy2025Out',canBuyFpt2025],['fptBuy205Out',canBuyFpt205],
+    ['fptBuy21Out',canBuyFpt21],['fptBuy22Out',canBuyFpt22],['fptBuy23Out',canBuyFpt23],
+    ['fptBuy24Out',canBuyFpt24],['fptBuy25Out',canBuyFpt25]
   ].forEach(([id,val])=>$(id).className='v '+(val>0?'positive':'negative'));
 
   const sellWarning=requestedSellQty>preSellQty
@@ -839,14 +905,8 @@ function calc(){
     const shortfall=REQUIRED_RATIO*totalBuy-nav2;
     $('status').innerHTML='Approximately <b>'+fmtMoney(shortfall)+'</b> is needed to restore the collateral ratio to 20%.'+sellWarning;
   }else{
-    $('status').innerHTML='Max additional VHM: <b>'+fmtShares(canBuyVhm)+'</b> at 20%; '
-      +'<b>'+fmtShares(canBuyVhm2025)+'</b> at 20,25%; '
-      +'<b>'+fmtShares(canBuyVhm205)+'</b> at 20.5%; '
-      +'<b>'+fmtShares(canBuyVhm21)+'</b> at 21%; '
-      +'<b>'+fmtShares(canBuyVhm22)+'</b> at 22%; '
-      +'<b>'+fmtShares(canBuyVhm23)+'</b> at 23%; '
-      +'<b>'+fmtShares(canBuyVhm24)+'</b> at 24%; '
-      +'<b>'+fmtShares(canBuyVhm25)+'</b> at 25%.'+sellWarning;
+    $('status').innerHTML='Max additional at 20%: VHM <b>'+fmtShares(canBuyVhm)+'</b> | FPT <b>'+fmtShares(canBuyFpt)+'</b>. '
+      +'At 20,25%: VHM <b>'+fmtShares(canBuyVhm2025)+'</b> | FPT <b>'+fmtShares(canBuyFpt2025)+'</b>.'+sellWarning;
   }
 }
 
