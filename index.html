@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 3-11-2026 time 15-59</title>
+<title>Last updated: 4-11-2026 time 10-07</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -193,7 +193,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 3-11-2026 time 15-59</div>
+  <div id="versionLine">Last updated: 4-11-2026 time 10-07</div>
 
   <div class="layout">
     <div class="panel">
@@ -208,6 +208,16 @@ body.locked #pinGate{display:flex}
           <label>Current VHM price</label>
           <input id="vhmPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
           <div id="vhmLive" class="live">price not loaded</div>
+        </div>
+        <div class="box">
+          <label>FPT core</label>
+          <input id="baseFptQty" type="number" value="5000" readonly>
+          <div class="unit">5,000 @ 52.900</div>
+        </div>
+        <div class="box">
+          <label>Current FPT price</label>
+          <input id="fptPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
+          <div id="fptLive" class="live">price not loaded</div>
         </div>
         <div class="box">
           <label>Current VIC price (reference only)</label>
@@ -454,6 +464,15 @@ const SETTLEMENT_DAYS = 2;              // MegaBot mark-to-liquidation interest 
 const SELL_NET_FACTOR = 1 - SELL_FEE;
 const MARK_TO_LIQUIDATION_FACTOR = SELL_NET_FACTOR * (1 - DAILY_RATE * SETTLEMENT_DAYS);
 
+// New FPT position bought on 04/11/2026: 5,000 shares @ 52.9.
+// It is part of the financed MegaBot portfolio and therefore affects purchase value, NAV2, collateral and buying power.
+const BASE_FPT_QTY = 5000;
+const BASE_FPT_BUY_PRICE_K = 52.9;
+const BASE_FPT_GROSS_COST = BASE_FPT_QTY * BASE_FPT_BUY_PRICE_K * 1000;
+const BASE_FPT_BUY_COST = BASE_FPT_GROSS_COST * (1 + BUY_FEE);
+const INITIAL_LAST_VALID_FPT_PRICE_K = 52.9;
+const INITIAL_LAST_VALID_FPT_LABEL = "FPT buy 04/11/2026 @52.9";
+
 // Snapshot anchor for subsequent live-price movement. The supplied table states VHM = 61.9.
 // Live/manual VHM prices move NAV2 from this exact prepared-for-04/11 anchor.
 const MODEL_ANCHOR_VHM_PRICE_K = 61.9;
@@ -489,6 +508,13 @@ const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v17_ts";
 const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v17_source";
 let sessionLastValidVhm = null;
 let vhmManualOverride = false;
+
+// Persistent FPT last-valid-price memory. FPT is now part of NAV, so a reliable fallback is required.
+const FPT_CACHE_KEY = "megabot_fpt_last_valid_v1_k";
+const FPT_CACHE_TS_KEY = "megabot_fpt_last_valid_v1_ts";
+const FPT_CACHE_SOURCE_KEY = "megabot_fpt_last_valid_v1_source";
+let sessionLastValidFpt = null;
+let fptManualOverride = false;
 
 const $ = id => document.getElementById(id);
 let loading=false;
@@ -571,6 +597,57 @@ function restoreLastGoodVhm(){
   return false;
 }
 
+function bootstrapPersistentFptPrice(){
+  let p=Number(safeStorageGet(FPT_CACHE_KEY));
+  let ts=Number(safeStorageGet(FPT_CACHE_TS_KEY));
+  let source=safeStorageGet(FPT_CACHE_SOURCE_KEY);
+  if(!(Number.isFinite(p)&&p>0)){
+    p=INITIAL_LAST_VALID_FPT_PRICE_K;
+    ts=Date.now();
+    source=INITIAL_LAST_VALID_FPT_LABEL;
+    safeStorageSet(FPT_CACHE_KEY,p.toFixed(1));
+    safeStorageSet(FPT_CACHE_TS_KEY,ts);
+    safeStorageSet(FPT_CACHE_SOURCE_KEY,source);
+  }
+  sessionLastValidFpt={price:p,ts,source};
+}
+function saveLastGoodFpt(priceK,source='live'){
+  const p=Number(priceK);
+  if(!Number.isFinite(p)||p<=0)return;
+  const ts=Date.now();
+  sessionLastValidFpt={price:p,ts,source};
+  safeStorageSet(FPT_CACHE_KEY,p.toFixed(1));
+  safeStorageSet(FPT_CACHE_TS_KEY,ts);
+  safeStorageSet(FPT_CACHE_SOURCE_KEY,source);
+}
+function getLastGoodFpt(){
+  const p=Number(safeStorageGet(FPT_CACHE_KEY));
+  const ts=Number(safeStorageGet(FPT_CACHE_TS_KEY));
+  const source=safeStorageGet(FPT_CACHE_SOURCE_KEY)||'last valid';
+  if(Number.isFinite(p)&&p>0){
+    const validTs=Number.isFinite(ts)&&ts>0?ts:Date.now();
+    sessionLastValidFpt={price:p,ts:validTs,source};
+    return {price:p,ts:validTs,age:Math.max(0,Date.now()-validTs),source};
+  }
+  if(sessionLastValidFpt && Number.isFinite(sessionLastValidFpt.price) && sessionLastValidFpt.price>0){
+    return {...sessionLastValidFpt,age:Math.max(0,Date.now()-sessionLastValidFpt.ts)};
+  }
+  return null;
+}
+function restoreLastGoodFpt(){
+  bootstrapPersistentFptPrice();
+  const cached=getLastGoodFpt();
+  if(cached){
+    $('fptPrice').value=cached.price.toFixed(1);
+    $('fptLive').textContent='LAST VALID '+cached.price.toFixed(1)+' · '+cached.source+' · '+formatCacheAge(cached.age);
+    $('fptLive').className='live neutral';
+    return true;
+  }
+  $('fptLive').textContent='NO LAST VALID PRICE · enter manual price';
+  $('fptLive').className='live warning';
+  return false;
+}
+
 function applyTheme(theme){
   document.body.classList.toggle("dark", theme==="dark");
   $("themeBtn").textContent = theme==="dark" ? "☀ Light" : "☾ Dark";
@@ -622,6 +699,7 @@ function makeRows(){
 
 function calc(){
   const vpK=+$('vhmPrice').value||0, vp=vpK*1000;
+  const fpK=+$('fptPrice').value||INITIAL_LAST_VALID_FPT_PRICE_K, fp=fpK*1000;
 
   // 5 future BUY lots.
   let extraVhmQty=0;
@@ -659,8 +737,9 @@ function calc(){
   const soldGrossCost=sellQty*preSellAvgGrossCost;
   const totalVhmQty=Math.max(0,preSellQty-sellQty);
   const vhmGrossCost=Math.max(0,preSellGrossCost-soldGrossCost);
-  const totalBuy=vhmGrossCost*(1+BUY_FEE);
-  const currentValue=totalVhmQty*vp;
+  const vhmBuyValue=vhmGrossCost*(1+BUY_FEE);
+  const totalBuy=vhmBuyValue+BASE_FPT_BUY_COST;
+  const currentValue=totalVhmQty*vp+BASE_FPT_QTY*fp;
   lastComputedTotalBuy=totalBuy;
   lastComputedTotalVhm=totalVhmQty;
 
@@ -676,9 +755,15 @@ function calc(){
   const extraSettlementInterest=extraSellNet*DAILY_RATE*SETTLEMENT_DAYS;
   const extraPnl=extraSellNet-extraBuyCost-extraDayInterest-extraSettlementInterest;
 
-  // Entered SELL lots replace the live mark for sold shares with their execution prices.
-  const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+extraPnl+sellExecutionAdjustment;
-  const nav2=SNAPSHOT_NAV2+baseMovePnl+extraPnl+sellExecutionAdjustment;
+  // FPT bought on 04/11 is treated with the same MegaBot mark-to-liquidation mechanics as a new financed buy.
+  const fptSellNet=BASE_FPT_QTY*fp*SELL_NET_FACTOR;
+  const fptDayInterest=BASE_FPT_BUY_COST*DAILY_RATE;
+  const fptSettlementInterest=fptSellNet*DAILY_RATE*SETTLEMENT_DAYS;
+  const fptPnl=fptSellNet-BASE_FPT_BUY_COST-fptDayInterest-fptSettlementInterest;
+
+  // Entered SELL lots replace the live mark for sold VHM shares with their execution prices.
+  const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+extraPnl+sellExecutionAdjustment+fptPnl;
+  const nav2=SNAPSHOT_NAV2+baseMovePnl+extraPnl+sellExecutionAdjustment+fptPnl;
 
   const totalPnl=REALIZED_PNL+openPnl;
   const netWorth=NET_DEPOSIT_CAPITAL+totalPnl;
@@ -943,6 +1028,35 @@ async function loadPrices(){
     }
   }
 
+  // FPT is part of the MegaBot/NAV model.
+  let fptOk=false;
+  let fptSource='';
+  try{
+    const x=await getPrice('FPT');
+    $('fptPrice').value=x.price.toFixed(1);
+    saveLastGoodFpt(x.price,'LIVE '+x.source);
+    fptManualOverride=false;
+    $('fptLive').textContent='LIVE '+x.source+' '+x.price.toFixed(1);
+    $('fptLive').className='live positive';
+    fptSource=x.source;
+    fptOk=true;
+  }catch(e){
+    const cached=getLastGoodFpt();
+    const current=Number($('fptPrice').value);
+    if(fptManualOverride && Number.isFinite(current) && current>0){
+      $('fptLive').textContent='MANUAL '+current.toFixed(1)+' · live feed unavailable';
+      $('fptLive').className='live warning';
+    }else if(cached){
+      $('fptPrice').value=cached.price.toFixed(1);
+      $('fptLive').textContent='LAST VALID '+cached.price.toFixed(1)+' · '+cached.source+' · '+formatCacheAge(cached.age);
+      $('fptLive').className='live neutral';
+    }else{
+      $('fptPrice').value=INITIAL_LAST_VALID_FPT_PRICE_K.toFixed(1);
+      $('fptLive').textContent='FALLBACK '+INITIAL_LAST_VALID_FPT_PRICE_K.toFixed(1)+' · enter manual price if needed';
+      $('fptLive').className='live warning';
+    }
+  }
+
   // VIC is completely independent: reference-only, quantity = 0, excluded from calc()/NAV.
   let vicOk=false;
   let vicSource='';
@@ -973,8 +1087,8 @@ async function loadPrices(){
     $('vnindexLive').className='live warning';
   }
 
-  // Only a VHM failure can trigger the main data-connection warning. VIC/VNINDEX never affect NAV.
-  $('errorBanner').style.display=vhmOk?'none':'block';
+  // VHM and FPT both affect NAV. VIC/VNINDEX remain reference-only.
+  $('errorBanner').style.display=(vhmOk&&fptOk)?'none':'block';
   calc();
 
   const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -986,13 +1100,21 @@ async function loadPrices(){
       : (cachedNow
         ? 'VHM LAST VALID '+$('vhmPrice').value+' ('+cachedNow.source+', '+formatCacheAge(cachedNow.age)+')'
         : 'VHM NO LAST VALID'));
+  const fptCachedNow=getLastGoodFpt();
+  const fptText=fptOk
+    ? 'FPT LIVE '+fptSource+' '+$('fptPrice').value
+    : (fptManualOverride
+      ? 'FPT MANUAL '+$('fptPrice').value
+      : (fptCachedNow
+        ? 'FPT LAST VALID '+$('fptPrice').value+' ('+fptCachedNow.source+', '+formatCacheAge(fptCachedNow.age)+')'
+        : 'FPT FALLBACK '+$('fptPrice').value));
   const vicText=vicOk ? 'VIC '+vicSource+' '+$('vicPrice').value : 'VIC reference unavailable';
   const vnindexText=vnindexOk ? 'VNINDEX '+vnindexSource+' '+$('vnindexPrice').value : 'VNINDEX reference unavailable';
-  $('source').textContent='Checked '+t+' | '+vhmText+' | '+vicText+' | '+vnindexText
-    +' | Core/total VHM: '+fmtShares(lastComputedTotalVhm)
+  $('source').textContent='Checked '+t+' | '+vhmText+' | '+fptText+' | '+vicText+' | '+vnindexText
+    +' | Core/total VHM: '+fmtShares(lastComputedTotalVhm)+' | FPT core: '+fmtShares(BASE_FPT_QTY)+' @'+BASE_FPT_BUY_PRICE_K.toFixed(1)
     +' | MegaBot purchase value: '+fmtMoneyFull(lastComputedTotalBuy)
     +' | Daily interest at 0.045%: '+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Official MegaBot snapshot 03/11/2026 @61.9: 51,000 VHM; purchase value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; one-day prepared interest for 04/11 '+fmtMoneyFull(PREPARED_DAILY_INTEREST)+'; prepared open P/L '+fmtMoneyFull(SNAPSHOT_OPEN_PNL)+'; prepared NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
+    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Official MegaBot snapshot 03/11/2026 @61.9: 51,000 VHM; purchase value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; one-day prepared interest for 04/11 '+fmtMoneyFull(PREPARED_DAILY_INTEREST)+'; prepared NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'. FPT purchase 04/11/2026: 5,000 @52.9; gross '+fmtMoneyFull(BASE_FPT_GROSS_COST)+'; including 0.15% buy fee '+fmtMoneyFull(BASE_FPT_BUY_COST)+'.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
@@ -1001,6 +1123,7 @@ async function loadPrices(){
 
 makeRows();
 restoreLastGoodVhm();
+restoreLastGoodFpt();
 $('vhmPrice').addEventListener("input",()=>{
   vhmManualOverride=true;
   $('vhmLive').textContent='MANUAL '+$('vhmPrice').value;
@@ -1008,6 +1131,13 @@ $('vhmPrice').addEventListener("input",()=>{
   calc();
 });
 $('vhmPrice').addEventListener("focus",e=>e.target.select());
+$('fptPrice').addEventListener("input",()=>{
+  fptManualOverride=true;
+  $('fptLive').textContent='MANUAL '+$('fptPrice').value;
+  $('fptLive').className='live neutral';
+  calc();
+});
+$('fptPrice').addEventListener("focus",e=>e.target.select());
 $('vicPrice').addEventListener("focus",e=>e.target.select());
 $('vicPrice').addEventListener("input",()=>{ $('vicLive').textContent='manual reference'; $('vicLive').className='live neutral'; });
 $('vnindexPrice').addEventListener("focus",e=>e.target.select());
