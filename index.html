@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 4-11-2026 time 10-07</title>
+<title>Last updated: 4-11-2026 time 11-20</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -193,7 +193,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 4-11-2026 time 10-07</div>
+  <div id="versionLine">Last updated: 4-11-2026 time 11-20</div>
 
   <div class="layout">
     <div class="panel">
@@ -201,8 +201,8 @@ body.locked #pinGate{display:flex}
       <div class="grid">
         <div class="box">
           <label>VHM core</label>
-          <input id="baseVhmQty" type="number" value="51000" readonly>
-          <div class="unit">51,000 @ 62.981</div>
+          <input id="baseVhmQty" type="number" value="50000" readonly>
+          <div class="unit">50,000 @ 62.981</div>
         </div>
         <div class="box">
           <label>Current VHM price</label>
@@ -264,7 +264,7 @@ body.locked #pinGate{display:flex}
   <div class="results">
     <div class="result">
       <div class="k">Total VHM</div>
-      <div id="totalVhmOut" class="v neutral">51,000</div>
+      <div id="totalVhmOut" class="v neutral">50,000</div>
     </div>
     <div class="result">
       <div class="k">New VHM average cost</div>
@@ -312,7 +312,7 @@ body.locked #pinGate{display:flex}
       <div id="vhmBuyOut" class="v">-</div>
     </div>
     <div class="result maxVhmCard" id="vhmBuy2025Card">
-      <div class="k">Max VHM at 20.25% collateral</div>
+      <div class="k">Max additional VHM at 20,25%</div>
       <div id="vhmBuy2025Out" class="v">-</div>
     </div>
     <div class="result maxVhmCard" id="vhmBuy205Card">
@@ -342,7 +342,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Updated 03/11/2026 after selling 10,000 VHM @61.5 and 5,000 VHM @61.9. Remaining core: 60,000 VHM @ average cost 61.901. Pre-sale morning NAV2 at VHM 62.0 was 755,498,097 after one day financing interest. Total sell fee: 2,311,250 VND; sale-price impact versus the 62.0 anchor: -5,500,000 VND. Post-sale anchor NAV2 / Current net assets at VHM 62.0: 747,686,847. Remaining total purchase value: 3,719,629,594. Buy fee 0.15%; sell fee 0.25%; daily financing rate 0.045%. UI updated with 5 BUY + 5 SELL lots and collateral targets through 25%.</div>
+  <div id="source" class="footer">Updated 04/11/2026 after selling 1,000 VHM @62.0. Remaining VHM core: 50,000 @ average cost 62.981. The 04/11 morning interest already deducted remains based on the pre-sale purchase value 3,216,847,399. The sold 1,000 shares are consolidated into the base so they are not counted again. Remaining VHM purchase value including 0.15% buy fee: 3,153,771,960. FPT core remains 5,000 @52.9. Buy fee 0.15%; sell fee 0.25%; daily financing rate 0.045%.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -449,10 +449,10 @@ const NET_DEPOSIT_CAPITAL = 1309100456.518321; // retained only to preserve hist
 // Prepared for the morning session of 04/11/2026 by deducting one full day of
 // financing interest at 0.045% on the full MegaBot Purchase Value (collateral is not deducted).
 const NAV1 = 824678534;
-const SNAPSHOT_TOTAL_BUY = 3216847399;
-const BASE_VHM_QTY = 51000;
-const PRE_INTEREST_NAV2 = 739512597;
-const PREPARED_DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * 0.00045;
+const SNAPSHOT_TOTAL_BUY = 3153771959.8039217;
+const BASE_VHM_QTY = 50000;
+const PRE_INTEREST_NAV2 = 739612257.225;
+const PREPARED_DAILY_INTEREST = 1447581.32955; // historical 04/11 morning charge based on pre-sale 3,216,847,399
 const SNAPSHOT_NAV2 = PRE_INTEREST_NAV2 - PREPARED_DAILY_INTEREST;
 const SNAPSHOT_OPEN_PNL = SNAPSHOT_NAV2 - NAV1;
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
@@ -477,7 +477,7 @@ const INITIAL_LAST_VALID_FPT_LABEL = "FPT buy 04/11/2026 @52.9";
 // Live/manual VHM prices move NAV2 from this exact prepared-for-04/11 anchor.
 const MODEL_ANCHOR_VHM_PRICE_K = 61.9;
 const INITIAL_LAST_VALID_VHM_PRICE_K = 61.9;
-const INITIAL_LAST_VALID_LABEL = "MegaBot snapshot 03/11/2026 @61.9; one-day interest pre-deducted for 04/11";
+const INITIAL_LAST_VALID_LABEL = "MegaBot base @61.9; 1,000 VHM sold @62.0 on 04/11/2026";
 
 // Gross stock cost before the 0.15% buy fee, chosen so Total MegaBot Purchase Value is exact.
 const BASE_VHM_GROSS_COST = SNAPSHOT_TOTAL_BUY / (1 + BUY_FEE);
@@ -494,7 +494,7 @@ const TARGET_RATIO_24 = 0.24;
 const TARGET_RATIO_25 = 0.25;
 const AUTO_REFRESH_MS = 5000;
 
-// The 51,000 VHM are consolidated into BASE CORE. Five BUY and five SELL rows are available for future trades.
+// The 50,000 VHM remaining after selling 1,000 @62.0 on 04/11 are consolidated into BASE CORE. Five BUY and five SELL rows are available for future trades.
 const VHM_CONFIRMED_BUYS = [];
 let lastComputedTotalBuy = SNAPSHOT_TOTAL_BUY;
 let lastComputedTotalVhm = BASE_VHM_QTY;
@@ -844,7 +844,7 @@ function calc(){
     $('status').innerHTML='Approximately <b>'+fmtMoney(shortfall)+'</b> is needed to restore the collateral ratio to 20%.'+sellWarning;
   }else{
     $('status').innerHTML='Max additional VHM: <b>'+fmtShares(canBuyVhm)+'</b> at 20%; '
-      +'<b>'+fmtShares(canBuyVhm2025)+'</b> at 20.25%; '
+      +'<b>'+fmtShares(canBuyVhm2025)+'</b> at 20,25%; '
       +'<b>'+fmtShares(canBuyVhm205)+'</b> at 20.5%; '
       +'<b>'+fmtShares(canBuyVhm21)+'</b> at 21%; '
       +'<b>'+fmtShares(canBuyVhm22)+'</b> at 22%; '
@@ -1114,7 +1114,7 @@ async function loadPrices(){
     +' | Core/total VHM: '+fmtShares(lastComputedTotalVhm)+' | FPT core: '+fmtShares(BASE_FPT_QTY)+' @'+BASE_FPT_BUY_PRICE_K.toFixed(1)
     +' | MegaBot purchase value: '+fmtMoneyFull(lastComputedTotalBuy)
     +' | Daily interest at 0.045%: '+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Official MegaBot snapshot 03/11/2026 @61.9: 51,000 VHM; purchase value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; one-day prepared interest for 04/11 '+fmtMoneyFull(PREPARED_DAILY_INTEREST)+'; prepared NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'. FPT purchase 04/11/2026: 5,000 @52.9; gross '+fmtMoneyFull(BASE_FPT_GROSS_COST)+'; including 0.15% buy fee '+fmtMoneyFull(BASE_FPT_BUY_COST)+'.';
+    +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. VHM base after sale 04/11/2026: 50,000 shares; remaining purchase value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; historical 04/11 morning interest already deducted '+fmtMoneyFull(PREPARED_DAILY_INTEREST)+'; prepared NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'. FPT purchase 04/11/2026: 5,000 @52.9; gross '+fmtMoneyFull(BASE_FPT_GROSS_COST)+'; including 0.15% buy fee '+fmtMoneyFull(BASE_FPT_BUY_COST)+'.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
