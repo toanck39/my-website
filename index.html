@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 4-11-2026 time 15-59</title>
+<title>Last updated: 4-11-2026 time 16-12</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -233,11 +233,37 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 4-11-2026 time 15-59</div>
+  <div id="versionLine">Last updated: 4-11-2026 time 16-12</div>
 
   <div class="indexSection" id="generalIndexSection">
     <div class="indexTitle">GENERAL INDEX</div>
     <div class="indexBody">
+      <div class="panel">
+        <div class="section">VHM & FPT CORE / LIVE PRICE</div>
+        <div class="grid">
+          <div class="box">
+            <label>VHM core</label>
+            <input id="baseVhmQty" type="number" value="45000" readonly>
+            <div class="unit">45,000 @ 63.416</div>
+          </div>
+          <div class="box">
+            <label>Current VHM price</label>
+            <input id="vhmPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
+            <div id="vhmLive" class="live">price not loaded</div>
+          </div>
+          <div class="box">
+            <label>FPT core</label>
+            <input id="baseFptQty" type="number" value="14000" readonly>
+            <div class="unit">14,000 @ 53.479</div>
+          </div>
+          <div class="box">
+            <label>Current FPT price</label>
+            <input id="fptPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
+            <div id="fptLive" class="live">price not loaded</div>
+          </div>
+        </div>
+      </div>
+
       <div class="panel">
         <div class="section">MARKET REFERENCES</div>
         <div class="grid">
@@ -274,41 +300,24 @@ body.locked #pinGate{display:flex}
   <div class="indexSection" id="vhmIndexSection">
     <div class="indexTitle">VHM INDEX</div>
     <div class="indexBody">
-      <div class="assetTop">
-        <div class="panel">
-          <div class="section">VHM CORE & LIVE PRICE</div>
-          <div class="grid">
-            <div class="box">
-              <label>VHM core</label>
-              <input id="baseVhmQty" type="number" value="45000" readonly>
-              <div class="unit">45,000 @ 63.416</div>
-            </div>
-            <div class="box">
-              <label>Current VHM price</label>
-              <input id="vhmPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
-              <div id="vhmLive" class="live">price not loaded</div>
-            </div>
-          </div>
-          <div class="assetSummary" style="margin-top:6px">
-            <div class="result"><div class="k">Total VHM</div><div id="totalVhmOut" class="v neutral">45,000</div></div>
-            <div class="result"><div class="k">VHM average cost</div><div id="avgVhmCostOut" class="v neutral">63.416</div></div>
-            <div class="result"><div class="k">VHM current value</div><div id="vhmCurrentValueOut" class="v neutral">-</div></div>
-            <div class="result"><div class="k">VHM market P/L</div><div id="vhmMarketPnlOut" class="v">-</div></div>
-          </div>
-        </div>
+      <div class="assetSummary">
+        <div class="result"><div class="k">Total VHM</div><div id="totalVhmOut" class="v neutral">45,000</div></div>
+        <div class="result"><div class="k">VHM average cost</div><div id="avgVhmCostOut" class="v neutral">63.416</div></div>
+        <div class="result"><div class="k">VHM current value</div><div id="vhmCurrentValueOut" class="v neutral">-</div></div>
+        <div class="result"><div class="k">VHM market P/L</div><div id="vhmMarketPnlOut" class="v">-</div></div>
+      </div>
 
-        <div class="panel">
-          <div class="section">5 VHM BUY LOTS</div>
-          <table class="buytable">
-            <thead><tr><th>Symbol / lot</th><th>Buy quantity</th><th>Buy price (k)</th></tr></thead>
-            <tbody id="buyRows"></tbody>
-          </table>
-          <div class="section" style="margin-top:8px">5 VHM SELL LOTS</div>
-          <table class="buytable">
-            <thead><tr><th>Symbol / lot</th><th>Sell quantity</th><th>Sell price (k)</th></tr></thead>
-            <tbody id="sellRows"></tbody>
-          </table>
-        </div>
+      <div class="panel">
+        <div class="section">2 VHM BUY LOTS</div>
+        <table class="buytable">
+          <thead><tr><th>Symbol / lot</th><th>Buy quantity</th><th>Buy price (k)</th></tr></thead>
+          <tbody id="buyRows"></tbody>
+        </table>
+        <div class="section" style="margin-top:8px">2 VHM SELL LOTS</div>
+        <table class="buytable">
+          <thead><tr><th>Symbol / lot</th><th>Sell quantity</th><th>Sell price (k)</th></tr></thead>
+          <tbody id="sellRows"></tbody>
+        </table>
       </div>
 
       <div class="assetResults">
@@ -327,26 +336,24 @@ body.locked #pinGate{display:flex}
   <div class="indexSection" id="fptIndexSection">
     <div class="indexTitle">FPT INDEX</div>
     <div class="indexBody">
+      <div class="assetSummary">
+        <div class="result"><div class="k">Total FPT</div><div id="totalFptOut" class="v neutral">14,000</div></div>
+        <div class="result"><div class="k">FPT average cost</div><div id="avgFptCostOut" class="v neutral">53.479</div></div>
+        <div class="result"><div class="k">FPT current value</div><div id="fptCurrentValueOut" class="v neutral">-</div></div>
+        <div class="result"><div class="k">FPT market P/L</div><div id="fptMarketPnlOut" class="v">-</div></div>
+      </div>
+
       <div class="panel">
-        <div class="section">FPT CORE & LIVE PRICE</div>
-        <div class="grid">
-          <div class="box">
-            <label>FPT core</label>
-            <input id="baseFptQty" type="number" value="14000" readonly>
-            <div class="unit">14,000 @ 53.479</div>
-          </div>
-          <div class="box">
-            <label>Current FPT price</label>
-            <input id="fptPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
-            <div id="fptLive" class="live">price not loaded</div>
-          </div>
-        </div>
-        <div class="assetSummary" style="margin-top:6px">
-          <div class="result"><div class="k">Total FPT</div><div id="totalFptOut" class="v neutral">14,000</div></div>
-          <div class="result"><div class="k">FPT average cost</div><div id="avgFptCostOut" class="v neutral">53.479</div></div>
-          <div class="result"><div class="k">FPT current value</div><div id="fptCurrentValueOut" class="v neutral">-</div></div>
-          <div class="result"><div class="k">FPT market P/L</div><div id="fptMarketPnlOut" class="v">-</div></div>
-        </div>
+        <div class="section">2 FPT BUY LOTS</div>
+        <table class="buytable">
+          <thead><tr><th>Symbol / lot</th><th>Buy quantity</th><th>Buy price (k)</th></tr></thead>
+          <tbody id="fptBuyRows"></tbody>
+        </table>
+        <div class="section" style="margin-top:8px">2 FPT SELL LOTS</div>
+        <table class="buytable">
+          <thead><tr><th>Symbol / lot</th><th>Sell quantity</th><th>Sell price (k)</th></tr></thead>
+          <tbody id="fptSellRows"></tbody>
+        </table>
       </div>
 
       <div class="assetResults">
@@ -514,10 +521,13 @@ const TARGET_RATIO_24 = 0.24;
 const TARGET_RATIO_25 = 0.25;
 const AUTO_REFRESH_MS = 5000;
 
-// The official 04/11 EOD base is 45,000 VHM and 14,000 FPT. Five VHM BUY and five VHM SELL rows remain available for future trades.
+// The official 04/11 EOD base is 45,000 VHM and 14,000 FPT.
+// Two BUY and two SELL rows are available for each symbol for future trades.
 const VHM_CONFIRMED_BUYS = [];
+const FPT_CONFIRMED_BUYS = [];
 let lastComputedTotalBuy = SNAPSHOT_TOTAL_BUY;
 let lastComputedTotalVhm = BASE_VHM_QTY;
+let lastComputedTotalFpt = BASE_FPT_QTY;
 
 // Persistent VHM last-valid-price memory for Android/desktop.
 // Priority on feed failure: explicit manual override -> persistent last valid price.
@@ -689,10 +699,14 @@ function fmtK(v){return (v/1000).toFixed(3)}
 function makeRows(){
   const buyTb=$("buyRows");
   const sellTb=$("sellRows");
+  const fptBuyTb=$("fptBuyRows");
+  const fptSellTb=$("fptSellRows");
   buyTb.innerHTML="";
   sellTb.innerHTML="";
+  fptBuyTb.innerHTML="";
+  fptSellTb.innerHTML="";
 
-  for(let i=1;i<=5;i++){
+  for(let i=1;i<=2;i++){
     const preset=VHM_CONFIRMED_BUYS[i-1] || {qty:0,price:0};
     const tr=document.createElement("tr");
     tr.innerHTML=`
@@ -702,13 +716,32 @@ function makeRows(){
     buyTb.appendChild(tr);
   }
 
-  for(let i=1;i<=5;i++){
+  for(let i=1;i<=2;i++){
     const tr=document.createElement("tr");
     tr.innerHTML=`
       <td class="n">VHM SELL ${i}</td>
       <td><input class="tradeQty sellQty" id="vhmSellQty${i}" type="number" value="0" min="0" step="100" inputmode="numeric"></td>
       <td><input class="tradePrice sellPrice" id="vhmSellPrice${i}" type="number" value="0" min="0" step="0.1" inputmode="decimal"></td>`;
     sellTb.appendChild(tr);
+  }
+
+  for(let i=1;i<=2;i++){
+    const preset=FPT_CONFIRMED_BUYS[i-1] || {qty:0,price:0};
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td class="n">FPT BUY ${i}</td>
+      <td><input class="tradeQty buyQty" id="fptBuyQty${i}" type="number" value="${preset.qty}" min="0" step="100" inputmode="numeric"></td>
+      <td><input class="tradePrice buyPrice" id="fptBuyPrice${i}" type="number" value="${preset.price}" min="0" step="0.1" inputmode="decimal"></td>`;
+    fptBuyTb.appendChild(tr);
+  }
+
+  for(let i=1;i<=2;i++){
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td class="n">FPT SELL ${i}</td>
+      <td><input class="tradeQty sellQty" id="fptSellQty${i}" type="number" value="0" min="0" step="100" inputmode="numeric"></td>
+      <td><input class="tradePrice sellPrice" id="fptSellPrice${i}" type="number" value="0" min="0" step="0.1" inputmode="decimal"></td>`;
+    fptSellTb.appendChild(tr);
   }
 
   document.querySelectorAll(".tradeQty,.tradePrice").forEach(el=>{
@@ -718,97 +751,130 @@ function makeRows(){
 }
 
 function calc(){
-  const vpK=+$('vhmPrice').value||0, vp=vpK*1000;
+  const vpK=+$('vhmPrice').value||INITIAL_LAST_VALID_VHM_PRICE_K, vp=vpK*1000;
   const fpK=+$('fptPrice').value||INITIAL_LAST_VALID_FPT_PRICE_K, fp=fpK*1000;
 
-  // 5 future BUY lots.
+  // VHM: two future BUY lots.
   let extraVhmQty=0;
   let extraVhmGrossCost=0;
-  for(let i=1;i<=5;i++){
+  for(let i=1;i<=2;i++){
     const q=Math.max(0,+$('vhmBuyQty'+i).value||0);
     const pK=Math.max(0,+$('vhmBuyPrice'+i).value||0);
     extraVhmQty+=q;
     extraVhmGrossCost+=q*pK*1000;
   }
+  const preSellVhmQty=BASE_VHM_QTY+extraVhmQty;
+  const preSellVhmGrossCost=BASE_VHM_GROSS_COST+extraVhmGrossCost;
+  const preSellVhmAvgGrossCost=preSellVhmQty>0?preSellVhmGrossCost/preSellVhmQty:0;
 
-  const preSellQty=BASE_VHM_QTY+extraVhmQty;
-  const preSellGrossCost=BASE_VHM_GROSS_COST+extraVhmGrossCost;
-  const preSellAvgGrossCost=preSellQty>0?preSellGrossCost/preSellQty:0;
-
-  // 5 future SELL lots. Sell quantities are applied sequentially and cannot exceed holdings.
-  let sellQty=0;
-  let sellExecutionAdjustment=0;
-  let remainingSellCapacity=preSellQty;
-  let requestedSellQty=0;
-  for(let i=1;i<=5;i++){
+  // VHM: two future SELL lots, applied sequentially and capped at holdings.
+  let sellVhmQty=0;
+  let vhmSellExecutionAdjustment=0;
+  let remainingVhmSellCapacity=preSellVhmQty;
+  let requestedVhmSellQty=0;
+  for(let i=1;i<=2;i++){
     const qRequested=Math.max(0,+$('vhmSellQty'+i).value||0);
     const pK=Math.max(0,+$('vhmSellPrice'+i).value||0);
-    requestedSellQty+=qRequested;
-    const q=Math.min(qRequested,remainingSellCapacity);
-    remainingSellCapacity-=q;
-    sellQty+=q;
-    // The live mark already values these shares at vp. Replace that mark with the actual sell price.
+    requestedVhmSellQty+=qRequested;
+    const q=Math.min(qRequested,remainingVhmSellCapacity);
+    remainingVhmSellCapacity-=q;
+    sellVhmQty+=q;
     if(q>0 && pK>0){
-      sellExecutionAdjustment+=q*((pK*1000)-vp)*MARK_TO_LIQUIDATION_FACTOR;
+      vhmSellExecutionAdjustment+=q*((pK*1000)-vp)*MARK_TO_LIQUIDATION_FACTOR;
     }
   }
-
-  // Sells reduce financed purchase value at the current weighted-average cost basis.
-  const soldGrossCost=sellQty*preSellAvgGrossCost;
-  const totalVhmQty=Math.max(0,preSellQty-sellQty);
-  const vhmGrossCost=Math.max(0,preSellGrossCost-soldGrossCost);
+  const soldVhmGrossCost=sellVhmQty*preSellVhmAvgGrossCost;
+  const totalVhmQty=Math.max(0,preSellVhmQty-sellVhmQty);
+  const vhmGrossCost=Math.max(0,preSellVhmGrossCost-soldVhmGrossCost);
   const vhmBuyValue=vhmGrossCost*(1+BUY_FEE);
-  const totalBuy=vhmBuyValue+BASE_FPT_BUY_COST;
+
+  // FPT: two future BUY lots.
+  let extraFptQty=0;
+  let extraFptGrossCost=0;
+  for(let i=1;i<=2;i++){
+    const q=Math.max(0,+$('fptBuyQty'+i).value||0);
+    const pK=Math.max(0,+$('fptBuyPrice'+i).value||0);
+    extraFptQty+=q;
+    extraFptGrossCost+=q*pK*1000;
+  }
+  const preSellFptQty=BASE_FPT_QTY+extraFptQty;
+  const preSellFptGrossCost=BASE_FPT_GROSS_COST+extraFptGrossCost;
+  const preSellFptAvgGrossCost=preSellFptQty>0?preSellFptGrossCost/preSellFptQty:0;
+
+  // FPT: two future SELL lots, applied sequentially and capped at holdings.
+  let sellFptQty=0;
+  let fptSellExecutionAdjustment=0;
+  let remainingFptSellCapacity=preSellFptQty;
+  let requestedFptSellQty=0;
+  for(let i=1;i<=2;i++){
+    const qRequested=Math.max(0,+$('fptSellQty'+i).value||0);
+    const pK=Math.max(0,+$('fptSellPrice'+i).value||0);
+    requestedFptSellQty+=qRequested;
+    const q=Math.min(qRequested,remainingFptSellCapacity);
+    remainingFptSellCapacity-=q;
+    sellFptQty+=q;
+    if(q>0 && pK>0){
+      fptSellExecutionAdjustment+=q*((pK*1000)-fp)*MARK_TO_LIQUIDATION_FACTOR;
+    }
+  }
+  const soldFptGrossCost=sellFptQty*preSellFptAvgGrossCost;
+  const totalFptQty=Math.max(0,preSellFptQty-sellFptQty);
+  const fptGrossCost=Math.max(0,preSellFptGrossCost-soldFptGrossCost);
+  const fptBuyValue=fptGrossCost*(1+BUY_FEE);
+
+  const totalBuy=vhmBuyValue+fptBuyValue;
   const vhmCurrentValue=totalVhmQty*vp;
-  const fptCurrentValue=BASE_FPT_QTY*fp;
+  const fptCurrentValue=totalFptQty*fp;
   const currentValue=vhmCurrentValue+fptCurrentValue;
   const vhmMarketPnl=vhmCurrentValue-vhmGrossCost;
-  const fptMarketPnl=fptCurrentValue-BASE_FPT_GROSS_COST;
-  const avgFptCost=BASE_FPT_QTY>0?BASE_FPT_GROSS_COST/BASE_FPT_QTY:0;
+  const fptMarketPnl=fptCurrentValue-fptGrossCost;
+  const avgVhmCost=totalVhmQty>0?vhmGrossCost/totalVhmQty:0;
+  const avgFptCost=totalFptQty>0?fptGrossCost/totalFptQty:0;
   lastComputedTotalBuy=totalBuy;
   lastComputedTotalVhm=totalVhmQty;
+  lastComputedTotalFpt=totalFptQty;
 
-  // MegaBot mark-to-liquidation logic:
-  // sell fee 0.25%, plus a two-day interest reserve on net sale proceeds.
+  // Base positions move from the exact 04/11 EOD anchor using MegaBot mark-to-liquidation assumptions.
   const basePrice=MODEL_ANCHOR_VHM_PRICE_K*1000;
   const baseMovePnl=BASE_VHM_QTY*(vp-basePrice)*MARK_TO_LIQUIDATION_FACTOR;
   const fptBasePrice=MODEL_ANCHOR_FPT_PRICE_K*1000;
   const fptMovePnl=BASE_FPT_QTY*(fp-fptBasePrice)*MARK_TO_LIQUIDATION_FACTOR;
 
-  // New buys: buy fee + one current-day financing charge + liquidation assumptions.
-  const extraBuyCost=extraVhmGrossCost*(1+BUY_FEE);
-  const extraSellNet=extraVhmQty*vp*SELL_NET_FACTOR;
-  const extraDayInterest=extraBuyCost*DAILY_RATE;
-  const extraSettlementInterest=extraSellNet*DAILY_RATE*SETTLEMENT_DAYS;
-  const extraPnl=extraSellNet-extraBuyCost-extraDayInterest-extraSettlementInterest;
+  // New VHM buys: buy fee + one current-day financing charge + liquidation assumptions.
+  const extraVhmBuyCost=extraVhmGrossCost*(1+BUY_FEE);
+  const extraVhmSellNet=extraVhmQty*vp*SELL_NET_FACTOR;
+  const extraVhmDayInterest=extraVhmBuyCost*DAILY_RATE;
+  const extraVhmSettlementInterest=extraVhmSellNet*DAILY_RATE*SETTLEMENT_DAYS;
+  const extraVhmPnl=extraVhmSellNet-extraVhmBuyCost-extraVhmDayInterest-extraVhmSettlementInterest;
 
-  // FPT is already included in the official 04/11 snapshot; only price movement from 53.9 is added here.
-  // Entered SELL lots replace the live mark for sold VHM shares with their execution prices.
-  const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+fptMovePnl+extraPnl+sellExecutionAdjustment;
-  const nav2=SNAPSHOT_NAV2+baseMovePnl+fptMovePnl+extraPnl+sellExecutionAdjustment;
+  // New FPT buys use the same MegaBot fee/interest mechanics.
+  const extraFptBuyCost=extraFptGrossCost*(1+BUY_FEE);
+  const extraFptSellNet=extraFptQty*fp*SELL_NET_FACTOR;
+  const extraFptDayInterest=extraFptBuyCost*DAILY_RATE;
+  const extraFptSettlementInterest=extraFptSellNet*DAILY_RATE*SETTLEMENT_DAYS;
+  const extraFptPnl=extraFptSellNet-extraFptBuyCost-extraFptDayInterest-extraFptSettlementInterest;
+
+  const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment;
+  const nav2=SNAPSHOT_NAV2+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment;
 
   const totalPnl=REALIZED_PNL+openPnl;
   const netWorth=NET_DEPOSIT_CAPITAL+totalPnl;
   const ratio=totalBuy>0?nav2/totalBuy:0;
   const buyingPower=5*nav2-totalBuy;
-
   const collateralCashHeadroom=nav2-REQUIRED_RATIO*totalBuy;
   const collateralCashAmount=Math.abs(collateralCashHeadroom);
 
-  const avgVhmCost=totalVhmQty>0?vhmGrossCost/totalVhmQty:0;
   const costPerNewVhm=vp*(1+BUY_FEE);
   const sellNetPerNewVhm=vp*SELL_NET_FACTOR;
   const buyDayInterestPerShare=costPerNewVhm*DAILY_RATE;
   const settlementInterestPerShare=sellNetPerNewVhm*DAILY_RATE*SETTLEMENT_DAYS;
   const pnlPerNewShare=sellNetPerNewVhm-costPerNewVhm-buyDayInterestPerShare-settlementInterestPerShare;
   const immediateDragPerShare=-pnlPerNewShare;
-
   function maxVhmAtTarget(target){
     const denom=immediateDragPerShare + target*costPerNewVhm;
     const headroom=nav2 - target*totalBuy;
     return (headroom>0&&denom>0)?Math.floor(headroom/denom):0;
   }
-
   const canBuyVhm=maxVhmAtTarget(REQUIRED_RATIO);
   const canBuyVhm2025=maxVhmAtTarget(TARGET_RATIO_2025);
   const canBuyVhm205=maxVhmAtTarget(TARGET_RATIO_205);
@@ -843,7 +909,7 @@ function calc(){
   $('vhmCurrentValueOut').textContent=fmtMoneyFull(vhmCurrentValue);
   $('vhmMarketPnlOut').textContent=fmtMoneyFull(vhmMarketPnl);
   $('vhmMarketPnlOut').className='v '+(vhmMarketPnl>=0?'positive':'negative');
-  $('totalFptOut').textContent=fmtShares(BASE_FPT_QTY);
+  $('totalFptOut').textContent=fmtShares(totalFptQty);
   $('avgFptCostOut').textContent=fmtK(avgFptCost);
   $('fptCurrentValueOut').textContent=fmtMoneyFull(fptCurrentValue);
   $('fptMarketPnlOut').textContent=fmtMoneyFull(fptMarketPnl);
@@ -897,16 +963,17 @@ function calc(){
     ['fptBuy24Out',canBuyFpt24],['fptBuy25Out',canBuyFpt25]
   ].forEach(([id,val])=>$(id).className='v '+(val>0?'positive':'negative'));
 
-  const sellWarning=requestedSellQty>preSellQty
-    ? ' Sell quantity was capped at the available holding of '+fmtShares(preSellQty)+' VHM.'
-    : '';
+  const warnings=[];
+  if(requestedVhmSellQty>preSellVhmQty) warnings.push('VHM sell quantity capped at '+fmtShares(preSellVhmQty)+'.');
+  if(requestedFptSellQty>preSellFptQty) warnings.push('FPT sell quantity capped at '+fmtShares(preSellFptQty)+'.');
+  const warningText=warnings.length?' '+warnings.join(' '):'';
 
   if(ratio<REQUIRED_RATIO){
     const shortfall=REQUIRED_RATIO*totalBuy-nav2;
-    $('status').innerHTML='Approximately <b>'+fmtMoney(shortfall)+'</b> is needed to restore the collateral ratio to 20%.'+sellWarning;
+    $('status').innerHTML='Approximately <b>'+fmtMoney(shortfall)+'</b> is needed to restore the collateral ratio to 20%.'+warningText;
   }else{
     $('status').innerHTML='Max additional at 20%: VHM <b>'+fmtShares(canBuyVhm)+'</b> | FPT <b>'+fmtShares(canBuyFpt)+'</b>. '
-      +'At 20,25%: VHM <b>'+fmtShares(canBuyVhm2025)+'</b> | FPT <b>'+fmtShares(canBuyFpt2025)+'</b>.'+sellWarning;
+      +'At 20,25%: VHM <b>'+fmtShares(canBuyVhm2025)+'</b> | FPT <b>'+fmtShares(canBuyFpt2025)+'</b>.'+warningText;
   }
 }
 
@@ -1167,7 +1234,7 @@ async function loadPrices(){
   const vicText=vicOk ? 'VIC '+vicSource+' '+$('vicPrice').value : 'VIC reference unavailable';
   const vnindexText=vnindexOk ? 'VNINDEX '+vnindexSource+' '+$('vnindexPrice').value : 'VNINDEX reference unavailable';
   $('source').textContent='Checked '+t+' | '+vhmText+' | '+fptText+' | '+vicText+' | '+vnindexText
-    +' | Core/total VHM: '+fmtShares(lastComputedTotalVhm)+' | FPT core: '+fmtShares(BASE_FPT_QTY)+' @'+BASE_FPT_BUY_PRICE_K.toFixed(1)
+    +' | Total VHM: '+fmtShares(lastComputedTotalVhm)+' | Total FPT: '+fmtShares(lastComputedTotalFpt)
     +' | MegaBot purchase value: '+fmtMoneyFull(lastComputedTotalBuy)
     +' | Daily interest at 0.045%: '+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
         +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. EOD snapshot 04/11/2026: VHM 45,000 @63.416 with close 63.2; FPT 14,000 @53.479 with close 53.9; Total MegaBot Purchase Value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; one-day financing interest prepared for 05/11 '+fmtMoneyFull(PREPARED_DAILY_INTEREST)+'; prepared NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
