@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 9-11-2026 time 16-49</title>
+<title>Last updated: 10-11-2026 time 10-21</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -233,7 +233,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 9-11-2026 time 16-49</div>
+  <div id="versionLine">Last updated: 10-11-2026 time 10-21</div>
 
   <div class="indexSection" id="generalIndexSection">
     <div class="indexTitle">GENERAL INDEX</div>
@@ -243,8 +243,8 @@ body.locked #pinGate{display:flex}
         <div class="grid">
           <div class="box">
             <label>VHM core</label>
-            <input id="baseVhmQty" type="number" value="37000" readonly>
-            <div class="unit">37,000 @ 63.975</div>
+            <input id="baseVhmQty" type="number" value="20000" readonly>
+            <div class="unit">20,000 @ 64.098</div>
           </div>
           <div class="box">
             <label>Current VHM price</label>
@@ -302,7 +302,7 @@ body.locked #pinGate{display:flex}
     <div class="indexBody">
       <div class="assetSummary">
         <div class="result"><div class="k">Total VHM</div><div id="totalVhmOut" class="v neutral">37,000</div></div>
-        <div class="result"><div class="k">VHM average cost</div><div id="avgVhmCostOut" class="v neutral">63.975</div></div>
+        <div class="result"><div class="k">VHM average cost</div><div id="avgVhmCostOut" class="v neutral">64.098</div></div>
         <div class="result"><div class="k">VHM current value</div><div id="vhmCurrentValueOut" class="v neutral">-</div></div>
         <div class="result"><div class="k">VHM market P/L</div><div id="vhmMarketPnlOut" class="v">-</div></div>
       </div>
@@ -370,7 +370,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">MegaBot snapshot updated for the 09/11/2026 trading session. Core: VHM 37,000 @63.975 with market anchor 60.4; FPT 20,000 @53.745 with market anchor 51.0. Total MegaBot Purchase Value: 3,447,132,955. NAV1: 834,820,200. Reported NAV2 before next-session financing deduction: 613,107,047. One full day of financing interest at 0.045% on the full purchase value (collateral is not deducted) equals 1,551,209.830 and is deducted in this prepared 10/11/2026 session base. Prepared NAV2: 611,555,837.170. Buy fee 0.15%; sell fee 0.25%.</div>
+  <div id="source" class="footer">MegaBot snapshot updated for 10/11/2026. Core quantities: VHM 20,000 and FPT 20,000. Total MegaBot Purchase Value: 2,360,388,546. NAV1: 774,214,702. Reported Open P/L: -84,216,302. Exact NAV2 anchor: 689,998,401. No extra financing day deducted in this update. Per-symbol market anchors are retained from the prior file because no new VHM/FPT prices were supplied. Buy fee 0.15%; sell fee 0.25%; interest 0.045% per day.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -473,25 +473,20 @@ document.addEventListener("DOMContentLoaded", initPinGate);
 const COLLATERAL_WITHDRAWAL = 15000000; // historical withdrawal already reflected in the account base
 const NET_DEPOSIT_CAPITAL = 1309100456.518321; // retained only to preserve historical realized-P/L bookkeeping
 
-// Official MegaBot snapshot supplied from Monday 09/11/2026.
-// Prepared for Tuesday 10/11/2026 by deducting 1 full day of financing interest
-// at 0.045% on the full MegaBot Purchase Value.
-// Collateral is not deducted from the interest base.
-const NAV1 = 834820200;
-const PRIOR_SNAPSHOT_TOTAL_BUY = 3447132955;
-const SNAPSHOT_TOTAL_BUY = 3447132955; // supplied 09/11/2026 total purchase value
-const BASE_VHM_QTY = 37000;
+// Official MegaBot snapshot supplied for Tuesday 10/11/2026.
+// No additional financing day is deducted in this update; the supplied NAV2 is used as the exact snapshot anchor.
+const NAV1 = 774214702;
+const PRIOR_SNAPSHOT_TOTAL_BUY = 2360388546;
+const SNAPSHOT_TOTAL_BUY = 2360388546; // supplied 10/11/2026 total purchase value
+const BASE_VHM_QTY = 20000;
 const BASE_FPT_QTY = 20000;
-const PRE_INTEREST_NAV2 = 613107047;
-const PRE_INTEREST_OPEN_PNL = -221713152;
-const PREPARED_INTEREST_DAYS = 1;
-const PREPARED_DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * 0.00045; // one day = 1,551,209.82975
-const PREPARED_TOTAL_INTEREST = PREPARED_DAILY_INTEREST * PREPARED_INTEREST_DAYS; // 1,551,209.82975 for Tuesday 10/11/2026 morning
-// The supplied Monday snapshot is the exact end-of-day account base.
-// The prepared Tuesday anchor deducts 1 financing day before any new live/manual price move.
-// Subsequent live/manual price moves and new BUY/SELL lots are calculated from this anchor.
-const SNAPSHOT_NAV2 = 611555837.17025; // 613,107,047 - 1,551,209.82975
-const SNAPSHOT_OPEN_PNL = -223264361.82975; // -221,713,152 - 1,551,209.82975
+const PRE_INTEREST_NAV2 = 689998401;
+const PRE_INTEREST_OPEN_PNL = -84216302;
+const PREPARED_INTEREST_DAYS = 0;
+const PREPARED_DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * 0.00045;
+const PREPARED_TOTAL_INTEREST = 0;
+const SNAPSHOT_NAV2 = 689998401;
+const SNAPSHOT_OPEN_PNL = -84216302;
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
 const BUY_FEE = 0.0015;                 // 0.15%
@@ -501,19 +496,21 @@ const SETTLEMENT_DAYS = 2;              // MegaBot mark-to-liquidation interest 
 const SELL_NET_FACTOR = 1 - SELL_FEE;
 const MARK_TO_LIQUIDATION_FACTOR = SELL_NET_FACTOR * (1 - DAILY_RATE * SETTLEMENT_DAYS);
 
-// Exact gross purchase values from the supplied 09/11/2026 MegaBot snapshot.
-const BASE_VHM_GROSS_COST = 2367070000;
+// Base gross purchase values for the supplied 10/11/2026 snapshot.
+// FPT cost basis remains 20,000 @53.745. VHM gross cost is derived from the supplied total purchase value
+// so the account-level Total MegaBot Purchase Value matches 2,360,388,546 exactly after the 0.15% buy fee.
 const BASE_FPT_GROSS_COST = 1074900000;
+const BASE_VHM_GROSS_COST = SNAPSHOT_TOTAL_BUY/(1+BUY_FEE) - BASE_FPT_GROSS_COST;
 const BASE_FPT_BUY_COST = BASE_FPT_GROSS_COST * (1 + BUY_FEE);
-const BASE_FPT_BUY_PRICE_K = BASE_FPT_GROSS_COST / BASE_FPT_QTY / 1000; // displays 53.745
+const BASE_FPT_BUY_PRICE_K = BASE_FPT_GROSS_COST / BASE_FPT_QTY / 1000; // 53.745
 
-// End-of-day market anchors. Subsequent live/manual price movement changes NAV2 from these exact anchors.
+// Market anchors retained from the prior file because the 10/11 snapshot did not provide new per-symbol market prices. Subsequent live/manual price movement changes NAV2 from this exact account anchor.
 const MODEL_ANCHOR_VHM_PRICE_K = 60.4;
 const MODEL_ANCHOR_FPT_PRICE_K = 51.0;
 const INITIAL_LAST_VALID_VHM_PRICE_K = 60.4;
-const INITIAL_LAST_VALID_LABEL = "Monday close 09/11/2026 @60.4";
+const INITIAL_LAST_VALID_LABEL = "retained market anchor @60.4";
 const INITIAL_LAST_VALID_FPT_PRICE_K = 51.0;
-const INITIAL_LAST_VALID_FPT_LABEL = "Monday close 09/11/2026 @51.0";
+const INITIAL_LAST_VALID_FPT_LABEL = "retained market anchor @51.0";
 
 const REMAINING_TOTAL_BUY = SNAPSHOT_TOTAL_BUY;
 const DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * DAILY_RATE;
@@ -528,7 +525,7 @@ const TARGET_RATIO_24 = 0.24;
 const TARGET_RATIO_25 = 0.25;
 const AUTO_REFRESH_MS = 5000;
 
-// Base prepared for Tuesday 10/11/2026: 37,000 VHM and 20,000 FPT.
+// Base snapshot for 10/11/2026: 20,000 VHM and 20,000 FPT.
 // Two BUY and two SELL rows remain free for future trades in each symbol.
 const VHM_CONFIRMED_BUYS = [];
 const FPT_CONFIRMED_BUYS = [];
@@ -865,7 +862,7 @@ function calc(){
   const nav2=SNAPSHOT_NAV2+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment;
 
   const totalPnl=REALIZED_PNL+openPnl;
-  const netWorth=NET_DEPOSIT_CAPITAL+totalPnl;
+  const netWorth=nav2; // keep Current net assets exactly aligned with NAV2
   const ratio=totalBuy>0?nav2/totalBuy:0;
   const buyingPower=5*nav2-totalBuy;
   const collateralCashHeadroom=nav2-REQUIRED_RATIO*totalBuy;
@@ -1244,7 +1241,7 @@ async function loadPrices(){
     +' | Total VHM: '+fmtShares(lastComputedTotalVhm)+' | Total FPT: '+fmtShares(lastComputedTotalFpt)
     +' | MegaBot purchase value: '+fmtMoneyFull(lastComputedTotalBuy)
     +' | Daily interest at 0.045%: '+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-        +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Tuesday 10/11/2026 from Monday close: VHM 37,000 @63.975 anchored at 60.4; FPT 20,000 @53.745 anchored at 51.0; Total MegaBot Purchase Value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; 1 prepared financing day deducted: '+fmtMoneyFull(PREPARED_TOTAL_INTEREST)+'; prepared model anchor NAV2: '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
+        +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Snapshot 10/11/2026: VHM 20,000; FPT 20,000; Total MegaBot Purchase Value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; exact snapshot NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
