@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 10-11-2026 time 10-21</title>
+<title>Last updated: 10-11-2026 time 10-31</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -233,7 +233,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 10-11-2026 time 10-21</div>
+  <div id="versionLine">Last updated: 10-11-2026 time 10-31</div>
 
   <div class="indexSection" id="generalIndexSection">
     <div class="indexTitle">GENERAL INDEX</div>
@@ -244,7 +244,7 @@ body.locked #pinGate{display:flex}
           <div class="box">
             <label>VHM core</label>
             <input id="baseVhmQty" type="number" value="20000" readonly>
-            <div class="unit">20,000 @ 64.098</div>
+            <div class="unit">20,000 · account snapshot allocation</div>
           </div>
           <div class="box">
             <label>Current VHM price</label>
@@ -283,7 +283,7 @@ body.locked #pinGate{display:flex}
       </div>
 
       <div class="generalResults">
-        <div class="result"><div class="k">Total MegaBot Purchase Value</div><div id="megaBotTotalBuyOut" class="v neutral">3,447,132,955</div></div>
+        <div class="result"><div class="k">Total MegaBot Purchase Value</div><div id="megaBotTotalBuyOut" class="v neutral">2,360,388,546</div></div>
         <div class="result"><div class="k">Current portfolio value</div><div id="currentValueOut" class="v neutral">-</div></div>
         <div class="result"><div class="k">NAV2</div><div id="nav2Out" class="v neutral">-</div></div>
         <div class="result"><div class="k">Current net assets</div><div id="netWorthOut" class="v neutral">-</div></div>
@@ -301,8 +301,8 @@ body.locked #pinGate{display:flex}
     <div class="indexTitle">VHM INDEX</div>
     <div class="indexBody">
       <div class="assetSummary">
-        <div class="result"><div class="k">Total VHM</div><div id="totalVhmOut" class="v neutral">37,000</div></div>
-        <div class="result"><div class="k">VHM average cost</div><div id="avgVhmCostOut" class="v neutral">64.098</div></div>
+        <div class="result"><div class="k">Total VHM</div><div id="totalVhmOut" class="v neutral">20,000</div></div>
+        <div class="result"><div class="k">VHM allocated average cost*</div><div id="avgVhmCostOut" class="v neutral">64.098</div></div>
         <div class="result"><div class="k">VHM current value</div><div id="vhmCurrentValueOut" class="v neutral">-</div></div>
         <div class="result"><div class="k">VHM market P/L</div><div id="vhmMarketPnlOut" class="v">-</div></div>
       </div>
@@ -370,7 +370,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">MegaBot snapshot updated for 10/11/2026. Core quantities: VHM 20,000 and FPT 20,000. Total MegaBot Purchase Value: 2,360,388,546. NAV1: 774,214,702. Reported Open P/L: -84,216,302. Exact NAV2 anchor: 689,998,401. No extra financing day deducted in this update. Per-symbol market anchors are retained from the prior file because no new VHM/FPT prices were supplied. Buy fee 0.15%; sell fee 0.25%; interest 0.045% per day.</div>
+  <div id="source" class="footer">MegaBot snapshot corrected for 10/11/2026. Core quantities: VHM 20,000 and FPT 20,000. Exact supplied account values: Total MegaBot Purchase Value 2,360,388,546; NAV1 774,214,702; Open P/L -84,216,302; NAV2 689,998,401; collateral headroom 217,920,691; Buying Power 1,089,603,457. No extra financing day deducted. No new per-symbol market prices were supplied, so the exact account snapshot is anchored to the first prices loaded in each page session. Buy fee 0.15%; sell fee 0.25%; interest 0.045% per day.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -487,6 +487,11 @@ const PREPARED_DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * 0.00045;
 const PREPARED_TOTAL_INTEREST = 0;
 const SNAPSHOT_NAV2 = 689998401;
 const SNAPSHOT_OPEN_PNL = -84216302;
+// Exact MegaBot display values supplied by the user for the 10/11/2026 snapshot.
+// These are used as the base display anchors so the page matches MegaBot exactly,
+// while later price/trade changes are applied as deltas from this snapshot.
+const SNAPSHOT_COLLATERAL_HEADROOM = 217920691;
+const SNAPSHOT_BUYING_POWER = 1089603457;
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
 const BUY_FEE = 0.0015;                 // 0.15%
@@ -504,9 +509,10 @@ const BASE_VHM_GROSS_COST = SNAPSHOT_TOTAL_BUY/(1+BUY_FEE) - BASE_FPT_GROSS_COST
 const BASE_FPT_BUY_COST = BASE_FPT_GROSS_COST * (1 + BUY_FEE);
 const BASE_FPT_BUY_PRICE_K = BASE_FPT_GROSS_COST / BASE_FPT_QTY / 1000; // 53.745
 
-// Market anchors retained from the prior file because the 10/11 snapshot did not provide new per-symbol market prices. Subsequent live/manual price movement changes NAV2 from this exact account anchor.
-const MODEL_ANCHOR_VHM_PRICE_K = 60.4;
-const MODEL_ANCHOR_FPT_PRICE_K = 51.0;
+// No new per-symbol market prices were supplied with the exact 10/11 snapshot.
+// 60.4 / 51.0 remain FALLBACK DISPLAY prices only. The exact account snapshot is
+// anchored to the first prices actually loaded in this page session, preventing stale
+// prior-session prices from changing the supplied NAV2 at startup.
 const INITIAL_LAST_VALID_VHM_PRICE_K = 60.4;
 const INITIAL_LAST_VALID_LABEL = "retained market anchor @60.4";
 const INITIAL_LAST_VALID_FPT_PRICE_K = 51.0;
@@ -532,6 +538,8 @@ const FPT_CONFIRMED_BUYS = [];
 let lastComputedTotalBuy = SNAPSHOT_TOTAL_BUY;
 let lastComputedTotalVhm = BASE_VHM_QTY;
 let lastComputedTotalFpt = BASE_FPT_QTY;
+let runtimeSnapshotVhmPriceK = null;
+let runtimeSnapshotFptPriceK = null;
 
 // Persistent VHM last-valid-price memory for Android/desktop.
 // Priority on feed failure: explicit manual override -> persistent last valid price.
@@ -838,10 +846,14 @@ function calc(){
   lastComputedTotalVhm=totalVhmQty;
   lastComputedTotalFpt=totalFptQty;
 
-  // Base positions move from the exact 09/11 session anchor using MegaBot mark-to-liquidation assumptions.
-  const basePrice=MODEL_ANCHOR_VHM_PRICE_K*1000;
+  // Anchor the exact supplied account snapshot to the first prices loaded in this session.
+  // The snapshot did not include per-symbol market prices, so using stale prior-session
+  // prices as P/L anchors would incorrectly move NAV2 immediately on page load.
+  if(runtimeSnapshotVhmPriceK===null) runtimeSnapshotVhmPriceK=vpK;
+  if(runtimeSnapshotFptPriceK===null) runtimeSnapshotFptPriceK=fpK;
+  const basePrice=runtimeSnapshotVhmPriceK*1000;
   const baseMovePnl=BASE_VHM_QTY*(vp-basePrice)*MARK_TO_LIQUIDATION_FACTOR;
-  const fptBasePrice=MODEL_ANCHOR_FPT_PRICE_K*1000;
+  const fptBasePrice=runtimeSnapshotFptPriceK*1000;
   const fptMovePnl=BASE_FPT_QTY*(fp-fptBasePrice)*MARK_TO_LIQUIDATION_FACTOR;
 
   // New VHM buys: buy fee + one current-day financing charge + liquidation assumptions.
@@ -864,8 +876,11 @@ function calc(){
   const totalPnl=REALIZED_PNL+openPnl;
   const netWorth=nav2; // keep Current net assets exactly aligned with NAV2
   const ratio=totalBuy>0?nav2/totalBuy:0;
-  const buyingPower=5*nav2-totalBuy;
-  const collateralCashHeadroom=nav2-REQUIRED_RATIO*totalBuy;
+  // Preserve MegaBot's supplied rounded base values exactly, then apply mathematical deltas.
+  const nav2Delta=nav2-SNAPSHOT_NAV2;
+  const totalBuyDelta=totalBuy-SNAPSHOT_TOTAL_BUY;
+  const buyingPower=SNAPSHOT_BUYING_POWER + 5*nav2Delta - totalBuyDelta;
+  const collateralCashHeadroom=SNAPSHOT_COLLATERAL_HEADROOM + nav2Delta - REQUIRED_RATIO*totalBuyDelta;
   const collateralCashAmount=Math.abs(collateralCashHeadroom);
 
   const costPerNewVhm=vp*(1+BUY_FEE);
@@ -918,17 +933,19 @@ function calc(){
   $('fptCurrentValueOut').textContent=fmtMoneyFull(fptCurrentValue);
   $('fptMarketPnlOut').textContent=fmtMoneyFull(fptMarketPnl);
   $('fptMarketPnlOut').className='v '+(fptMarketPnl>=0?'positive':'negative');
-  $('megaBotTotalBuyOut').textContent=fmtMoneyFull(totalBuy);
+  const isExactSnapshotBase=Math.abs(nav2Delta)<0.01 && Math.abs(totalBuyDelta)<0.01 &&
+    extraVhmQty===0 && extraFptQty===0 && sellVhmQty===0 && sellFptQty===0;
+  $('megaBotTotalBuyOut').textContent=fmtMoneyFull(isExactSnapshotBase?SNAPSHOT_TOTAL_BUY:totalBuy);
   $('currentValueOut').textContent=fmtMoneyFull(currentValue);
-  $('nav2Out').textContent=fmtMoneyFull(nav2);
-  $('openPnlOut').textContent=fmtMoney(openPnl);
+  $('nav2Out').textContent=fmtMoneyFull(isExactSnapshotBase?SNAPSHOT_NAV2:nav2);
+  $('openPnlOut').textContent=isExactSnapshotBase?fmtMoneyFull(SNAPSHOT_OPEN_PNL):fmtMoney(openPnl);
   $('totalPnlOut').textContent=fmtMoney(totalPnl);
-  $('netWorthOut').textContent=fmtMoneyFull(netWorth);
+  $('netWorthOut').textContent=fmtMoneyFull(isExactSnapshotBase?SNAPSHOT_NAV2:netWorth);
   $('openPnlOut').className='v stressLow '+(openPnl>=0?'positive':'negative');
   $('totalPnlOut').className='v stressLow '+(totalPnl>=0?'positive':'negative');
   $('ratioOut').textContent=(ratio*100).toFixed(2)+'%';
   if(collateralCashHeadroom>0.5){
-    $('collateralCashOut').textContent='+'+fmtMoneyFull(collateralCashAmount);
+    $('collateralCashOut').textContent='+'+fmtMoneyFull(isExactSnapshotBase?SNAPSHOT_COLLATERAL_HEADROOM:collateralCashAmount);
     $('collateralCashOut').className='v positive';
   }else if(collateralCashHeadroom<-0.5){
     $('collateralCashOut').textContent='-'+fmtMoneyFull(collateralCashAmount);
@@ -937,7 +954,7 @@ function calc(){
     $('collateralCashOut').textContent='0';
     $('collateralCashOut').className='v neutral';
   }
-  $('bpOut').textContent=fmtMoney(buyingPower);
+  $('bpOut').textContent=isExactSnapshotBase?fmtMoneyFull(SNAPSHOT_BUYING_POWER):fmtMoney(buyingPower);
   $('dailyInterestOut').textContent=fmtMoneyFull(totalBuy*DAILY_RATE);
   $('vhmBuyOut').textContent=fmtShares(canBuyVhm);
   $('vhmBuy2025Out').textContent=fmtShares(canBuyVhm2025);
@@ -1269,7 +1286,6 @@ $('vicPrice').addEventListener("focus",e=>e.target.select());
 $('vicPrice').addEventListener("input",()=>{ $('vicLive').textContent='manual reference'; $('vicLive').className='live neutral'; });
 $('vnindexPrice').addEventListener("focus",e=>e.target.select());
 $('vnindexPrice').addEventListener("input",()=>{ $('vnindexLive').textContent='manual reference'; $('vnindexLive').className='live neutral'; });
-calc();
 loadPrices();
 setInterval(loadPrices,AUTO_REFRESH_MS);
 </script>
