@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 10-11-2026 time 16-03</title>
+<title>Last updated: 11-11-2026 time 8-44</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -25,8 +25,9 @@ body{display:flex;justify-content:center;transition:background .2s,color .2s}
   border:1px solid var(--line);background:var(--card);border-radius:10px;
   padding:4px 10px;white-space:nowrap;
 }
-#time_is_link{color:var(--muted);text-decoration:none;font-size:18px;font-weight:900;animation:timeBlink 1s ease-in-out infinite}
-#Hanoi_z40a{color:var(--text);font-size:clamp(50px,7vw,72px);font-weight:900;letter-spacing:1px;line-height:1;animation:timeBlink 1s ease-in-out infinite}
+#time_is_link{color:var(--muted);text-decoration:none;font-size:18px;font-weight:900;animation:timeBlink 1s ease-in-out infinite;will-change:opacity;transform:translateZ(0)}
+#Hanoi_z40a{color:var(--text);font-size:clamp(50px,7vw,72px);font-weight:900;letter-spacing:1px;line-height:1;animation:timeBlink 1s ease-in-out infinite;will-change:opacity;transform:translateZ(0)}
+#vhmIndexSection,#fptIndexSection{content-visibility:auto;contain-intrinsic-size:auto 900px}
 h1{margin:0;font-size:clamp(17px,3vw,25px);font-weight:800}
 button{
   border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;
@@ -227,13 +228,13 @@ body.locked #pinGate{display:flex}
     </div>
     <div class="actions">
       <button id="themeBtn" onclick="toggleTheme()">☾ Dark</button>
-      <button id="refreshBtn" onclick="loadPrices()">↻ Refresh</button>
+      <button id="refreshBtn" onclick="loadPrices(true)">↻ Refresh</button>
       <button class="lockBtn" onclick="lockPage()">🔒 Lock</button>
     </div>
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 10-11-2026 time 16-03</div>
+  <div id="versionLine">Last updated: 11-11-2026 time 8-44</div>
 
   <div class="indexSection" id="generalIndexSection">
     <div class="indexTitle">GENERAL INDEX</div>
@@ -373,14 +374,30 @@ body.locked #pinGate{display:flex}
   <div id="source" class="footer">Prepared for 11/11/2026 from the supplied 10/11/2026 MegaBot closing snapshot. Core: VHM 20,000 @64.098, FPT 28,000 @53.021. Closing prices: VHM 62.0, FPT 50.9. Total MegaBot Purchase Value 2,770,703,096; NAV1 774,214,702; closing NAV2 649,437,964. One financing day at 0.045% (1,246,816.393) is deducted in advance, giving prepared NAV2 648,191,147.607 (displayed 648,191,148). Buy fee 0.15%; sell fee 0.25%.</div>
 </div>
 
-<script src="https://widget.time.is/t.js"></script>
 <script>
-time_is_widget.init({
-  Hanoi_z40a:{time_format:"hours:minutes:seconds"}
-});
-</script>
+// Fast local Hanoi clock. Keeping the Time.is link avoids a blocking third-party script on Android.
+let localClockTimer=null;
+let hanoiClockFormatter=null;
+try{
+  hanoiClockFormatter=new Intl.DateTimeFormat("en-GB",{
+    timeZone:"Asia/Ho_Chi_Minh",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false
+  });
+}catch(e){}
+function updateLocalHanoiClock(){
+  const el=document.getElementById("Hanoi_z40a");
+  if(!el)return;
+  el.textContent=hanoiClockFormatter
+    ? hanoiClockFormatter.format(new Date())
+    : new Date().toLocaleTimeString("en-GB",{hour12:false});
+}
+function startLocalHanoiClock(){
+  updateLocalHanoiClock();
+  if(localClockTimer)clearInterval(localClockTimer);
+  localClockTimer=setInterval(updateLocalHanoiClock,1000);
+}
+document.addEventListener("DOMContentLoaded",startLocalHanoiClock);
 
-<script>
+
 
 const PIN_HASH = "2cec8cf0e321c284fa0c2ebef804aac18bf1cbb85546f89e7e3d0b6aa8b9d2cf";
 const AUTH_DATE_KEY = "pcm_pin_ok_date";
@@ -525,7 +542,10 @@ const TARGET_RATIO_22 = 0.22;
 const TARGET_RATIO_23 = 0.23;
 const TARGET_RATIO_24 = 0.24;
 const TARGET_RATIO_25 = 0.25;
-const AUTO_REFRESH_MS = 5000;
+const AUTO_REFRESH_MS = 12000;
+const REFERENCE_REFRESH_MS = 30000;
+const FETCH_TIMEOUT_MS = 2200;
+const PROXY_TIMEOUT_MS = 2800;
 
 // Prepared base for 11/11/2026: 20,000 VHM and 28,000 FPT.
 // Two BUY and two SELL rows remain free for future trades in each symbol.
@@ -554,6 +574,16 @@ let fptManualOverride = false;
 
 const $ = id => document.getElementById(id);
 let loading=false;
+let refreshTimer=null;
+let lastReferenceFetch=0;
+let calcFrame=null;
+function scheduleCalc(){
+  if(calcFrame!==null)return;
+  calcFrame=requestAnimationFrame(()=>{
+    calcFrame=null;
+    calc();
+  });
+}
 
 function safeStorageGet(key){
   try{return localStorage.getItem(key)}catch(e){return null}
@@ -751,7 +781,7 @@ function makeRows(){
   }
 
   document.querySelectorAll(".tradeQty,.tradePrice").forEach(el=>{
-    el.addEventListener("input",calc);
+    el.addEventListener("input",scheduleCalc);
     el.addEventListener("focus",e=>e.target.select());
   });
 }
@@ -988,15 +1018,25 @@ function calc(){
   }
 }
 
+async function fetchWithTimeout(url,options={},timeoutMs=FETCH_TIMEOUT_MS){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try{
+    return await fetch(url,{...options,signal:controller.signal});
+  }finally{
+    clearTimeout(timer);
+  }
+}
+
 async function fetchJson(url){
   const options={cache:"no-store",headers:{"Accept":"application/json,text/plain,*/*"}};
   try{
-    const r=await fetch(url,options);
+    const r=await fetchWithTimeout(url,options,FETCH_TIMEOUT_MS);
     if(!r.ok)throw new Error("HTTP "+r.status);
     return await r.json();
   }catch(e1){
     const p="https://api.allorigins.win/raw?url="+encodeURIComponent(url);
-    const r=await fetch(p,{cache:"no-store"});
+    const r=await fetchWithTimeout(p,{cache:"no-store"},PROXY_TIMEOUT_MS);
     if(!r.ok)throw new Error("Proxy HTTP "+r.status);
     return await r.json();
   }
@@ -1127,157 +1167,184 @@ async function getPrice(symbol){
   throw new Error("No public price source for "+sym);
 }
 
-async function loadPrices(){
+async function loadPrices(forceReference=false){
   if(loading)return;
   loading=true;
-  const btn=$('refreshBtn');
+  const btn=$("refreshBtn");
   btn.disabled=true;
-  btn.textContent='Loading...';
+  btn.textContent="Loading...";
 
-  // VHM is the only live price used by the MegaBot/NAV model.
-  let vhmOk=false;
-  let vhmSource='';
-  try{
-    const x=await getPrice('VHM');
-    $('vhmPrice').value=x.price.toFixed(1);
-    saveLastGoodVhm(x.price,'LIVE '+x.source);
-    vhmManualOverride=false;
-    $('vhmLive').textContent='LIVE '+x.source+' '+x.price.toFixed(1);
-    $('vhmLive').className='live positive';
-    vhmSource=x.source;
-    vhmOk=true;
-  }catch(e){
-    const cached=getLastGoodVhm();
-    const current=Number($('vhmPrice').value);
-    if(vhmManualOverride && Number.isFinite(current) && current>0){
-      $('vhmLive').textContent='MANUAL '+current.toFixed(1)+' · live feed unavailable';
-      $('vhmLive').className='live warning';
-    }else if(cached){
-      $('vhmPrice').value=cached.price.toFixed(1);
-      $('vhmLive').textContent='LAST VALID '+cached.price.toFixed(1)+' · '+cached.source+' · '+formatCacheAge(cached.age);
-      $('vhmLive').className='live neutral';
-    }else{
-      $('vhmLive').textContent='NO LAST VALID PRICE · enter manual price';
-      $('vhmLive').className='live warning';
+  let vhmOk=false,vhmSource="";
+  let fptOk=false,fptSource="";
+  let vicOk=false,vicSource="";
+  let vnindexOk=false,vnindexSource="";
+
+  const vhmTask=(async()=>{
+    try{
+      const x=await getPrice("VHM");
+      $("vhmPrice").value=x.price.toFixed(1);
+      saveLastGoodVhm(x.price,"LIVE "+x.source);
+      vhmManualOverride=false;
+      $("vhmLive").textContent="LIVE "+x.source+" "+x.price.toFixed(1);
+      $("vhmLive").className="live positive";
+      vhmSource=x.source;
+      vhmOk=true;
+    }catch(e){
+      const cached=getLastGoodVhm();
+      const current=Number($("vhmPrice").value);
+      if(vhmManualOverride && Number.isFinite(current) && current>0){
+        $("vhmLive").textContent="MANUAL "+current.toFixed(1)+" · live feed unavailable";
+        $("vhmLive").className="live warning";
+      }else if(cached){
+        $("vhmPrice").value=cached.price.toFixed(1);
+        $("vhmLive").textContent="LAST VALID "+cached.price.toFixed(1)+" · "+cached.source+" · "+formatCacheAge(cached.age);
+        $("vhmLive").className="live neutral";
+      }else{
+        $("vhmPrice").value=INITIAL_LAST_VALID_VHM_PRICE_K.toFixed(1);
+        $("vhmLive").textContent="FALLBACK "+INITIAL_LAST_VALID_VHM_PRICE_K.toFixed(1);
+        $("vhmLive").className="live warning";
+      }
+    }finally{
+      scheduleCalc();
     }
-  }
+  })();
 
-  // FPT is part of the MegaBot/NAV model.
-  let fptOk=false;
-  let fptSource='';
-  try{
-    const x=await getPrice('FPT');
-    $('fptPrice').value=x.price.toFixed(1);
-    saveLastGoodFpt(x.price,'LIVE '+x.source);
-    fptManualOverride=false;
-    $('fptLive').textContent='LIVE '+x.source+' '+x.price.toFixed(1);
-    $('fptLive').className='live positive';
-    fptSource=x.source;
-    fptOk=true;
-  }catch(e){
-    const cached=getLastGoodFpt();
-    const current=Number($('fptPrice').value);
-    if(fptManualOverride && Number.isFinite(current) && current>0){
-      $('fptLive').textContent='MANUAL '+current.toFixed(1)+' · live feed unavailable';
-      $('fptLive').className='live warning';
-    }else if(cached){
-      $('fptPrice').value=cached.price.toFixed(1);
-      $('fptLive').textContent='LAST VALID '+cached.price.toFixed(1)+' · '+cached.source+' · '+formatCacheAge(cached.age);
-      $('fptLive').className='live neutral';
-    }else{
-      $('fptPrice').value=INITIAL_LAST_VALID_FPT_PRICE_K.toFixed(1);
-      $('fptLive').textContent='FALLBACK '+INITIAL_LAST_VALID_FPT_PRICE_K.toFixed(1)+' · enter manual price if needed';
-      $('fptLive').className='live warning';
+  const fptTask=(async()=>{
+    try{
+      const x=await getPrice("FPT");
+      $("fptPrice").value=x.price.toFixed(1);
+      saveLastGoodFpt(x.price,"LIVE "+x.source);
+      fptManualOverride=false;
+      $("fptLive").textContent="LIVE "+x.source+" "+x.price.toFixed(1);
+      $("fptLive").className="live positive";
+      fptSource=x.source;
+      fptOk=true;
+    }catch(e){
+      const cached=getLastGoodFpt();
+      const current=Number($("fptPrice").value);
+      if(fptManualOverride && Number.isFinite(current) && current>0){
+        $("fptLive").textContent="MANUAL "+current.toFixed(1)+" · live feed unavailable";
+        $("fptLive").className="live warning";
+      }else if(cached){
+        $("fptPrice").value=cached.price.toFixed(1);
+        $("fptLive").textContent="LAST VALID "+cached.price.toFixed(1)+" · "+cached.source+" · "+formatCacheAge(cached.age);
+        $("fptLive").className="live neutral";
+      }else{
+        $("fptPrice").value=INITIAL_LAST_VALID_FPT_PRICE_K.toFixed(1);
+        $("fptLive").textContent="FALLBACK "+INITIAL_LAST_VALID_FPT_PRICE_K.toFixed(1);
+        $("fptLive").className="live warning";
+      }
+    }finally{
+      scheduleCalc();
     }
+  })();
+
+  const now=Date.now();
+  const refreshReferences=forceReference || (now-lastReferenceFetch>=REFERENCE_REFRESH_MS);
+  const referenceTasks=[];
+  if(refreshReferences){
+    lastReferenceFetch=now;
+    referenceTasks.push((async()=>{
+      try{
+        const x=await getPrice("VIC");
+        $("vicPrice").value=x.price.toFixed(1);
+        $("vicLive").textContent="✓ "+x.source+" "+x.price.toFixed(1);
+        $("vicLive").className="live positive";
+        vicSource=x.source; vicOk=true;
+      }catch(e){
+        $("vicLive").textContent="⚠ reference feed unavailable";
+        $("vicLive").className="live warning";
+      }
+    })());
+    referenceTasks.push((async()=>{
+      try{
+        const x=await getPrice("VNINDEX");
+        $("vnindexPrice").value=x.price.toFixed(2);
+        $("vnindexLive").textContent="✓ "+x.source+" "+x.price.toFixed(2);
+        $("vnindexLive").className="live positive";
+        vnindexSource=x.source; vnindexOk=true;
+      }catch(e){
+        $("vnindexLive").textContent="⚠ reference feed unavailable";
+        $("vnindexLive").className="live warning";
+      }
+    })());
   }
 
-  // VIC is completely independent: reference-only, quantity = 0, excluded from calc()/NAV.
-  let vicOk=false;
-  let vicSource='';
-  try{
-    const x=await getPrice('VIC');
-    $('vicPrice').value=x.price.toFixed(1);
-    $('vicLive').textContent='✓ '+x.source+' '+x.price.toFixed(1);
-    $('vicLive').className='live positive';
-    vicSource=x.source;
-    vicOk=true;
-  }catch(e){
-    $('vicLive').textContent='⚠ reference feed unavailable';
-    $('vicLive').className='live warning';
-  }
+  // Main prices run in parallel. Android no longer waits for VHM before starting FPT.
+  await Promise.allSettled([vhmTask,fptTask]);
+  $("errorBanner").style.display=(vhmOk&&fptOk)?"none":"block";
+  scheduleCalc();
 
-  // VNINDEX is completely independent: market reference only, excluded from calc()/NAV.
-  let vnindexOk=false;
-  let vnindexSource='';
-  try{
-    const x=await getPrice('VNINDEX');
-    $('vnindexPrice').value=x.price.toFixed(2);
-    $('vnindexLive').textContent='✓ '+x.source+' '+x.price.toFixed(2);
-    $('vnindexLive').className='live positive';
-    vnindexSource=x.source;
-    vnindexOk=true;
-  }catch(e){
-    $('vnindexLive').textContent='⚠ reference feed unavailable';
-    $('vnindexLive').className='live warning';
-  }
+  // Reference-only feeds never block NAV display; finish them in the same cycle when requested.
+  if(referenceTasks.length)await Promise.allSettled(referenceTasks);
 
-  // VHM and FPT both affect NAV. VIC/VNINDEX remain reference-only.
-  $('errorBanner').style.display=(vhmOk&&fptOk)?'none':'block';
-  calc();
-
-  const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const t=new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   const cachedNow=getLastGoodVhm();
   const vhmText=vhmOk
-    ? 'VHM LIVE '+vhmSource+' '+$('vhmPrice').value
-    : (vhmManualOverride
-      ? 'VHM MANUAL '+$('vhmPrice').value
-      : (cachedNow
-        ? 'VHM LAST VALID '+$('vhmPrice').value+' ('+cachedNow.source+', '+formatCacheAge(cachedNow.age)+')'
-        : 'VHM NO LAST VALID'));
+    ? "VHM LIVE "+vhmSource+" "+$("vhmPrice").value
+    : (vhmManualOverride ? "VHM MANUAL "+$("vhmPrice").value
+      : (cachedNow ? "VHM LAST VALID "+$("vhmPrice").value+" ("+cachedNow.source+", "+formatCacheAge(cachedNow.age)+")" : "VHM FALLBACK"));
   const fptCachedNow=getLastGoodFpt();
   const fptText=fptOk
-    ? 'FPT LIVE '+fptSource+' '+$('fptPrice').value
-    : (fptManualOverride
-      ? 'FPT MANUAL '+$('fptPrice').value
-      : (fptCachedNow
-        ? 'FPT LAST VALID '+$('fptPrice').value+' ('+fptCachedNow.source+', '+formatCacheAge(fptCachedNow.age)+')'
-        : 'FPT FALLBACK '+$('fptPrice').value));
-  const vicText=vicOk ? 'VIC '+vicSource+' '+$('vicPrice').value : 'VIC reference unavailable';
-  const vnindexText=vnindexOk ? 'VNINDEX '+vnindexSource+' '+$('vnindexPrice').value : 'VNINDEX reference unavailable';
-  $('source').textContent='Checked '+t+' | '+vhmText+' | '+fptText+' | '+vicText+' | '+vnindexText
-    +' | Total VHM: '+fmtShares(lastComputedTotalVhm)+' | Total FPT: '+fmtShares(lastComputedTotalFpt)
-    +' | MegaBot purchase value: '+fmtMoneyFull(lastComputedTotalBuy)
-    +' | Daily interest at 0.045%: '+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-        +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared 11/11/2026 from 10/11 close: VHM 20,000 @62.0; FPT 28,000 @50.9; Total MegaBot Purchase Value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; one-day interest '+fmtMoneyFull(PREPARED_TOTAL_INTEREST)+'; prepared NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
+    ? "FPT LIVE "+fptSource+" "+$("fptPrice").value
+    : (fptManualOverride ? "FPT MANUAL "+$("fptPrice").value
+      : (fptCachedNow ? "FPT LAST VALID "+$("fptPrice").value+" ("+fptCachedNow.source+", "+formatCacheAge(fptCachedNow.age)+")" : "FPT FALLBACK"));
+  const vicText=refreshReferences ? (vicOk ? "VIC "+vicSource+" "+$("vicPrice").value : "VIC reference unavailable") : "VIC cached";
+  const vnindexText=refreshReferences ? (vnindexOk ? "VNINDEX "+vnindexSource+" "+$("vnindexPrice").value : "VNINDEX reference unavailable") : "VNINDEX cached";
+  $("source").textContent="Checked "+t+" | "+vhmText+" | "+fptText+" | "+vicText+" | "+vnindexText
+    +" | Total VHM: "+fmtShares(lastComputedTotalVhm)+" | Total FPT: "+fmtShares(lastComputedTotalFpt)
+    +" | MegaBot purchase value: "+fmtMoneyFull(lastComputedTotalBuy)
+    +" | Daily interest at 0.045%: "+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
+    +". Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared 11/11/2026 from 10/11 close: VHM 20,000 @62.0; FPT 28,000 @50.9; Total MegaBot Purchase Value "+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+"; NAV1 "+fmtMoneyFull(NAV1)+"; one-day interest "+fmtMoneyFull(PREPARED_TOTAL_INTEREST)+"; prepared NAV2 "+fmtMoneyFull(SNAPSHOT_NAV2)+".";
 
   btn.disabled=false;
-  btn.textContent='↻ Refresh';
+  btn.textContent="↻ Refresh";
   loading=false;
+}
+
+function armAutoRefresh(){
+  if(refreshTimer)clearTimeout(refreshTimer);
+  refreshTimer=setTimeout(async()=>{
+    if(!document.hidden)await loadPrices(false);
+    armAutoRefresh();
+  },AUTO_REFRESH_MS);
 }
 
 makeRows();
 restoreLastGoodVhm();
 restoreLastGoodFpt();
-$('vhmPrice').addEventListener("input",()=>{
+
+// Critical Android optimization: render the full snapshot immediately from local/cache values.
+// Live network refresh starts only after the browser has had a chance to paint the page.
+calc();
+
+$("vhmPrice").addEventListener("input",()=>{
   vhmManualOverride=true;
-  $('vhmLive').textContent='MANUAL '+$('vhmPrice').value;
-  $('vhmLive').className='live neutral';
-  calc();
+  $("vhmLive").textContent="MANUAL "+$("vhmPrice").value;
+  $("vhmLive").className="live neutral";
+  scheduleCalc();
 });
-$('vhmPrice').addEventListener("focus",e=>e.target.select());
-$('fptPrice').addEventListener("input",()=>{
+$("vhmPrice").addEventListener("focus",e=>e.target.select());
+$("fptPrice").addEventListener("input",()=>{
   fptManualOverride=true;
-  $('fptLive').textContent='MANUAL '+$('fptPrice').value;
-  $('fptLive').className='live neutral';
-  calc();
+  $("fptLive").textContent="MANUAL "+$("fptPrice").value;
+  $("fptLive").className="live neutral";
+  scheduleCalc();
 });
-$('fptPrice').addEventListener("focus",e=>e.target.select());
-$('vicPrice').addEventListener("focus",e=>e.target.select());
-$('vicPrice').addEventListener("input",()=>{ $('vicLive').textContent='manual reference'; $('vicLive').className='live neutral'; });
-$('vnindexPrice').addEventListener("focus",e=>e.target.select());
-$('vnindexPrice').addEventListener("input",()=>{ $('vnindexLive').textContent='manual reference'; $('vnindexLive').className='live neutral'; });
-loadPrices();
-setInterval(loadPrices,AUTO_REFRESH_MS);
+$("fptPrice").addEventListener("focus",e=>e.target.select());
+$("vicPrice").addEventListener("focus",e=>e.target.select());
+$("vicPrice").addEventListener("input",()=>{ $("vicLive").textContent="manual reference"; $("vicLive").className="live neutral"; });
+$("vnindexPrice").addEventListener("focus",e=>e.target.select());
+$("vnindexPrice").addEventListener("input",()=>{ $("vnindexLive").textContent="manual reference"; $("vnindexLive").className="live neutral"; });
+
+requestAnimationFrame(()=>setTimeout(()=>loadPrices(true),40));
+armAutoRefresh();
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden){
+    loadPrices(false);
+    armAutoRefresh();
+  }
+});
 </script>
 </body>
 </html>
