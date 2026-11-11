@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 11-11-2026 time 16-19</title>
+<title>Last updated: 11-11-2026 time 16-24</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -234,7 +234,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 11-11-2026 time 16-19</div>
+  <div id="versionLine">Last updated: 11-11-2026 time 16-24</div>
 
   <div class="indexSection" id="generalIndexSection">
     <div class="indexTitle">GENERAL INDEX</div>
@@ -292,11 +292,11 @@ body.locked #pinGate{display:flex}
         <div class="result"><div class="k">Current net assets</div><div id="netWorthOut" class="v neutral">-</div></div>
         <div class="result"><div class="k">MM annual interest</div><div id="mmRateOut" class="v positive">9.00%</div></div>
         <div class="result"><div class="k">Estimated MM interest / day</div><div id="mmDailyInterestOut" class="v positive">-</div></div>
-        <div class="result"><div class="k">Collateral ratio</div><div id="ratioOut" class="v">-</div></div>
+        <div class="result"><div class="k">NAV2 / Purchase value ratio (incl. MM)</div><div id="ratioOut" class="v">-</div></div>
         <div class="result"><div class="k">Open P/L</div><div id="openPnlOut" class="v stressLow">-</div></div>
         <div class="result"><div class="k">Total account P/L</div><div id="totalPnlOut" class="v stressLow">-</div></div>
         <div class="result" id="collateralCashCard"><div class="k">Collateral to add / available to withdraw</div><div id="collateralCashOut" class="v">-</div></div>
-        <div class="result"><div class="k">Buying power</div><div id="bpOut" class="v">-</div></div>
+        <div class="result"><div class="k">Buying power (NAV2 incl. MM)</div><div id="bpOut" class="v">-</div></div>
         <div class="result"><div class="k">Daily financing interest 0.045%</div><div id="dailyInterestOut" class="v warning">-</div></div>
       </div>
     </div>
@@ -375,7 +375,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Prepared for 12/11/2026 from the supplied 11/11/2026 MegaBot closing snapshot. VHM 20,000 @64.098, FPT 28,000 @53.021. Total MegaBot Purchase Value 2,770,703,096. Closing collateral NAV2 563,157,170 and MegaMarket balance 95,000,000, so total closing NAV2 is 658,157,170. One financing day at 0.045% is deducted from the collateral account for the 12/11 prepared view; MM principal remains 95,000,000. MM rate 9%/year; estimated MM interest/day is shown separately and is not added until credited.</div>
+  <div id="source" class="footer">Prepared for 12/11/2026 from the supplied 11/11/2026 MegaBot closing snapshot. VHM 20,000 @64.098, FPT 28,000 @53.021. Total MegaBot Purchase Value 2,770,703,096. Closing collateral NAV2 563,157,170 and MegaMarket balance 95,000,000, so total closing NAV2 is 658,157,170. One financing day at 0.045% is deducted from the collateral account for the 12/11 prepared view; MM principal remains 95,000,000. Buying power, total NAV2 ratio and Max additional VHM/FPT use total NAV2 including MM principal. MM rate is 9%/year; estimated MM interest/day is shown separately and is not added until credited.</div>
 </div>
 
 <script>
@@ -513,9 +513,11 @@ const PREPARED_TOTAL_INTEREST = PREPARED_DAILY_INTEREST * PREPARED_INTEREST_DAYS
 const SNAPSHOT_COLLATERAL_NAV2 = PRE_INTEREST_COLLATERAL_NAV2 - PREPARED_TOTAL_INTEREST;
 const SNAPSHOT_NAV2 = SNAPSHOT_COLLATERAL_NAV2 + MM_BALANCE;
 const SNAPSHOT_OPEN_PNL = PRE_INTEREST_OPEN_PNL - PREPARED_TOTAL_INTEREST;
-// Collateral ratio, buying power and max-buy calculations use collateral NAV2 only.
+// Total NAV2 is the account asset base for buying power and max-buy calculations.
+// MegaMarket principal is included; MM interest is NOT included until actually credited.
+const SNAPSHOT_TOTAL_NAV_HEADROOM = Math.round(SNAPSHOT_NAV2 - 0.20*SNAPSHOT_TOTAL_BUY);
 const SNAPSHOT_COLLATERAL_HEADROOM = Math.round(SNAPSHOT_COLLATERAL_NAV2 - 0.20*SNAPSHOT_TOTAL_BUY);
-const SNAPSHOT_BUYING_POWER = Math.round(5*SNAPSHOT_COLLATERAL_NAV2 - SNAPSHOT_TOTAL_BUY);
+const SNAPSHOT_BUYING_POWER = Math.round(5*SNAPSHOT_NAV2 - SNAPSHOT_TOTAL_BUY);
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
 const BUY_FEE = 0.0015;                 // 0.15%
@@ -905,12 +907,14 @@ function calc(){
 
   const totalPnl=REALIZED_PNL+openPnl;
   const netWorth=nav2; // total net assets = collateral account + MegaMarket principal
-  const ratio=totalBuy>0?collateralNav2/totalBuy:0;
-  // Preserve MegaBot's supplied collateral base values exactly, then apply mathematical deltas.
+  // Risk / buying-capacity metrics use total NAV2, including MM principal.
+  const ratio=totalBuy>0?nav2/totalBuy:0;
+  const nav2Delta=nav2-SNAPSHOT_NAV2;
   const collateralNav2Delta=collateralNav2-SNAPSHOT_COLLATERAL_NAV2;
   const totalBuyDelta=totalBuy-SNAPSHOT_TOTAL_BUY;
-  const buyingPower=SNAPSHOT_BUYING_POWER + 5*collateralNav2Delta - totalBuyDelta;
-  const collateralCashHeadroom=SNAPSHOT_COLLATERAL_HEADROOM + collateralNav2Delta - REQUIRED_RATIO*totalBuyDelta;
+  const buyingPower=SNAPSHOT_BUYING_POWER + 5*nav2Delta - totalBuyDelta;
+  // Keep the collateral cash-transfer indicator tied to the collateral account itself.
+  const collateralCashHeadroom=(SNAPSHOT_COLLATERAL_NAV2-REQUIRED_RATIO*SNAPSHOT_TOTAL_BUY) + collateralNav2Delta - REQUIRED_RATIO*totalBuyDelta;
   const collateralCashAmount=Math.abs(collateralCashHeadroom);
 
   const costPerNewVhm=vp*(1+BUY_FEE);
@@ -921,7 +925,7 @@ function calc(){
   const immediateDragPerShare=-pnlPerNewShare;
   function maxVhmAtTarget(target){
     const denom=immediateDragPerShare + target*costPerNewVhm;
-    const headroom=collateralNav2 - target*totalBuy;
+    const headroom=nav2 - target*totalBuy;
     return (headroom>0&&denom>0)?Math.floor(headroom/denom):0;
   }
   const canBuyVhm=maxVhmAtTarget(REQUIRED_RATIO);
@@ -941,7 +945,7 @@ function calc(){
   const immediateDragPerFpt=-pnlPerNewFpt;
   function maxFptAtTarget(target){
     const denom=immediateDragPerFpt + target*costPerNewFpt;
-    const headroom=collateralNav2 - target*totalBuy;
+    const headroom=nav2 - target*totalBuy;
     return (headroom>0&&denom>0)?Math.floor(headroom/denom):0;
   }
   const canBuyFpt=maxFptAtTarget(REQUIRED_RATIO);
@@ -1309,7 +1313,7 @@ async function loadPrices(forceReference=false){
     +" | Total VHM: "+fmtShares(lastComputedTotalVhm)+" | Total FPT: "+fmtShares(lastComputedTotalFpt)
     +" | MegaBot purchase value: "+fmtMoneyFull(lastComputedTotalBuy)
     +" | Daily interest at 0.045%: "+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-    +". Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared 12/11/2026 from 11/11 close: VHM 20,000 @62.5; FPT 28,000 @50.9; Total MegaBot Purchase Value "+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+"; prepared collateral NAV2 "+fmtMoneyFull(SNAPSHOT_COLLATERAL_NAV2)+"; MegaMarket "+fmtMoneyFull(MM_BALANCE)+" at 9%/year; total NAV2 "+fmtMoneyFull(SNAPSHOT_NAV2)+".";
+    +". Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared 12/11/2026 from 11/11 close: VHM 20,000 @62.5; FPT 28,000 @50.9; Total MegaBot Purchase Value "+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+"; prepared collateral NAV2 "+fmtMoneyFull(SNAPSHOT_COLLATERAL_NAV2)+"; MegaMarket "+fmtMoneyFull(MM_BALANCE)+" at 9%/year; total NAV2 "+fmtMoneyFull(SNAPSHOT_NAV2)+"; buying power and max-buy limits use total NAV2 including MM principal.";
 
   btn.disabled=false;
   btn.textContent="↻ Refresh";
