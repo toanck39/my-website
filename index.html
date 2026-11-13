@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 13-11-2026 time 9-58</title>
+<title>Last updated: 13-11-2026 time 15-22</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -234,7 +234,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 13-11-2026 time 9-58</div>
+  <div id="versionLine">Last updated: 13-11-2026 time 15-22</div>
 
   <div class="indexSection" id="generalIndexSection">
     <div class="indexTitle">GENERAL INDEX</div>
@@ -254,8 +254,8 @@ body.locked #pinGate{display:flex}
           </div>
           <div class="box">
             <label>FPT core</label>
-            <input id="baseFptQty" type="number" value="28000" readonly>
-            <div class="unit">28,000 @ 53.021</div>
+            <input id="baseFptQty" type="number" value="30000" readonly>
+            <div class="unit">30,000 @ 52.850</div>
           </div>
           <div class="box">
             <label>Current FPT price</label>
@@ -284,7 +284,7 @@ body.locked #pinGate{display:flex}
       </div>
 
       <div class="generalResults">
-        <div class="result"><div class="k">Total MegaBot Purchase Value</div><div id="megaBotTotalBuyOut" class="v neutral">2,770,703,096</div></div>
+        <div class="result"><div class="k">Total MegaBot Purchase Value</div><div id="megaBotTotalBuyOut" class="v neutral">2,871,754,446</div></div>
         <div class="result"><div class="k">Current portfolio value</div><div id="currentValueOut" class="v neutral">-</div></div>
         <div class="result"><div class="k">Collateral NAV2</div><div id="collateralNav2Out" class="v neutral">-</div></div>
         <div class="result"><div class="k">MegaMarket (MM) balance</div><div id="mmBalanceOut" class="v positive">95,000,000</div></div>
@@ -342,8 +342,8 @@ body.locked #pinGate{display:flex}
     <div class="indexTitle">FPT INDEX</div>
     <div class="indexBody">
       <div class="assetSummary">
-        <div class="result"><div class="k">Total FPT</div><div id="totalFptOut" class="v neutral">28,000</div></div>
-        <div class="result"><div class="k">FPT average cost</div><div id="avgFptCostOut" class="v neutral">53.021</div></div>
+        <div class="result"><div class="k">Total FPT</div><div id="totalFptOut" class="v neutral">30,000</div></div>
+        <div class="result"><div class="k">FPT average cost</div><div id="avgFptCostOut" class="v neutral">52.850</div></div>
         <div class="result"><div class="k">FPT current value</div><div id="fptCurrentValueOut" class="v neutral">-</div></div>
         <div class="result"><div class="k">FPT market P/L</div><div id="fptMarketPnlOut" class="v">-</div></div>
       </div>
@@ -375,7 +375,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Prepared for 13/11/2026 from the supplied 11/11/2026 MegaBot closing snapshot with quantities and price anchors unchanged. VHM 20,000 @64.098, FPT 28,000 @53.021. Total MegaBot Purchase Value 2,770,703,096. Closing collateral NAV2 563,157,170 and MegaMarket balance 95,000,000, so total closing NAV2 is 658,157,170. Two financing days in total are deducted from the collateral account: the prior prepared day plus one additional day for 12/11; MM principal remains 95,000,000. Buying power, total NAV2 ratio and Max additional VHM/FPT use total NAV2 including MM principal. MM rate is 9%/year; estimated MM interest/day is shown separately and is not added until credited.</div>
+  <div id="source" class="footer">Prepared for Monday 16/11/2026 from the supplied Friday 13/11/2026 MegaBot closing snapshot. VHM 20,000 @64.098 with closing price 62.2; FPT 30,000 @52.850 with closing price 50.1. Total MegaBot Purchase Value 2,871,754,446. Closing collateral NAV2 531,122,756 and MegaMarket balance 95,000,000, so total closing NAV2 is 626,122,756. Three financing days (Saturday + Sunday + Monday morning) at 0.045% are deducted from the collateral account; MM principal remains 95,000,000. Buying power, total NAV2 ratio and Max additional VHM/FPT use total NAV2 including MM principal. MM interest at 9%/year remains displayed separately and is not added until credited.</div>
 </div>
 
 <script>
@@ -494,20 +494,20 @@ document.addEventListener("DOMContentLoaded", initPinGate);
 const COLLATERAL_WITHDRAWAL = 15000000; // historical withdrawal already reflected in the account base
 const NET_DEPOSIT_CAPITAL = 1309100456.518321; // retained only to preserve historical realized-P/L bookkeeping
 
-// Official MegaBot closing snapshot supplied for Wednesday 11/11/2026, carried forward for Friday 13/11/2026.
-// Two financing days in total are deducted from NAV2/Open P/L at 0.045% of the full MegaBot Purchase Value;
-// this adds one more day of interest for 12/11 while quantities and price anchors stay unchanged.
+// Official MegaBot closing snapshot supplied for Friday 13/11/2026, carried forward for Monday 16/11/2026.
+// Three financing days are deducted from collateral NAV2/Open P/L at 0.045% of the full MegaBot Purchase Value:
+// Saturday morning + Sunday morning + Monday morning. MegaMarket principal remains a separate asset.
 const NAV1 = 679214702;
-const PRIOR_SNAPSHOT_TOTAL_BUY = 2770703096;
-const SNAPSHOT_TOTAL_BUY = 2770703096;
+const PRIOR_SNAPSHOT_TOTAL_BUY = 2871754446;
+const SNAPSHOT_TOTAL_BUY = 2871754446;
 const BASE_VHM_QTY = 20000;
-const BASE_FPT_QTY = 28000;
-const PRE_INTEREST_COLLATERAL_NAV2 = 563157170;
-const PRE_INTEREST_OPEN_PNL = -116057532;
+const BASE_FPT_QTY = 30000;
+const PRE_INTEREST_COLLATERAL_NAV2 = 531122756;
+const PRE_INTEREST_OPEN_PNL = -148091946;
 const MM_BALANCE = 95000000;
 const MM_ANNUAL_RATE = 0.09;
 const MM_DAILY_INTEREST = MM_BALANCE * MM_ANNUAL_RATE / 365;
-const PREPARED_INTEREST_DAYS = 2;
+const PREPARED_INTEREST_DAYS = 3;
 const PREPARED_DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * 0.00045;
 const PREPARED_TOTAL_INTEREST = PREPARED_DAILY_INTEREST * PREPARED_INTEREST_DAYS;
 // Financing interest reduces the collateral account; MegaMarket principal remains a separate asset.
@@ -528,20 +528,20 @@ const SETTLEMENT_DAYS = 2;              // MegaBot mark-to-liquidation interest 
 const SELL_NET_FACTOR = 1 - SELL_FEE;
 const MARK_TO_LIQUIDATION_FACTOR = SELL_NET_FACTOR * (1 - DAILY_RATE * SETTLEMENT_DAYS);
 
-// Exact per-symbol gross purchase values supplied for the 11/11/2026 closing snapshot.
+// Exact per-symbol gross purchase values supplied for the 13/11/2026 closing snapshot.
 const BASE_VHM_GROSS_COST = 1281953266; // 20,000 @ 64.098 approx.
-const BASE_FPT_GROSS_COST = 1484600000; // 28,000 @ 53.021 approx.
+const BASE_FPT_GROSS_COST = 1585500000; // 30,000 @ 52.850 exactly
 const BASE_VHM_BUY_PRICE_K = BASE_VHM_GROSS_COST / BASE_VHM_QTY / 1000;
 const BASE_FPT_BUY_PRICE_K = BASE_FPT_GROSS_COST / BASE_FPT_QTY / 1000;
 const BASE_TOTAL_BUY_CALC = (BASE_VHM_GROSS_COST + BASE_FPT_GROSS_COST) * (1 + BUY_FEE);
 
-// Exact market anchors supplied with the 11/11/2026 closing snapshot.
-const MODEL_ANCHOR_VHM_PRICE_K = 62.5;
-const MODEL_ANCHOR_FPT_PRICE_K = 50.9;
-const INITIAL_LAST_VALID_VHM_PRICE_K = 62.5;
-const INITIAL_LAST_VALID_LABEL = "11/11 closing anchor @62.5";
-const INITIAL_LAST_VALID_FPT_PRICE_K = 50.9;
-const INITIAL_LAST_VALID_FPT_LABEL = "11/11 closing anchor @50.9";
+// Exact market anchors supplied with the 13/11/2026 closing snapshot.
+const MODEL_ANCHOR_VHM_PRICE_K = 62.2;
+const MODEL_ANCHOR_FPT_PRICE_K = 50.1;
+const INITIAL_LAST_VALID_VHM_PRICE_K = 62.2;
+const INITIAL_LAST_VALID_LABEL = "13/11 closing anchor @62.2";
+const INITIAL_LAST_VALID_FPT_PRICE_K = 50.1;
+const INITIAL_LAST_VALID_FPT_LABEL = "13/11 closing anchor @50.1";
 
 const REMAINING_TOTAL_BUY = SNAPSHOT_TOTAL_BUY;
 const DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * DAILY_RATE;
@@ -559,7 +559,7 @@ const REFERENCE_REFRESH_MS = 30000;
 const FETCH_TIMEOUT_MS = 2200;
 const PROXY_TIMEOUT_MS = 2800;
 
-// Prepared base carried into 13/11/2026: 20,000 VHM and 28,000 FPT, unchanged.
+// Prepared base for Monday 16/11/2026: 20,000 VHM and 30,000 FPT from the Friday 13/11 closing snapshot.
 // Two BUY and two SELL rows remain free for future trades in each symbol.
 const VHM_CONFIRMED_BUYS = [];
 const FPT_CONFIRMED_BUYS = [];
@@ -569,18 +569,18 @@ let lastComputedTotalFpt = BASE_FPT_QTY;
 
 // Persistent VHM last-valid-price memory for Android/desktop.
 // Priority on feed failure: explicit manual override -> persistent last valid price.
-// The 10/11 closing anchors 62.0 (VHM) and 50.9 (FPT) bootstrap fresh cache namespaces;
+// The 13/11 closing anchors 62.2 (VHM) and 50.1 (FPT) bootstrap fresh cache namespaces;
 // every successful LIVE quote permanently replaces it, including tomorrow's close.
-const VHM_CACHE_KEY = "megabot_vhm_last_valid_v23_k";
-const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v23_ts";
-const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v23_source";
+const VHM_CACHE_KEY = "megabot_vhm_last_valid_v24_k";
+const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v24_ts";
+const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v24_source";
 let sessionLastValidVhm = null;
 let vhmManualOverride = false;
 
 // Persistent FPT last-valid-price memory. FPT is now part of NAV, so a reliable fallback is required.
-const FPT_CACHE_KEY = "megabot_fpt_last_valid_v9_k";
-const FPT_CACHE_TS_KEY = "megabot_fpt_last_valid_v9_ts";
-const FPT_CACHE_SOURCE_KEY = "megabot_fpt_last_valid_v9_source";
+const FPT_CACHE_KEY = "megabot_fpt_last_valid_v10_k";
+const FPT_CACHE_TS_KEY = "megabot_fpt_last_valid_v10_ts";
+const FPT_CACHE_SOURCE_KEY = "megabot_fpt_last_valid_v10_source";
 let sessionLastValidFpt = null;
 let fptManualOverride = false;
 
@@ -882,7 +882,7 @@ function calc(){
   lastComputedTotalVhm=totalVhmQty;
   lastComputedTotalFpt=totalFptQty;
 
-  // Move NAV2 from the exact 11/11 closing price anchors supplied by the user.
+  // Move NAV2 from the exact 13/11 closing price anchors supplied by the user.
   const basePrice=MODEL_ANCHOR_VHM_PRICE_K*1000;
   const baseMovePnl=BASE_VHM_QTY*(vp-basePrice)*MARK_TO_LIQUIDATION_FACTOR;
   const fptBasePrice=MODEL_ANCHOR_FPT_PRICE_K*1000;
@@ -1314,7 +1314,7 @@ async function loadPrices(forceReference=false){
     +" | Total VHM: "+fmtShares(lastComputedTotalVhm)+" | Total FPT: "+fmtShares(lastComputedTotalFpt)
     +" | MegaBot purchase value: "+fmtMoneyFull(lastComputedTotalBuy)
     +" | Daily interest at 0.045%: "+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-    +". Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared 13/11/2026 from 11/11 close with one additional financing day for 12/11: VHM 20,000 @62.5; FPT 28,000 @50.9; Total MegaBot Purchase Value "+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+"; prepared collateral NAV2 "+fmtMoneyFull(SNAPSHOT_COLLATERAL_NAV2)+"; MegaMarket "+fmtMoneyFull(MM_BALANCE)+" at 9%/year; total NAV2 "+fmtMoneyFull(SNAPSHOT_NAV2)+"; buying power and max-buy limits use total NAV2 including MM principal.";
+    +". Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Monday 16/11/2026 from Friday 13/11 close with three financing days (Saturday + Sunday + Monday morning): VHM 20,000 @62.2; FPT 30,000 @50.1; Total MegaBot Purchase Value "+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+"; prepared collateral NAV2 "+fmtMoneyFull(SNAPSHOT_COLLATERAL_NAV2)+"; MegaMarket "+fmtMoneyFull(MM_BALANCE)+" at 9%/year; total NAV2 "+fmtMoneyFull(SNAPSHOT_NAV2)+"; buying power and max-buy limits use total NAV2 including MM principal.";
 
   btn.disabled=false;
   btn.textContent="↻ Refresh";
