@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 13-11-2026 time 15-22</title>
+<meta name="format-detection" content="telephone=no">
+<title>Last updated: 17-11-2026 time 16-15</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -27,7 +28,6 @@ body{display:flex;justify-content:center;transition:background .2s,color .2s}
 }
 #time_is_link{color:var(--muted);text-decoration:none;font-size:18px;font-weight:900;animation:timeBlink 1s ease-in-out infinite;will-change:opacity;transform:translateZ(0)}
 #Hanoi_z40a{color:var(--text);font-size:clamp(50px,7vw,72px);font-weight:900;letter-spacing:1px;line-height:1;animation:timeBlink 1s ease-in-out infinite;will-change:opacity;transform:translateZ(0)}
-#vhmIndexSection,#fptIndexSection{content-visibility:auto;contain-intrinsic-size:auto 900px}
 h1{margin:0;font-size:clamp(17px,3vw,25px);font-weight:800}
 button{
   border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer;
@@ -234,7 +234,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 13-11-2026 time 15-22</div>
+  <div id="versionLine">Last updated: 17-11-2026 time 16-15</div>
 
   <div class="indexSection" id="generalIndexSection">
     <div class="indexTitle">GENERAL INDEX</div>
@@ -286,13 +286,9 @@ body.locked #pinGate{display:flex}
       <div class="generalResults">
         <div class="result"><div class="k">Total MegaBot Purchase Value</div><div id="megaBotTotalBuyOut" class="v neutral">2,871,754,446</div></div>
         <div class="result"><div class="k">Current portfolio value</div><div id="currentValueOut" class="v neutral">-</div></div>
-        <div class="result"><div class="k">Collateral NAV2</div><div id="collateralNav2Out" class="v neutral">-</div></div>
-        <div class="result"><div class="k">MegaMarket (MM) balance</div><div id="mmBalanceOut" class="v positive">95,000,000</div></div>
-        <div class="result"><div class="k">NAV2 = Collateral NAV2 + MM</div><div id="nav2Out" class="v neutral">-</div></div>
+        <div class="result"><div class="k">NAV2</div><div id="nav2Out" class="v neutral">-</div></div>
         <div class="result"><div class="k">Current net assets</div><div id="netWorthOut" class="v neutral">-</div></div>
-        <div class="result"><div class="k">MM annual interest</div><div id="mmRateOut" class="v positive">9.00%</div></div>
-        <div class="result"><div class="k">Estimated MM interest / day</div><div id="mmDailyInterestOut" class="v positive">-</div></div>
-        <div class="result"><div class="k">NAV2 / Purchase value ratio (incl. MM)</div><div id="ratioOut" class="v">-</div></div>
+        <div class="result"><div class="k">NAV2 / Purchase value ratio</div><div id="ratioOut" class="v">-</div></div>
         <div class="result"><div class="k">Open P/L</div><div id="openPnlOut" class="v stressLow">-</div></div>
         <div class="result"><div class="k">Total account P/L</div><div id="totalPnlOut" class="v stressLow">-</div></div>
         <div class="result" id="collateralCashCard"><div class="k">Collateral to add / available to withdraw</div><div id="collateralCashOut" class="v">-</div></div>
@@ -375,7 +371,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Prepared for Monday 16/11/2026 from the supplied Friday 13/11/2026 MegaBot closing snapshot. VHM 20,000 @64.098 with closing price 62.2; FPT 30,000 @52.850 with closing price 50.1. Total MegaBot Purchase Value 2,871,754,446. Closing collateral NAV2 531,122,756 and MegaMarket balance 95,000,000, so total closing NAV2 is 626,122,756. Three financing days (Saturday + Sunday + Monday morning) at 0.045% are deducted from the collateral account; MM principal remains 95,000,000. Buying power, total NAV2 ratio and Max additional VHM/FPT use total NAV2 including MM principal. MM interest at 9%/year remains displayed separately and is not added until credited.</div>
+  <div id="source" class="footer">Prepared for Wednesday 18/11/2026 from the supplied Tuesday 17/11/2026 MegaBot snapshot. Total MegaBot Purchase Value 2,871,754,446; NAV1 774,380,952; pre-interest NAV2 565,310,122; Open P/L -209,070,830. One financing day at 0.045% is deducted for the next session.</div>
 </div>
 
 <script>
@@ -415,10 +411,57 @@ function localDateKey(){
   return `${y}-${m}-${day}`;
 }
 
-async function sha256Hex(s){
-  const data = new TextEncoder().encode(s);
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,"0")).join("");
+function rotr32(x,n){ return (x>>>n)|(x<<(32-n)); }
+function sha256HexFallback(text){
+  var utf8=unescape(encodeURIComponent(String(text)));
+  var bytes=[];
+  var i,j,off;
+  for(i=0;i<utf8.length;i++)bytes.push(utf8.charCodeAt(i));
+  var bitLen=bytes.length*8;
+  bytes.push(0x80);
+  while((bytes.length%64)!==56)bytes.push(0);
+  var hi=Math.floor(bitLen/0x100000000);
+  var lo=bitLen>>>0;
+  bytes.push((hi>>>24)&255,(hi>>>16)&255,(hi>>>8)&255,hi&255,(lo>>>24)&255,(lo>>>16)&255,(lo>>>8)&255,lo&255);
+  var K=[
+    0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+    0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+    0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+    0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+    0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+    0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+    0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+    0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  var w=new Array(64);
+  for(off=0;off<bytes.length;off+=64){
+    for(i=0;i<16;i++){
+      j=off+i*4;
+      w[i]=((bytes[j]<<24)|(bytes[j+1]<<16)|(bytes[j+2]<<8)|bytes[j+3])>>>0;
+    }
+    for(i=16;i<64;i++){
+      var s0=(rotr32(w[i-15],7)^rotr32(w[i-15],18)^(w[i-15]>>>3))>>>0;
+      var s1=(rotr32(w[i-2],17)^rotr32(w[i-2],19)^(w[i-2]>>>10))>>>0;
+      w[i]=(w[i-16]+s0+w[i-7]+s1)>>>0;
+    }
+    var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+    for(i=0;i<64;i++){
+      var S1=(rotr32(e,6)^rotr32(e,11)^rotr32(e,25))>>>0;
+      var ch=((e&f)^((~e)&g))>>>0;
+      var t1=(h+S1+ch+K[i]+w[i])>>>0;
+      var S0=(rotr32(a,2)^rotr32(a,13)^rotr32(a,22))>>>0;
+      var maj=((a&b)^(a&c)^(b&c))>>>0;
+      var t2=(S0+maj)>>>0;
+      h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;
+    }
+    H[0]=(H[0]+a)>>>0;H[1]=(H[1]+b)>>>0;H[2]=(H[2]+c)>>>0;H[3]=(H[3]+d)>>>0;
+    H[4]=(H[4]+e)>>>0;H[5]=(H[5]+f)>>>0;H[6]=(H[6]+g)>>>0;H[7]=(H[7]+h)>>>0;
+  }
+  return H.map(function(x){return ('00000000'+x.toString(16)).slice(-8);}).join('');
+}
+async function sha256Hex(value){
+  // Always use the pure-JS fallback for consistent file:// behavior on Android.
+  return sha256HexFallback(value);
 }
 
 function scheduleMidnightReset(){
@@ -433,31 +476,37 @@ function scheduleMidnightReset(){
   );
 
   midnightTimer = setTimeout(()=>{
-    localStorage.removeItem(AUTH_DATE_KEY);
+    safeStorageRemove(AUTH_DATE_KEY);
     lockPage(false);
     scheduleMidnightReset();
   }, nextMidnight.getTime() - now.getTime());
 }
 
 async function unlockPage(){
-  const input = document.getElementById("pinInput");
-  const msg = document.getElementById("pinMsg");
-  const entered = (input.value || "").trim();
-
-  if(await sha256Hex(entered) === PIN_HASH){
-    localStorage.setItem(AUTH_DATE_KEY, localDateKey());
-    document.body.classList.remove("locked");
-    msg.textContent="";
-    input.value="";
-    scheduleMidnightReset();
-  } else {
-    msg.textContent="Incorrect PIN";
-    input.select();
+  const input=document.getElementById("pinInput");
+  const msg=document.getElementById("pinMsg");
+  if(!input)return;
+  const entered=(input.value||"").trim();
+  try{
+    const digest=await sha256Hex(entered);
+    if(digest===PIN_HASH){
+      safeStorageSet(AUTH_DATE_KEY,localDateKey());
+      document.body.classList.remove("locked");
+      if(msg)msg.textContent="";
+      input.value="";
+      scheduleMidnightReset();
+      try{calc();}catch(e){}
+    }else{
+      if(msg)msg.textContent="Incorrect PIN";
+      input.select();
+    }
+  }catch(e){
+    if(msg)msg.textContent="Unlock error - reload the file";
   }
 }
 
 function lockPage(clearDailyAuth=true){
-  if(clearDailyAuth) localStorage.removeItem(AUTH_DATE_KEY);
+  if(clearDailyAuth) safeStorageRemove(AUTH_DATE_KEY);
 
   document.body.classList.add("locked");
   const input=document.getElementById("pinInput");
@@ -471,20 +520,22 @@ function lockPage(clearDailyAuth=true){
 }
 
 function initPinGate(){
-  const unlockedToday = localStorage.getItem(AUTH_DATE_KEY) === localDateKey();
+  const unlockedToday = safeStorageGet(AUTH_DATE_KEY) === localDateKey();
 
   if(unlockedToday){
     document.body.classList.remove("locked");
   } else {
-    localStorage.removeItem(AUTH_DATE_KEY);
+    safeStorageRemove(AUTH_DATE_KEY);
     document.body.classList.add("locked");
-    setTimeout(()=>document.getElementById("pinInput")?.focus(),50);
+    setTimeout(function(){var el=document.getElementById("pinInput");if(el)el.focus();},50);
   }
 
   const input=document.getElementById("pinInput");
-  input?.addEventListener("keydown",e=>{
-    if(e.key==="Enter") unlockPage();
-  });
+  if(input){
+    input.addEventListener("keydown",function(e){
+      if(e.key==="Enter")unlockPage();
+    });
+  }
 
   scheduleMidnightReset();
 }
@@ -494,30 +545,22 @@ document.addEventListener("DOMContentLoaded", initPinGate);
 const COLLATERAL_WITHDRAWAL = 15000000; // historical withdrawal already reflected in the account base
 const NET_DEPOSIT_CAPITAL = 1309100456.518321; // retained only to preserve historical realized-P/L bookkeeping
 
-// Official MegaBot closing snapshot supplied for Friday 13/11/2026, carried forward for Monday 16/11/2026.
-// Three financing days are deducted from collateral NAV2/Open P/L at 0.045% of the full MegaBot Purchase Value:
-// Saturday morning + Sunday morning + Monday morning. MegaMarket principal remains a separate asset.
-const NAV1 = 679214702;
+// Official MegaBot snapshot supplied for Tuesday 17/11/2026, carried forward for Wednesday 18/11/2026.
+// One financing day is deducted from NAV2/Open P/L at 0.045% of the full MegaBot Purchase Value.
+// MegaMarket has been fully released; MM balance is zero and no longer participates in any account metric.
+const NAV1 = 774380952;
 const PRIOR_SNAPSHOT_TOTAL_BUY = 2871754446;
 const SNAPSHOT_TOTAL_BUY = 2871754446;
 const BASE_VHM_QTY = 20000;
 const BASE_FPT_QTY = 30000;
-const PRE_INTEREST_COLLATERAL_NAV2 = 531122756;
-const PRE_INTEREST_OPEN_PNL = -148091946;
-const MM_BALANCE = 95000000;
-const MM_ANNUAL_RATE = 0.09;
-const MM_DAILY_INTEREST = MM_BALANCE * MM_ANNUAL_RATE / 365;
-const PREPARED_INTEREST_DAYS = 3;
+const PRE_INTEREST_NAV2 = 565310122;
+const PRE_INTEREST_OPEN_PNL = -209070830;
+const PREPARED_INTEREST_DAYS = 1;
 const PREPARED_DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * 0.00045;
 const PREPARED_TOTAL_INTEREST = PREPARED_DAILY_INTEREST * PREPARED_INTEREST_DAYS;
-// Financing interest reduces the collateral account; MegaMarket principal remains a separate asset.
-const SNAPSHOT_COLLATERAL_NAV2 = PRE_INTEREST_COLLATERAL_NAV2 - PREPARED_TOTAL_INTEREST;
-const SNAPSHOT_NAV2 = SNAPSHOT_COLLATERAL_NAV2 + MM_BALANCE;
+const SNAPSHOT_NAV2 = PRE_INTEREST_NAV2 - PREPARED_TOTAL_INTEREST;
 const SNAPSHOT_OPEN_PNL = PRE_INTEREST_OPEN_PNL - PREPARED_TOTAL_INTEREST;
-// Total NAV2 is the account asset base for buying power and max-buy calculations.
-// MegaMarket principal is included; MM interest is NOT included until actually credited.
-const SNAPSHOT_TOTAL_NAV_HEADROOM = Math.round(SNAPSHOT_NAV2 - 0.20*SNAPSHOT_TOTAL_BUY);
-const SNAPSHOT_COLLATERAL_HEADROOM = Math.round(SNAPSHOT_COLLATERAL_NAV2 - 0.20*SNAPSHOT_TOTAL_BUY);
+const SNAPSHOT_HEADROOM = Math.round(SNAPSHOT_NAV2 - 0.20*SNAPSHOT_TOTAL_BUY);
 const SNAPSHOT_BUYING_POWER = Math.round(5*SNAPSHOT_NAV2 - SNAPSHOT_TOTAL_BUY);
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
@@ -559,7 +602,7 @@ const REFERENCE_REFRESH_MS = 30000;
 const FETCH_TIMEOUT_MS = 2200;
 const PROXY_TIMEOUT_MS = 2800;
 
-// Prepared base for Monday 16/11/2026: 20,000 VHM and 30,000 FPT from the Friday 13/11 closing snapshot.
+// Prepared base for Wednesday 18/11/2026: holdings unchanged at 20,000 VHM and 30,000 FPT; no new per-symbol prices were supplied in the 17/11 account snapshot.
 // Two BUY and two SELL rows remain free for future trades in each symbol.
 const VHM_CONFIRMED_BUYS = [];
 const FPT_CONFIRMED_BUYS = [];
@@ -569,18 +612,18 @@ let lastComputedTotalFpt = BASE_FPT_QTY;
 
 // Persistent VHM last-valid-price memory for Android/desktop.
 // Priority on feed failure: explicit manual override -> persistent last valid price.
-// The 13/11 closing anchors 62.2 (VHM) and 50.1 (FPT) bootstrap fresh cache namespaces;
+// The latest available per-symbol anchors 62.2 (VHM) and 50.1 (FPT) bootstrap the cache;
 // every successful LIVE quote permanently replaces it, including tomorrow's close.
-const VHM_CACHE_KEY = "megabot_vhm_last_valid_v24_k";
-const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v24_ts";
-const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v24_source";
+const VHM_CACHE_KEY = "megabot_vhm_last_valid_v25_k";
+const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v25_ts";
+const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v25_source";
 let sessionLastValidVhm = null;
 let vhmManualOverride = false;
 
 // Persistent FPT last-valid-price memory. FPT is now part of NAV, so a reliable fallback is required.
-const FPT_CACHE_KEY = "megabot_fpt_last_valid_v10_k";
-const FPT_CACHE_TS_KEY = "megabot_fpt_last_valid_v10_ts";
-const FPT_CACHE_SOURCE_KEY = "megabot_fpt_last_valid_v10_source";
+const FPT_CACHE_KEY = "megabot_fpt_last_valid_v11_k";
+const FPT_CACHE_TS_KEY = "megabot_fpt_last_valid_v11_ts";
+const FPT_CACHE_SOURCE_KEY = "megabot_fpt_last_valid_v11_source";
 let sessionLastValidFpt = null;
 let fptManualOverride = false;
 
@@ -602,6 +645,9 @@ function safeStorageGet(key){
 }
 function safeStorageSet(key,value){
   try{localStorage.setItem(key,String(value));return true}catch(e){return false}
+}
+function safeStorageRemove(key){
+  try{localStorage.removeItem(key);return true}catch(e){return false}
 }
 // Start a fresh persistent cache from the latest 30/10 user-reported execution price.
 // This deliberately ignores older cache namespaces so Android cannot resurrect a stale intraday price.
@@ -625,7 +671,7 @@ function bootstrapPersistentVhmPrice(){
       "megabot_vhm_last_good_v2_k","megabot_vhm_last_good_v2_ts",
       "megabot_vhm_last_valid_v3_k","megabot_vhm_last_valid_v3_ts","megabot_vhm_last_valid_v3_source",
       "megabot_vhm_last_valid_v7_k","megabot_vhm_last_valid_v7_ts","megabot_vhm_last_valid_v7_source"
-    ].forEach(k=>localStorage.removeItem(k));
+    ].forEach(function(k){safeStorageRemove(k);});
   }catch(e){}
 }
 function saveLastGoodVhm(priceK,source='live'){
@@ -647,7 +693,7 @@ function getLastGoodVhm(){
     return {price:p,ts:validTs,age:Math.max(0,Date.now()-validTs),source};
   }
   if(sessionLastValidVhm && Number.isFinite(sessionLastValidVhm.price) && sessionLastValidVhm.price>0){
-    return {...sessionLastValidVhm,age:Math.max(0,Date.now()-sessionLastValidVhm.ts)};
+    return {price:sessionLastValidVhm.price,ts:sessionLastValidVhm.ts,source:sessionLastValidVhm.source,age:Math.max(0,Date.now()-sessionLastValidVhm.ts)};
   }
   return null;
 }
@@ -708,7 +754,7 @@ function getLastGoodFpt(){
     return {price:p,ts:validTs,age:Math.max(0,Date.now()-validTs),source};
   }
   if(sessionLastValidFpt && Number.isFinite(sessionLastValidFpt.price) && sessionLastValidFpt.price>0){
-    return {...sessionLastValidFpt,age:Math.max(0,Date.now()-sessionLastValidFpt.ts)};
+    return {price:sessionLastValidFpt.price,ts:sessionLastValidFpt.ts,source:sessionLastValidFpt.source,age:Math.max(0,Date.now()-sessionLastValidFpt.ts)};
   }
   return null;
 }
@@ -729,10 +775,10 @@ function restoreLastGoodFpt(){
 function applyTheme(theme){
   document.body.classList.toggle("dark", theme==="dark");
   $("themeBtn").textContent = theme==="dark" ? "☀ Light" : "☾ Dark";
-  localStorage.setItem("theme",theme);
+  safeStorageSet("theme",theme);
 }
 function toggleTheme(){applyTheme(document.body.classList.contains("dark")?"light":"dark")}
-applyTheme(localStorage.getItem("theme")||"light");
+applyTheme(safeStorageGet("theme")||"light");
 
 function fmtMoney(n){
   const sign=n<0?"-":"",x=Math.abs(n);
@@ -903,19 +949,15 @@ function calc(){
   const extraFptPnl=extraFptSellNet-extraFptBuyCost-extraFptDayInterest-extraFptSettlementInterest;
 
   const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment;
-  const collateralNav2=SNAPSHOT_COLLATERAL_NAV2+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment;
-  const nav2=collateralNav2+MM_BALANCE;
+  const nav2=SNAPSHOT_NAV2+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment;
 
   const totalPnl=REALIZED_PNL+openPnl;
-  const netWorth=nav2; // total net assets = collateral account + MegaMarket principal
-  // Risk / buying-capacity metrics use total NAV2, including MM principal.
+  const netWorth=nav2;
   const ratio=totalBuy>0?nav2/totalBuy:0;
   const nav2Delta=nav2-SNAPSHOT_NAV2;
-  const collateralNav2Delta=collateralNav2-SNAPSHOT_COLLATERAL_NAV2;
   const totalBuyDelta=totalBuy-SNAPSHOT_TOTAL_BUY;
   const buyingPower=SNAPSHOT_BUYING_POWER + 5*nav2Delta - totalBuyDelta;
-  // Keep the collateral cash-transfer indicator tied to the collateral account itself.
-  const collateralCashHeadroom=(SNAPSHOT_COLLATERAL_NAV2-REQUIRED_RATIO*SNAPSHOT_TOTAL_BUY) + collateralNav2Delta - REQUIRED_RATIO*totalBuyDelta;
+  const collateralCashHeadroom=(SNAPSHOT_NAV2-REQUIRED_RATIO*SNAPSHOT_TOTAL_BUY) + nav2Delta - REQUIRED_RATIO*totalBuyDelta;
   const collateralCashAmount=Math.abs(collateralCashHeadroom);
 
   const costPerNewVhm=vp*(1+BUY_FEE);
@@ -968,14 +1010,10 @@ function calc(){
   $('fptCurrentValueOut').textContent=fmtMoneyFull(fptCurrentValue);
   $('fptMarketPnlOut').textContent=fmtMoneyFull(fptMarketPnl);
   $('fptMarketPnlOut').className='v '+(fptMarketPnl>=0?'positive':'negative');
-  const isExactSnapshotBase=Math.abs(collateralNav2Delta)<0.01 && Math.abs(totalBuyDelta)<0.01 &&
+  const isExactSnapshotBase=Math.abs(nav2Delta)<0.01 && Math.abs(totalBuyDelta)<0.01 &&
     extraVhmQty===0 && extraFptQty===0 && sellVhmQty===0 && sellFptQty===0;
   $('megaBotTotalBuyOut').textContent=fmtMoneyFull(isExactSnapshotBase?SNAPSHOT_TOTAL_BUY:totalBuy);
   $('currentValueOut').textContent=fmtMoneyFull(currentValue);
-  $('collateralNav2Out').textContent=fmtMoneyFull(isExactSnapshotBase?SNAPSHOT_COLLATERAL_NAV2:collateralNav2);
-  $('mmBalanceOut').textContent=fmtMoneyFull(MM_BALANCE);
-  $('mmRateOut').textContent=(MM_ANNUAL_RATE*100).toFixed(2)+'%';
-  $('mmDailyInterestOut').textContent=fmtMoneyFull(MM_DAILY_INTEREST);
   $('nav2Out').textContent=fmtMoneyFull(isExactSnapshotBase?SNAPSHOT_NAV2:nav2);
   $('openPnlOut').textContent=isExactSnapshotBase?fmtMoneyFull(SNAPSHOT_OPEN_PNL):fmtMoney(openPnl);
   $('totalPnlOut').textContent=fmtMoney(totalPnl);
@@ -984,7 +1022,7 @@ function calc(){
   $('totalPnlOut').className='v stressLow '+(totalPnl>=0?'positive':'negative');
   $('ratioOut').textContent=(ratio*100).toFixed(2)+'%';
   if(collateralCashHeadroom>0.5){
-    $('collateralCashOut').textContent='+'+fmtMoneyFull(isExactSnapshotBase?SNAPSHOT_COLLATERAL_HEADROOM:collateralCashAmount);
+    $('collateralCashOut').textContent='+'+fmtMoneyFull(isExactSnapshotBase?SNAPSHOT_HEADROOM:collateralCashAmount);
     $('collateralCashOut').className='v positive';
   }else if(collateralCashHeadroom<-0.5){
     $('collateralCashOut').textContent='-'+fmtMoneyFull(collateralCashAmount);
@@ -1037,14 +1075,23 @@ function calc(){
   }
 }
 
-async function fetchWithTimeout(url,options={},timeoutMs=FETCH_TIMEOUT_MS){
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),timeoutMs);
-  try{
-    return await fetch(url,{...options,signal:controller.signal});
-  }finally{
-    clearTimeout(timer);
+async function fetchWithTimeout(url,options,timeoutMs){
+  options=options||{};
+  timeoutMs=timeoutMs||FETCH_TIMEOUT_MS;
+  if(typeof AbortController!=="undefined"){
+    const controller=new AbortController();
+    const timer=setTimeout(function(){controller.abort();},timeoutMs);
+    try{
+      const opts=Object.assign({},options,{signal:controller.signal});
+      return await fetch(url,opts);
+    }finally{
+      clearTimeout(timer);
+    }
   }
+  return await Promise.race([
+    fetch(url,options),
+    new Promise(function(_,reject){setTimeout(function(){reject(new Error("timeout"));},timeoutMs);})
+  ]);
 }
 
 async function fetchJson(url){
@@ -1065,9 +1112,10 @@ async function fetchKBS(symbol){
   const url="https://kbbuddywts.kbsec.com.vn/iis-server/investment/trade/history/"
     +encodeURIComponent(symbol)+"?page=1&limit=1&_="+Date.now();
   const j=await fetchJson(url);
-  const row=Array.isArray(j?.data)&&j.data.length?j.data[0]:null;
+  const row=(j&&Array.isArray(j.data)&&j.data.length)?j.data[0]:null;
   if(!row)throw new Error("KBS no data");
-  let p=Number(row.FMP??row.price??row.matchPrice);
+  let raw=(row.FMP!=null?row.FMP:(row.price!=null?row.price:row.matchPrice));
+  let p=Number(raw);
   if(!Number.isFinite(p)||p<=0)throw new Error("KBS bad price");
   if(p<1000)p*=1000;
   return p/1000;
@@ -1186,6 +1234,13 @@ async function getPrice(symbol){
   throw new Error("No public price source for "+sym);
 }
 
+function allSettledCompat(promises){
+  if(Promise.allSettled)return Promise.allSettled(promises);
+  return Promise.all(promises.map(function(p){
+    return Promise.resolve(p).then(function(value){return {status:"fulfilled",value:value};},function(reason){return {status:"rejected",reason:reason};});
+  }));
+}
+
 async function loadPrices(forceReference=false){
   if(loading)return;
   loading=true;
@@ -1290,12 +1345,12 @@ async function loadPrices(forceReference=false){
   }
 
   // Main prices run in parallel. Android no longer waits for VHM before starting FPT.
-  await Promise.allSettled([vhmTask,fptTask]);
+  await allSettledCompat([vhmTask,fptTask]);
   $("errorBanner").style.display=(vhmOk&&fptOk)?"none":"block";
   scheduleCalc();
 
   // Reference-only feeds never block NAV display; finish them in the same cycle when requested.
-  if(referenceTasks.length)await Promise.allSettled(referenceTasks);
+  if(referenceTasks.length)await allSettledCompat(referenceTasks);
 
   const t=new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   const cachedNow=getLastGoodVhm();
@@ -1314,7 +1369,7 @@ async function loadPrices(forceReference=false){
     +" | Total VHM: "+fmtShares(lastComputedTotalVhm)+" | Total FPT: "+fmtShares(lastComputedTotalFpt)
     +" | MegaBot purchase value: "+fmtMoneyFull(lastComputedTotalBuy)
     +" | Daily interest at 0.045%: "+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-    +". Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Monday 16/11/2026 from Friday 13/11 close with three financing days (Saturday + Sunday + Monday morning): VHM 20,000 @62.2; FPT 30,000 @50.1; Total MegaBot Purchase Value "+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+"; prepared collateral NAV2 "+fmtMoneyFull(SNAPSHOT_COLLATERAL_NAV2)+"; MegaMarket "+fmtMoneyFull(MM_BALANCE)+" at 9%/year; total NAV2 "+fmtMoneyFull(SNAPSHOT_NAV2)+"; buying power and max-buy limits use total NAV2 including MM principal.";
+    +". Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Wednesday 18/11/2026 from the Tuesday 17/11 account snapshot with one financing day deducted: holdings unchanged at VHM 20,000 and FPT 30,000; Total MegaBot Purchase Value "+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+"; prepared NAV2 "+fmtMoneyFull(SNAPSHOT_NAV2)+".";
 
   btn.disabled=false;
   btn.textContent="↻ Refresh";
@@ -1356,7 +1411,11 @@ $("vicPrice").addEventListener("input",()=>{ $("vicLive").textContent="manual re
 $("vnindexPrice").addEventListener("focus",e=>e.target.select());
 $("vnindexPrice").addEventListener("input",()=>{ $("vnindexLive").textContent="manual reference"; $("vnindexLive").className="live neutral"; });
 
-requestAnimationFrame(()=>setTimeout(()=>loadPrices(true),40));
+if(window.requestAnimationFrame){
+  requestAnimationFrame(function(){setTimeout(function(){loadPrices(true);},80);});
+}else{
+  setTimeout(function(){loadPrices(true);},120);
+}
 armAutoRefresh();
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden){
