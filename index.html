@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
-<title>Last updated: 17-11-2026 time 16-15</title>
+<title>Last updated: 17-11-2026 time 16-28</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -234,7 +234,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 17-11-2026 time 16-15</div>
+  <div id="versionLine">Last updated: 17-11-2026 time 16-28</div>
 
   <div class="indexSection" id="generalIndexSection">
     <div class="indexTitle">GENERAL INDEX</div>
@@ -288,11 +288,12 @@ body.locked #pinGate{display:flex}
         <div class="result"><div class="k">Current portfolio value</div><div id="currentValueOut" class="v neutral">-</div></div>
         <div class="result"><div class="k">NAV2</div><div id="nav2Out" class="v neutral">-</div></div>
         <div class="result"><div class="k">Current net assets</div><div id="netWorthOut" class="v neutral">-</div></div>
-        <div class="result"><div class="k">NAV2 / Purchase value ratio</div><div id="ratioOut" class="v">-</div></div>
+        <div class="result"><div class="k">Current collateral ratio (17/11 snapshot)</div><div id="ratioOut" class="v">19.69%</div></div>
+        <div class="result"><div class="k">Prepared ratio after 1-day interest</div><div id="preparedRatioOut" class="v">19.64%</div></div>
         <div class="result"><div class="k">Open P/L</div><div id="openPnlOut" class="v stressLow">-</div></div>
         <div class="result"><div class="k">Total account P/L</div><div id="totalPnlOut" class="v stressLow">-</div></div>
         <div class="result" id="collateralCashCard"><div class="k">Collateral to add / available to withdraw</div><div id="collateralCashOut" class="v">-</div></div>
-        <div class="result"><div class="k">Buying power (NAV2 incl. MM)</div><div id="bpOut" class="v">-</div></div>
+        <div class="result"><div class="k">Buying power (NAV2)</div><div id="bpOut" class="v">-</div></div>
         <div class="result"><div class="k">Daily financing interest 0.045%</div><div id="dailyInterestOut" class="v warning">-</div></div>
       </div>
     </div>
@@ -560,6 +561,8 @@ const PREPARED_DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * 0.00045;
 const PREPARED_TOTAL_INTEREST = PREPARED_DAILY_INTEREST * PREPARED_INTEREST_DAYS;
 const SNAPSHOT_NAV2 = PRE_INTEREST_NAV2 - PREPARED_TOTAL_INTEREST;
 const SNAPSHOT_OPEN_PNL = PRE_INTEREST_OPEN_PNL - PREPARED_TOTAL_INTEREST;
+const REPORTED_CURRENT_RATIO = PRE_INTEREST_NAV2 / SNAPSHOT_TOTAL_BUY;
+const PREPARED_RATIO = SNAPSHOT_NAV2 / SNAPSHOT_TOTAL_BUY;
 const SNAPSHOT_HEADROOM = Math.round(SNAPSHOT_NAV2 - 0.20*SNAPSHOT_TOTAL_BUY);
 const SNAPSHOT_BUYING_POWER = Math.round(5*SNAPSHOT_NAV2 - SNAPSHOT_TOTAL_BUY);
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
@@ -578,13 +581,15 @@ const BASE_VHM_BUY_PRICE_K = BASE_VHM_GROSS_COST / BASE_VHM_QTY / 1000;
 const BASE_FPT_BUY_PRICE_K = BASE_FPT_GROSS_COST / BASE_FPT_QTY / 1000;
 const BASE_TOTAL_BUY_CALC = (BASE_VHM_GROSS_COST + BASE_FPT_GROSS_COST) * (1 + BUY_FEE);
 
-// Exact market anchors supplied with the 13/11/2026 closing snapshot.
-const MODEL_ANCHOR_VHM_PRICE_K = 62.2;
-const MODEL_ANCHOR_FPT_PRICE_K = 50.1;
+// The 17/11 account snapshot did not include per-symbol closing prices.
+// Therefore the old 13/11 prices must NOT be used as NAV2 movement anchors.
+// We keep them only as display fallbacks and rebase NAV2 movement to the first valid LIVE quote of each symbol in this browser session.
 const INITIAL_LAST_VALID_VHM_PRICE_K = 62.2;
-const INITIAL_LAST_VALID_LABEL = "13/11 closing anchor @62.2";
+const INITIAL_LAST_VALID_LABEL = "display fallback @62.2";
 const INITIAL_LAST_VALID_FPT_PRICE_K = 50.1;
-const INITIAL_LAST_VALID_FPT_LABEL = "13/11 closing anchor @50.1";
+const INITIAL_LAST_VALID_FPT_LABEL = "display fallback @50.1";
+let LIVE_REBASE_VHM_PRICE_K = null;
+let LIVE_REBASE_FPT_PRICE_K = null;
 
 const REMAINING_TOTAL_BUY = SNAPSHOT_TOTAL_BUY;
 const DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * DAILY_RATE;
@@ -614,16 +619,16 @@ let lastComputedTotalFpt = BASE_FPT_QTY;
 // Priority on feed failure: explicit manual override -> persistent last valid price.
 // The latest available per-symbol anchors 62.2 (VHM) and 50.1 (FPT) bootstrap the cache;
 // every successful LIVE quote permanently replaces it, including tomorrow's close.
-const VHM_CACHE_KEY = "megabot_vhm_last_valid_v25_k";
-const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v25_ts";
-const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v25_source";
+const VHM_CACHE_KEY = "megabot_vhm_last_valid_v26_k";
+const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v26_ts";
+const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v26_source";
 let sessionLastValidVhm = null;
 let vhmManualOverride = false;
 
 // Persistent FPT last-valid-price memory. FPT is now part of NAV, so a reliable fallback is required.
-const FPT_CACHE_KEY = "megabot_fpt_last_valid_v11_k";
-const FPT_CACHE_TS_KEY = "megabot_fpt_last_valid_v11_ts";
-const FPT_CACHE_SOURCE_KEY = "megabot_fpt_last_valid_v11_source";
+const FPT_CACHE_KEY = "megabot_fpt_last_valid_v12_k";
+const FPT_CACHE_TS_KEY = "megabot_fpt_last_valid_v12_ts";
+const FPT_CACHE_SOURCE_KEY = "megabot_fpt_last_valid_v12_source";
 let sessionLastValidFpt = null;
 let fptManualOverride = false;
 
@@ -928,10 +933,11 @@ function calc(){
   lastComputedTotalVhm=totalVhmQty;
   lastComputedTotalFpt=totalFptQty;
 
-  // Move NAV2 from the exact 13/11 closing price anchors supplied by the user.
-  const basePrice=MODEL_ANCHOR_VHM_PRICE_K*1000;
+  // Rebase price movement to the first valid LIVE quote of this browser session.
+  // This prevents stale 13/11 price anchors from corrupting the 17/11 account snapshot.
+  const basePrice=((Number.isFinite(LIVE_REBASE_VHM_PRICE_K)&&LIVE_REBASE_VHM_PRICE_K>0)?LIVE_REBASE_VHM_PRICE_K:vpK)*1000;
   const baseMovePnl=BASE_VHM_QTY*(vp-basePrice)*MARK_TO_LIQUIDATION_FACTOR;
-  const fptBasePrice=MODEL_ANCHOR_FPT_PRICE_K*1000;
+  const fptBasePrice=((Number.isFinite(LIVE_REBASE_FPT_PRICE_K)&&LIVE_REBASE_FPT_PRICE_K>0)?LIVE_REBASE_FPT_PRICE_K:fpK)*1000;
   const fptMovePnl=BASE_FPT_QTY*(fp-fptBasePrice)*MARK_TO_LIQUIDATION_FACTOR;
 
   // New VHM buys: buy fee + one current-day financing charge + liquidation assumptions.
@@ -1020,7 +1026,9 @@ function calc(){
   $('netWorthOut').textContent=fmtMoneyFull(isExactSnapshotBase?SNAPSHOT_NAV2:netWorth);
   $('openPnlOut').className='v stressLow '+(openPnl>=0?'positive':'negative');
   $('totalPnlOut').className='v stressLow '+(totalPnl>=0?'positive':'negative');
-  $('ratioOut').textContent=(ratio*100).toFixed(2)+'%';
+  // Keep the supplied 17/11 collateral ratio visible exactly as the official snapshot.
+  $('ratioOut').textContent=(REPORTED_CURRENT_RATIO*100).toFixed(2)+'%';
+  $('preparedRatioOut').textContent=(ratio*100).toFixed(2)+'%';
   if(collateralCashHeadroom>0.5){
     $('collateralCashOut').textContent='+'+fmtMoneyFull(isExactSnapshotBase?SNAPSHOT_HEADROOM:collateralCashAmount);
     $('collateralCashOut').className='v positive';
@@ -1050,7 +1058,8 @@ function calc(){
   $('fptBuy24Out').textContent=fmtShares(canBuyFpt24);
   $('fptBuy25Out').textContent=fmtShares(canBuyFpt25);
 
-  $('ratioOut').className='v '+(ratio>=REQUIRED_RATIO?'positive':'negative');
+  $('ratioOut').className='v '+(REPORTED_CURRENT_RATIO>=REQUIRED_RATIO?'positive':'negative');
+  $('preparedRatioOut').className='v '+(ratio>=REQUIRED_RATIO?'positive':'negative');
   $('bpOut').className='v '+(buyingPower>=0?'positive':'negative');
   [
     ['vhmBuyOut',canBuyVhm],['vhmBuy2025Out',canBuyVhm2025],['vhmBuy205Out',canBuyVhm205],
@@ -1256,6 +1265,7 @@ async function loadPrices(forceReference=false){
   const vhmTask=(async()=>{
     try{
       const x=await getPrice("VHM");
+      if(!(Number.isFinite(LIVE_REBASE_VHM_PRICE_K)&&LIVE_REBASE_VHM_PRICE_K>0)) LIVE_REBASE_VHM_PRICE_K=x.price;
       $("vhmPrice").value=x.price.toFixed(1);
       saveLastGoodVhm(x.price,"LIVE "+x.source);
       vhmManualOverride=false;
@@ -1286,6 +1296,7 @@ async function loadPrices(forceReference=false){
   const fptTask=(async()=>{
     try{
       const x=await getPrice("FPT");
+      if(!(Number.isFinite(LIVE_REBASE_FPT_PRICE_K)&&LIVE_REBASE_FPT_PRICE_K>0)) LIVE_REBASE_FPT_PRICE_K=x.price;
       $("fptPrice").value=x.price.toFixed(1);
       saveLastGoodFpt(x.price,"LIVE "+x.source);
       fptManualOverride=false;
@@ -1369,7 +1380,7 @@ async function loadPrices(forceReference=false){
     +" | Total VHM: "+fmtShares(lastComputedTotalVhm)+" | Total FPT: "+fmtShares(lastComputedTotalFpt)
     +" | MegaBot purchase value: "+fmtMoneyFull(lastComputedTotalBuy)
     +" | Daily interest at 0.045%: "+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-    +". Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Wednesday 18/11/2026 from the Tuesday 17/11 account snapshot with one financing day deducted: holdings unchanged at VHM 20,000 and FPT 30,000; Total MegaBot Purchase Value "+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+"; prepared NAV2 "+fmtMoneyFull(SNAPSHOT_NAV2)+".";
+    +". Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Wednesday 18/11/2026 from the Tuesday 17/11 account snapshot with one financing day deducted. Current snapshot collateral ratio is locked to the supplied 19.69%; prepared ratio after the financing deduction is shown separately. Live VHM/FPT movement is rebased from the first valid quote of the session so stale 13/11 anchors cannot distort NAV2. Holdings unchanged at VHM 20,000 and FPT 30,000; Total MegaBot Purchase Value "+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+"; prepared NAV2 "+fmtMoneyFull(SNAPSHOT_NAV2)+".";
 
   btn.disabled=false;
   btn.textContent="↻ Refresh";
