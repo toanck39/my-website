@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 20-11-2026 time 10-41</title>
+<title>Last updated: 21-11-2026 time 18-26</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -233,13 +233,13 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 20-11-2026 time 10-41</div>
+  <div id="versionLine">Last updated: 21-11-2026 time 18-26</div>
 
   <div class="indexSection" id="generalIndexSection">
     <div class="indexTitle">GENERAL INDEX</div>
     <div class="indexBody">
       <div class="panel">
-        <div class="section">VHM & FPT CORE / LIVE PRICE</div>
+        <div class="section">VHM & FPT & GAS CORE / LIVE PRICE</div>
         <div class="grid">
           <div class="box">
             <label>VHM core</label>
@@ -254,12 +254,22 @@ body.locked #pinGate{display:flex}
           <div class="box">
             <label>FPT core</label>
             <input id="baseFptQty" type="number" value="21000" readonly>
-            <div class="unit">21,000 @ 52.844</div>
+            <div class="unit">21,000 @ 52.657</div>
           </div>
           <div class="box">
             <label>Current FPT price</label>
             <input id="fptPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
             <div id="fptLive" class="live">price not loaded</div>
+          </div>
+          <div class="box">
+            <label>GAS core</label>
+            <input id="baseGasQty" type="number" value="0" readonly>
+            <div class="unit">0 @ -</div>
+          </div>
+          <div class="box">
+            <label>Current GAS price</label>
+            <input id="gasPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
+            <div id="gasLive" class="live">price not loaded</div>
           </div>
         </div>
       </div>
@@ -283,7 +293,7 @@ body.locked #pinGate{display:flex}
       </div>
 
       <div class="generalResults">
-        <div class="result"><div class="k">Total MegaBot Purchase Value</div><div id="megaBotTotalBuyOut" class="v neutral">2,319,744,142</div></div>
+        <div class="result"><div class="k">Total MegaBot Purchase Value</div><div id="megaBotTotalBuyOut" class="v neutral">2,262,881,198</div></div>
         <div class="result"><div class="k">Current portfolio value</div><div id="currentValueOut" class="v neutral">-</div></div>
         <div class="result"><div class="k">NAV2</div><div id="nav2Out" class="v neutral">-</div></div>
         <div class="result"><div class="k">Current net assets</div><div id="netWorthOut" class="v neutral">-</div></div>
@@ -338,7 +348,7 @@ body.locked #pinGate{display:flex}
     <div class="indexBody">
       <div class="assetSummary">
         <div class="result"><div class="k">Total FPT</div><div id="totalFptOut" class="v neutral">21,000</div></div>
-        <div class="result"><div class="k">FPT average cost</div><div id="avgFptCostOut" class="v neutral">52.844</div></div>
+        <div class="result"><div class="k">FPT average cost</div><div id="avgFptCostOut" class="v neutral">52.657</div></div>
         <div class="result"><div class="k">FPT current value</div><div id="fptCurrentValueOut" class="v neutral">-</div></div>
         <div class="result"><div class="k">FPT market P/L</div><div id="fptMarketPnlOut" class="v">-</div></div>
       </div>
@@ -369,8 +379,44 @@ body.locked #pinGate{display:flex}
     </div>
   </div>
 
+  <div class="indexSection" id="gasIndexSection">
+    <div class="indexTitle">GAS INDEX</div>
+    <div class="indexBody">
+      <div class="assetSummary">
+        <div class="result"><div class="k">Total GAS</div><div id="totalGasOut" class="v neutral">0</div></div>
+        <div class="result"><div class="k">GAS average cost</div><div id="avgGasCostOut" class="v neutral">0.000</div></div>
+        <div class="result"><div class="k">GAS current value</div><div id="gasCurrentValueOut" class="v neutral">-</div></div>
+        <div class="result"><div class="k">GAS market P/L</div><div id="gasMarketPnlOut" class="v">-</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="section">2 GAS BUY LOTS</div>
+        <table class="buytable">
+          <thead><tr><th>Symbol / lot</th><th>Buy quantity</th><th>Buy price (k)</th></tr></thead>
+          <tbody id="gasBuyRows"></tbody>
+        </table>
+        <div class="section" style="margin-top:8px">2 GAS SELL LOTS</div>
+        <table class="buytable">
+          <thead><tr><th>Symbol / lot</th><th>Sell quantity</th><th>Sell price (k)</th></tr></thead>
+          <tbody id="gasSellRows"></tbody>
+        </table>
+      </div>
+
+      <div class="assetResults">
+        <div class="result maxAssetCard"><div class="k">Max additional GAS</div><div id="gasBuyOut" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max additional GAS at 20,25%</div><div id="gasBuy2025Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max GAS at 20.5% collateral</div><div id="gasBuy205Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max GAS at 21% collateral</div><div id="gasBuy21Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max GAS at 22% collateral</div><div id="gasBuy22Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max GAS at 23% collateral</div><div id="gasBuy23Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max GAS at 24% collateral</div><div id="gasBuy24Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max GAS at 25% collateral</div><div id="gasBuy25Out" class="v">-</div></div>
+      </div>
+    </div>
+  </div>
+
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">MegaBot intraday update 20/11/2026 after confirmed sales 5,000 FPT @45.6 and 1,000 FPT @45.1. Core: VHM 18,000 @64.094 with market anchor 60.4; FPT 21,000 @52.844 with latest post-sale anchor 45.1. Total MegaBot Purchase Value: 2,266,820,431. Model NAV1 after reclassifying both confirmed sales: 698,478,070. Post-sale model NAV2 anchor: 449,410,014. The financing deduction for the 20/11 morning was already included before these intraday sales; no extra financing day is deducted in this update. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve remains 2 days at 0.045%.</div>
+  <div id="source" class="footer">Prepared for Monday 23/11/2026 from the supplied Friday 20/11/2026 MegaBot closing snapshot. Core: VHM 18,000 @64.094 with market anchor 60.4; FPT 21,000 @52.657 with market anchor 45.0; GAS core starts at 0 and is available as a full third trading field. Total MegaBot Purchase Value: 2,262,881,198. NAV1: 691,711,740. Closing NAV2: 436,485,062. Three financing days (Saturday 21/11 + Sunday 22/11 + Monday 23/11 morning) at 0.045% are deducted before the Monday session. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve remains 2 days at 0.045%.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -473,26 +519,23 @@ document.addEventListener("DOMContentLoaded", initPinGate);
 const COLLATERAL_WITHDRAWAL = 15000000; // historical withdrawal already reflected in the account base
 const NET_DEPOSIT_CAPITAL = 1309100456.518321; // retained only to preserve historical realized-P/L bookkeeping
 
-// Post-sale MegaBot model snapshot for Friday 20/11/2026.
-// The prior 19/11 closing snapshot had already been prepared for 20/11 by deducting one financing day.
-// Confirmed trades: sold 5,000 FPT at 45.6, then sold another 1,000 FPT at 45.1, reducing FPT from 27,000 to 21,000 shares.
-// Both confirmed sales are rebased into the core position so both SELL rows remain free for future trades.
-const NAV1 = 698478069.8083333; // model-estimated after reclassifying both confirmed FPT sales
-const PRIOR_SNAPSHOT_TOTAL_BUY = 2584362698;
-const SNAPSHOT_TOTAL_BUY = 2266820431.273333;
+// Official MegaBot closing snapshot supplied for Friday 20/11/2026.
+// Prepared for Monday 23/11/2026 by deducting 3 full financing days
+// (Saturday morning + Sunday morning + Monday morning) at 0.045% of the full MegaBot Purchase Value.
+// Collateral is not deducted from the interest base.
+const NAV1 = 691711740;
+const PRIOR_SNAPSHOT_TOTAL_BUY = 2262881198;
+const SNAPSHOT_TOTAL_BUY = 2262881198;
 const BASE_VHM_QTY = 18000;
 const BASE_FPT_QTY = 21000;
-const PRE_INTEREST_NAV2 = 449410013.58590;
-const PRE_INTEREST_OPEN_PNL = -249068056.22243327;
-const PREPARED_INTEREST_DAYS = 0; // the 20/11 morning financing deduction was already included before this intraday sale
+const BASE_GAS_QTY = 0;
+const PRE_INTEREST_NAV2 = 436485062;
+const PRE_INTEREST_OPEN_PNL = -255226678;
+const PREPARED_INTEREST_DAYS = 3;
 const PREPARED_DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * 0.00045;
-const PREPARED_TOTAL_INTEREST = 0;
-const SNAPSHOT_NAV2 = PRE_INTEREST_NAV2;
-const SNAPSHOT_OPEN_PNL = PRE_INTEREST_OPEN_PNL;
-const CONFIRMED_FPT_SALE_QTY = 5000;
-const CONFIRMED_FPT_SALE_PRICE_K = 45.6;
-const CONFIRMED_FPT_SECOND_SALE_QTY = 1000;
-const CONFIRMED_FPT_SECOND_SALE_PRICE_K = 45.1;
+const PREPARED_TOTAL_INTEREST = PREPARED_DAILY_INTEREST * PREPARED_INTEREST_DAYS;
+const SNAPSHOT_NAV2 = PRE_INTEREST_NAV2 - PREPARED_TOTAL_INTEREST;
+const SNAPSHOT_OPEN_PNL = PRE_INTEREST_OPEN_PNL - PREPARED_TOTAL_INTEREST;
 const REALIZED_PNL = NAV1 - NET_DEPOSIT_CAPITAL;
 
 const BUY_FEE = 0.0015;                 // 0.15%
@@ -502,19 +545,22 @@ const SETTLEMENT_DAYS = 2;              // MegaBot mark-to-liquidation interest 
 const SELL_NET_FACTOR = 1 - SELL_FEE;
 const MARK_TO_LIQUIDATION_FACTOR = SELL_NET_FACTOR * (1 - DAILY_RATE * SETTLEMENT_DAYS);
 
-// Remaining gross purchase values after the confirmed 5,000 FPT sale @45.6 and 1,000 FPT sale @45.1 on 20/11/2026.
+// Exact gross purchase values from the supplied 20/11/2026 closing snapshot.
 const BASE_VHM_GROSS_COST = 1153691960;
-const BASE_FPT_GROSS_COST = 1109733333.3333333;
+const BASE_FPT_GROSS_COST = 1105800000;
+const BASE_GAS_GROSS_COST = 0;
 const BASE_FPT_BUY_COST = BASE_FPT_GROSS_COST * (1 + BUY_FEE);
-const BASE_FPT_BUY_PRICE_K = BASE_FPT_GROSS_COST / BASE_FPT_QTY / 1000; // displays 52.844
+const BASE_FPT_BUY_PRICE_K = BASE_FPT_GROSS_COST / BASE_FPT_QTY / 1000; // displays 52.657
 
-// Post-sale market anchors. VHM remains at the last supplied 60.4 anchor; FPT is rebased to the latest confirmed 45.1 execution.
+// End-of-day market anchors supplied with the 20/11/2026 snapshot. GAS starts with no holding, so no base GAS anchor affects NAV.
 const MODEL_ANCHOR_VHM_PRICE_K = 60.4;
-const MODEL_ANCHOR_FPT_PRICE_K = 45.1;
+const MODEL_ANCHOR_FPT_PRICE_K = 45.0;
 const INITIAL_LAST_VALID_VHM_PRICE_K = 60.4;
-const INITIAL_LAST_VALID_LABEL = "19/11 close anchor @60.4";
-const INITIAL_LAST_VALID_FPT_PRICE_K = 45.1;
-const INITIAL_LAST_VALID_FPT_LABEL = "20/11 latest confirmed sale anchor @45.1";
+const INITIAL_LAST_VALID_LABEL = "Friday close 20/11/2026 @60.4";
+const INITIAL_LAST_VALID_FPT_PRICE_K = 45.0;
+const INITIAL_LAST_VALID_FPT_LABEL = "Friday close 20/11/2026 @45.0";
+const INITIAL_LAST_VALID_GAS_PRICE_K = 0;
+const INITIAL_LAST_VALID_GAS_LABEL = "no GAS base position";
 
 const REMAINING_TOTAL_BUY = SNAPSHOT_TOTAL_BUY;
 const DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * DAILY_RATE;
@@ -529,13 +575,15 @@ const TARGET_RATIO_24 = 0.24;
 const TARGET_RATIO_25 = 0.25;
 const AUTO_REFRESH_MS = 5000;
 
-// Post-sale base for Friday 20/11/2026: 18,000 VHM and 21,000 FPT after selling 5,000 FPT @45.6 and another 1,000 FPT @45.1.
+// Prepared base for Monday 23/11/2026: VHM 18,000, FPT 21,000, GAS 0.
 // Two BUY and two SELL rows remain free for future trades in each symbol.
 const VHM_CONFIRMED_BUYS = [];
 const FPT_CONFIRMED_BUYS = [];
+const GAS_CONFIRMED_BUYS = [];
 let lastComputedTotalBuy = SNAPSHOT_TOTAL_BUY;
 let lastComputedTotalVhm = BASE_VHM_QTY;
 let lastComputedTotalFpt = BASE_FPT_QTY;
+let lastComputedTotalGas = BASE_GAS_QTY;
 
 // Persistent VHM last-valid-price memory for Android/desktop.
 // Priority on feed failure: explicit manual override -> persistent last valid price.
@@ -548,11 +596,18 @@ let sessionLastValidVhm = null;
 let vhmManualOverride = false;
 
 // Persistent FPT last-valid-price memory. FPT is now part of NAV, so a reliable fallback is required.
-const FPT_CACHE_KEY = "megabot_fpt_last_valid_v15_k";
-const FPT_CACHE_TS_KEY = "megabot_fpt_last_valid_v15_ts";
-const FPT_CACHE_SOURCE_KEY = "megabot_fpt_last_valid_v15_source";
+const FPT_CACHE_KEY = "megabot_fpt_last_valid_v16_k";
+const FPT_CACHE_TS_KEY = "megabot_fpt_last_valid_v16_ts";
+const FPT_CACHE_SOURCE_KEY = "megabot_fpt_last_valid_v16_source";
 let sessionLastValidFpt = null;
 let fptManualOverride = false;
+
+// Persistent GAS last-valid-price memory. GAS starts with no core holding and becomes part of NAV only after a GAS BUY lot is entered.
+const GAS_CACHE_KEY = "megabot_gas_last_valid_v1_k";
+const GAS_CACHE_TS_KEY = "megabot_gas_last_valid_v1_ts";
+const GAS_CACHE_SOURCE_KEY = "megabot_gas_last_valid_v1_source";
+let sessionLastValidGas = null;
+let gasManualOverride = false;
 
 const $ = id => document.getElementById(id);
 let loading=false;
@@ -686,6 +741,54 @@ function restoreLastGoodFpt(){
   return false;
 }
 
+function bootstrapPersistentGasPrice(){
+  let p=Number(safeStorageGet(GAS_CACHE_KEY));
+  let ts=Number(safeStorageGet(GAS_CACHE_TS_KEY));
+  let source=safeStorageGet(GAS_CACHE_SOURCE_KEY);
+  if(!(Number.isFinite(p)&&p>0)){
+    sessionLastValidGas=null;
+    return;
+  }
+  sessionLastValidGas={price:p,ts:Number.isFinite(ts)&&ts>0?ts:Date.now(),source:source||'last valid'};
+}
+function saveLastGoodGas(priceK,source='live'){
+  const p=Number(priceK);
+  if(!Number.isFinite(p)||p<=0)return;
+  const ts=Date.now();
+  sessionLastValidGas={price:p,ts,source};
+  safeStorageSet(GAS_CACHE_KEY,p.toFixed(1));
+  safeStorageSet(GAS_CACHE_TS_KEY,ts);
+  safeStorageSet(GAS_CACHE_SOURCE_KEY,source);
+}
+function getLastGoodGas(){
+  const p=Number(safeStorageGet(GAS_CACHE_KEY));
+  const ts=Number(safeStorageGet(GAS_CACHE_TS_KEY));
+  const source=safeStorageGet(GAS_CACHE_SOURCE_KEY)||'last valid';
+  if(Number.isFinite(p)&&p>0){
+    const validTs=Number.isFinite(ts)&&ts>0?ts:Date.now();
+    sessionLastValidGas={price:p,ts:validTs,source};
+    return {price:p,ts:validTs,age:Math.max(0,Date.now()-validTs),source};
+  }
+  if(sessionLastValidGas && Number.isFinite(sessionLastValidGas.price) && sessionLastValidGas.price>0){
+    return {...sessionLastValidGas,age:Math.max(0,Date.now()-sessionLastValidGas.ts)};
+  }
+  return null;
+}
+function restoreLastGoodGas(){
+  bootstrapPersistentGasPrice();
+  const cached=getLastGoodGas();
+  if(cached){
+    $('gasPrice').value=cached.price.toFixed(1);
+    $('gasLive').textContent='LAST VALID '+cached.price.toFixed(1)+' · '+cached.source+' · '+formatCacheAge(cached.age);
+    $('gasLive').className='live neutral';
+    return true;
+  }
+  $('gasPrice').value='';
+  $('gasLive').textContent='NO LAST VALID PRICE · waiting for live GAS';
+  $('gasLive').className='live warning';
+  return false;
+}
+
 function applyTheme(theme){
   document.body.classList.toggle("dark", theme==="dark");
   $("themeBtn").textContent = theme==="dark" ? "☀ Light" : "☾ Dark";
@@ -709,10 +812,14 @@ function makeRows(){
   const sellTb=$("sellRows");
   const fptBuyTb=$("fptBuyRows");
   const fptSellTb=$("fptSellRows");
+  const gasBuyTb=$("gasBuyRows");
+  const gasSellTb=$("gasSellRows");
   buyTb.innerHTML="";
   sellTb.innerHTML="";
   fptBuyTb.innerHTML="";
   fptSellTb.innerHTML="";
+  gasBuyTb.innerHTML="";
+  gasSellTb.innerHTML="";
 
   for(let i=1;i<=2;i++){
     const preset=VHM_CONFIRMED_BUYS[i-1] || {qty:0,price:0};
@@ -752,6 +859,25 @@ function makeRows(){
     fptSellTb.appendChild(tr);
   }
 
+  for(let i=1;i<=2;i++){
+    const preset=GAS_CONFIRMED_BUYS[i-1] || {qty:0,price:0};
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td class="n">GAS BUY ${i}</td>
+      <td><input class="tradeQty buyQty" id="gasBuyQty${i}" type="number" value="${preset.qty}" min="0" step="100" inputmode="numeric"></td>
+      <td><input class="tradePrice buyPrice" id="gasBuyPrice${i}" type="number" value="${preset.price}" min="0" step="0.1" inputmode="decimal"></td>`;
+    gasBuyTb.appendChild(tr);
+  }
+
+  for(let i=1;i<=2;i++){
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td class="n">GAS SELL ${i}</td>
+      <td><input class="tradeQty sellQty" id="gasSellQty${i}" type="number" value="0" min="0" step="100" inputmode="numeric"></td>
+      <td><input class="tradePrice sellPrice" id="gasSellPrice${i}" type="number" value="0" min="0" step="0.1" inputmode="decimal"></td>`;
+    gasSellTb.appendChild(tr);
+  }
+
   document.querySelectorAll(".tradeQty,.tradePrice").forEach(el=>{
     el.addEventListener("input",calc);
     el.addEventListener("focus",e=>e.target.select());
@@ -761,6 +887,7 @@ function makeRows(){
 function calc(){
   const vpK=+$('vhmPrice').value||INITIAL_LAST_VALID_VHM_PRICE_K, vp=vpK*1000;
   const fpK=+$('fptPrice').value||INITIAL_LAST_VALID_FPT_PRICE_K, fp=fpK*1000;
+  const gpK=+$('gasPrice').value||0, gp=gpK*1000;
 
   // VHM: two future BUY lots.
   let extraVhmQty=0;
@@ -830,17 +957,53 @@ function calc(){
   const fptGrossCost=Math.max(0,preSellFptGrossCost-soldFptGrossCost);
   const fptBuyValue=fptGrossCost*(1+BUY_FEE);
 
-  const totalBuy=vhmBuyValue+fptBuyValue;
+  // GAS: two future BUY lots, then two SELL lots. Core GAS starts at zero.
+  let extraGasQty=0;
+  let extraGasGrossCost=0;
+  for(let i=1;i<=2;i++){
+    const q=Math.max(0,+$('gasBuyQty'+i).value||0);
+    const pK=Math.max(0,+$('gasBuyPrice'+i).value||0);
+    extraGasQty+=q;
+    extraGasGrossCost+=q*pK*1000;
+  }
+  const preSellGasQty=BASE_GAS_QTY+extraGasQty;
+  const preSellGasGrossCost=BASE_GAS_GROSS_COST+extraGasGrossCost;
+  const preSellGasAvgGrossCost=preSellGasQty>0?preSellGasGrossCost/preSellGasQty:0;
+  let sellGasQty=0;
+  let gasSellExecutionAdjustment=0;
+  let remainingGasSellCapacity=preSellGasQty;
+  let requestedGasSellQty=0;
+  for(let i=1;i<=2;i++){
+    const qRequested=Math.max(0,+$('gasSellQty'+i).value||0);
+    const pK=Math.max(0,+$('gasSellPrice'+i).value||0);
+    requestedGasSellQty+=qRequested;
+    const q=Math.min(qRequested,remainingGasSellCapacity);
+    remainingGasSellCapacity-=q;
+    sellGasQty+=q;
+    if(q>0 && pK>0){
+      gasSellExecutionAdjustment+=q*((pK*1000)-gp)*MARK_TO_LIQUIDATION_FACTOR;
+    }
+  }
+  const soldGasGrossCost=sellGasQty*preSellGasAvgGrossCost;
+  const totalGasQty=Math.max(0,preSellGasQty-sellGasQty);
+  const gasGrossCost=Math.max(0,preSellGasGrossCost-soldGasGrossCost);
+  const gasBuyValue=gasGrossCost*(1+BUY_FEE);
+
+  const totalBuy=vhmBuyValue+fptBuyValue+gasBuyValue;
   const vhmCurrentValue=totalVhmQty*vp;
   const fptCurrentValue=totalFptQty*fp;
-  const currentValue=vhmCurrentValue+fptCurrentValue;
+  const gasCurrentValue=totalGasQty*gp;
+  const currentValue=vhmCurrentValue+fptCurrentValue+gasCurrentValue;
   const vhmMarketPnl=vhmCurrentValue-vhmGrossCost;
   const fptMarketPnl=fptCurrentValue-fptGrossCost;
+  const gasMarketPnl=gasCurrentValue-gasGrossCost;
   const avgVhmCost=totalVhmQty>0?vhmGrossCost/totalVhmQty:0;
   const avgFptCost=totalFptQty>0?fptGrossCost/totalFptQty:0;
+  const avgGasCost=totalGasQty>0?gasGrossCost/totalGasQty:0;
   lastComputedTotalBuy=totalBuy;
   lastComputedTotalVhm=totalVhmQty;
   lastComputedTotalFpt=totalFptQty;
+  lastComputedTotalGas=totalGasQty;
 
   // Base positions move from the post-sale 20/11 anchors using MegaBot mark-to-liquidation assumptions.
   const basePrice=MODEL_ANCHOR_VHM_PRICE_K*1000;
@@ -862,8 +1025,15 @@ function calc(){
   const extraFptSettlementInterest=extraFptSellNet*DAILY_RATE*SETTLEMENT_DAYS;
   const extraFptPnl=extraFptSellNet-extraFptBuyCost-extraFptDayInterest-extraFptSettlementInterest;
 
-  const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment;
-  const nav2=SNAPSHOT_NAV2+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment;
+  // New GAS buys use the same MegaBot fee/interest mechanics.
+  const extraGasBuyCost=extraGasGrossCost*(1+BUY_FEE);
+  const extraGasSellNet=extraGasQty*gp*SELL_NET_FACTOR;
+  const extraGasDayInterest=extraGasBuyCost*DAILY_RATE;
+  const extraGasSettlementInterest=extraGasSellNet*DAILY_RATE*SETTLEMENT_DAYS;
+  const extraGasPnl=extraGasSellNet-extraGasBuyCost-extraGasDayInterest-extraGasSettlementInterest;
+
+  const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+extraGasPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment+gasSellExecutionAdjustment;
+  const nav2=SNAPSHOT_NAV2+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+extraGasPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment+gasSellExecutionAdjustment;
 
   const totalPnl=REALIZED_PNL+openPnl;
   const netWorth=NET_DEPOSIT_CAPITAL+totalPnl;
@@ -912,6 +1082,26 @@ function calc(){
   const canBuyFpt24=maxFptAtTarget(TARGET_RATIO_24);
   const canBuyFpt25=maxFptAtTarget(TARGET_RATIO_25);
 
+  const costPerNewGas=gp*(1+BUY_FEE);
+  const sellNetPerNewGas=gp*SELL_NET_FACTOR;
+  const buyDayInterestPerGas=costPerNewGas*DAILY_RATE;
+  const settlementInterestPerGas=sellNetPerNewGas*DAILY_RATE*SETTLEMENT_DAYS;
+  const pnlPerNewGas=sellNetPerNewGas-costPerNewGas-buyDayInterestPerGas-settlementInterestPerGas;
+  const immediateDragPerGas=-pnlPerNewGas;
+  function maxGasAtTarget(target){
+    const denom=immediateDragPerGas + target*costPerNewGas;
+    const headroom=nav2 - target*totalBuy;
+    return (gp>0&&headroom>0&&denom>0)?Math.floor(headroom/denom):0;
+  }
+  const canBuyGas=maxGasAtTarget(REQUIRED_RATIO);
+  const canBuyGas2025=maxGasAtTarget(TARGET_RATIO_2025);
+  const canBuyGas205=maxGasAtTarget(TARGET_RATIO_205);
+  const canBuyGas21=maxGasAtTarget(TARGET_RATIO_21);
+  const canBuyGas22=maxGasAtTarget(TARGET_RATIO_22);
+  const canBuyGas23=maxGasAtTarget(TARGET_RATIO_23);
+  const canBuyGas24=maxGasAtTarget(TARGET_RATIO_24);
+  const canBuyGas25=maxGasAtTarget(TARGET_RATIO_25);
+
   $('totalVhmOut').textContent=fmtShares(totalVhmQty);
   $('avgVhmCostOut').textContent=fmtK(avgVhmCost);
   $('vhmCurrentValueOut').textContent=fmtMoneyFull(vhmCurrentValue);
@@ -922,6 +1112,11 @@ function calc(){
   $('fptCurrentValueOut').textContent=fmtMoneyFull(fptCurrentValue);
   $('fptMarketPnlOut').textContent=fmtMoneyFull(fptMarketPnl);
   $('fptMarketPnlOut').className='v '+(fptMarketPnl>=0?'positive':'negative');
+  $('totalGasOut').textContent=fmtShares(totalGasQty);
+  $('avgGasCostOut').textContent=fmtK(avgGasCost);
+  $('gasCurrentValueOut').textContent=fmtMoneyFull(gasCurrentValue);
+  $('gasMarketPnlOut').textContent=fmtMoneyFull(gasMarketPnl);
+  $('gasMarketPnlOut').className='v '+(gasMarketPnl>=0?'positive':'negative');
   $('megaBotTotalBuyOut').textContent=fmtMoneyFull(totalBuy);
   $('currentValueOut').textContent=fmtMoneyFull(currentValue);
   $('nav2Out').textContent=fmtMoneyFull(nav2);
@@ -959,6 +1154,14 @@ function calc(){
   $('fptBuy23Out').textContent=fmtShares(canBuyFpt23);
   $('fptBuy24Out').textContent=fmtShares(canBuyFpt24);
   $('fptBuy25Out').textContent=fmtShares(canBuyFpt25);
+  $('gasBuyOut').textContent=fmtShares(canBuyGas);
+  $('gasBuy2025Out').textContent=fmtShares(canBuyGas2025);
+  $('gasBuy205Out').textContent=fmtShares(canBuyGas205);
+  $('gasBuy21Out').textContent=fmtShares(canBuyGas21);
+  $('gasBuy22Out').textContent=fmtShares(canBuyGas22);
+  $('gasBuy23Out').textContent=fmtShares(canBuyGas23);
+  $('gasBuy24Out').textContent=fmtShares(canBuyGas24);
+  $('gasBuy25Out').textContent=fmtShares(canBuyGas25);
 
   $('ratioOut').className='v '+(ratio>=REQUIRED_RATIO?'positive':'negative');
   $('bpOut').className='v '+(buyingPower>=0?'positive':'negative');
@@ -968,20 +1171,24 @@ function calc(){
     ['vhmBuy24Out',canBuyVhm24],['vhmBuy25Out',canBuyVhm25],
     ['fptBuyOut',canBuyFpt],['fptBuy2025Out',canBuyFpt2025],['fptBuy205Out',canBuyFpt205],
     ['fptBuy21Out',canBuyFpt21],['fptBuy22Out',canBuyFpt22],['fptBuy23Out',canBuyFpt23],
-    ['fptBuy24Out',canBuyFpt24],['fptBuy25Out',canBuyFpt25]
+    ['fptBuy24Out',canBuyFpt24],['fptBuy25Out',canBuyFpt25],
+    ['gasBuyOut',canBuyGas],['gasBuy2025Out',canBuyGas2025],['gasBuy205Out',canBuyGas205],
+    ['gasBuy21Out',canBuyGas21],['gasBuy22Out',canBuyGas22],['gasBuy23Out',canBuyGas23],
+    ['gasBuy24Out',canBuyGas24],['gasBuy25Out',canBuyGas25]
   ].forEach(([id,val])=>$(id).className='v '+(val>0?'positive':'negative'));
 
   const warnings=[];
   if(requestedVhmSellQty>preSellVhmQty) warnings.push('VHM sell quantity capped at '+fmtShares(preSellVhmQty)+'.');
   if(requestedFptSellQty>preSellFptQty) warnings.push('FPT sell quantity capped at '+fmtShares(preSellFptQty)+'.');
+  if(requestedGasSellQty>preSellGasQty) warnings.push('GAS sell quantity capped at '+fmtShares(preSellGasQty)+'.');
   const warningText=warnings.length?' '+warnings.join(' '):'';
 
   if(ratio<REQUIRED_RATIO){
     const shortfall=REQUIRED_RATIO*totalBuy-nav2;
     $('status').innerHTML='Approximately <b>'+fmtMoney(shortfall)+'</b> is needed to restore the collateral ratio to 20%.'+warningText;
   }else{
-    $('status').innerHTML='Max additional at 20%: VHM <b>'+fmtShares(canBuyVhm)+'</b> | FPT <b>'+fmtShares(canBuyFpt)+'</b>. '
-      +'At 20,25%: VHM <b>'+fmtShares(canBuyVhm2025)+'</b> | FPT <b>'+fmtShares(canBuyFpt2025)+'</b>.'+warningText;
+    $('status').innerHTML='Max additional at 20%: VHM <b>'+fmtShares(canBuyVhm)+'</b> | FPT <b>'+fmtShares(canBuyFpt)+'</b> | GAS <b>'+fmtShares(canBuyGas)+'</b>. '
+      +'At 20,25%: VHM <b>'+fmtShares(canBuyVhm2025)+'</b> | FPT <b>'+fmtShares(canBuyFpt2025)+'</b> | GAS <b>'+fmtShares(canBuyGas2025)+'</b>.'+warningText;
   }
 }
 
@@ -1188,6 +1395,35 @@ async function loadPrices(){
     }
   }
 
+  // GAS is a full third MegaBot symbol. With zero core holding it affects NAV only after a GAS BUY lot is entered.
+  let gasOk=false;
+  let gasSource='';
+  try{
+    const x=await getPrice('GAS');
+    $('gasPrice').value=x.price.toFixed(1);
+    saveLastGoodGas(x.price,'LIVE '+x.source);
+    gasManualOverride=false;
+    $('gasLive').textContent='LIVE '+x.source+' '+x.price.toFixed(1);
+    $('gasLive').className='live positive';
+    gasSource=x.source;
+    gasOk=true;
+  }catch(e){
+    const cached=getLastGoodGas();
+    const current=Number($('gasPrice').value);
+    if(gasManualOverride && Number.isFinite(current) && current>0){
+      $('gasLive').textContent='MANUAL '+current.toFixed(1)+' · live feed unavailable';
+      $('gasLive').className='live warning';
+    }else if(cached){
+      $('gasPrice').value=cached.price.toFixed(1);
+      $('gasLive').textContent='LAST VALID '+cached.price.toFixed(1)+' · '+cached.source+' · '+formatCacheAge(cached.age);
+      $('gasLive').className='live neutral';
+    }else{
+      $('gasPrice').value='';
+      $('gasLive').textContent='NO LAST VALID PRICE · enter manual GAS price';
+      $('gasLive').className='live warning';
+    }
+  }
+
   // VIC is completely independent: reference-only, quantity = 0, excluded from calc()/NAV.
   let vicOk=false;
   let vicSource='';
@@ -1219,7 +1455,7 @@ async function loadPrices(){
   }
 
   // VHM and FPT both affect NAV. VIC/VNINDEX remain reference-only.
-  $('errorBanner').style.display=(vhmOk&&fptOk)?'none':'block';
+  $('errorBanner').style.display=(vhmOk&&fptOk&&gasOk)?'none':'block';
   calc();
 
   const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -1239,13 +1475,21 @@ async function loadPrices(){
       : (fptCachedNow
         ? 'FPT LAST VALID '+$('fptPrice').value+' ('+fptCachedNow.source+', '+formatCacheAge(fptCachedNow.age)+')'
         : 'FPT FALLBACK '+$('fptPrice').value));
+  const gasCachedNow=getLastGoodGas();
+  const gasText=gasOk
+    ? 'GAS LIVE '+gasSource+' '+$('gasPrice').value
+    : (gasManualOverride
+      ? 'GAS MANUAL '+$('gasPrice').value
+      : (gasCachedNow
+        ? 'GAS LAST VALID '+$('gasPrice').value+' ('+gasCachedNow.source+', '+formatCacheAge(gasCachedNow.age)+')'
+        : 'GAS awaiting live/manual price'));
   const vicText=vicOk ? 'VIC '+vicSource+' '+$('vicPrice').value : 'VIC reference unavailable';
   const vnindexText=vnindexOk ? 'VNINDEX '+vnindexSource+' '+$('vnindexPrice').value : 'VNINDEX reference unavailable';
-  $('source').textContent='Checked '+t+' | '+vhmText+' | '+fptText+' | '+vicText+' | '+vnindexText
-    +' | Total VHM: '+fmtShares(lastComputedTotalVhm)+' | Total FPT: '+fmtShares(lastComputedTotalFpt)
+  $('source').textContent='Checked '+t+' | '+vhmText+' | '+fptText+' | '+gasText+' | '+vicText+' | '+vnindexText
+    +' | Total VHM: '+fmtShares(lastComputedTotalVhm)+' | Total FPT: '+fmtShares(lastComputedTotalFpt)+' | Total GAS: '+fmtShares(lastComputedTotalGas)
     +' | MegaBot purchase value: '+fmtMoneyFull(lastComputedTotalBuy)
     +' | Daily interest at 0.045%: '+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-        +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Updated intraday Friday 20/11/2026 after confirmed sales of 5,000 FPT @45.6 and 1,000 FPT @45.1. Core now: VHM 18,000 @64.094 anchored at 60.4; FPT 21,000 @52.844 anchored at 45.1; Total MegaBot Purchase Value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; model NAV1 '+fmtMoneyFull(NAV1)+'; post-sale model anchor NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
+        +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Monday 23/11/2026 from Friday 20/11 close with three financing days deducted. Core: VHM 18,000 @64.094 anchored at 60.4; FPT 21,000 @52.657 anchored at 45.0; GAS core 0. Total MegaBot Purchase Value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; three-day financing deduction '+fmtMoneyFull(PREPARED_TOTAL_INTEREST)+'; prepared NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
@@ -1255,6 +1499,7 @@ async function loadPrices(){
 makeRows();
 restoreLastGoodVhm();
 restoreLastGoodFpt();
+restoreLastGoodGas();
 $('vhmPrice').addEventListener("input",()=>{
   vhmManualOverride=true;
   $('vhmLive').textContent='MANUAL '+$('vhmPrice').value;
@@ -1269,6 +1514,13 @@ $('fptPrice').addEventListener("input",()=>{
   calc();
 });
 $('fptPrice').addEventListener("focus",e=>e.target.select());
+$('gasPrice').addEventListener("input",()=>{
+  gasManualOverride=true;
+  $('gasLive').textContent='MANUAL '+$('gasPrice').value;
+  $('gasLive').className='live neutral';
+  calc();
+});
+$('gasPrice').addEventListener("focus",e=>e.target.select());
 $('vicPrice').addEventListener("focus",e=>e.target.select());
 $('vicPrice').addEventListener("input",()=>{ $('vicLive').textContent='manual reference'; $('vicLive').className='live neutral'; });
 $('vnindexPrice').addEventListener("focus",e=>e.target.select());
