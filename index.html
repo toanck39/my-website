@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 27-11-2026 time 16-08</title>
+<title>Last updated: 27-11-2026 time 16-42</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -233,13 +233,13 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 27-11-2026 time 16-08</div>
+  <div id="versionLine">Last updated: 27-11-2026 time 16-42</div>
 
   <div class="indexSection" id="generalIndexSection">
     <div class="indexTitle">GENERAL INDEX</div>
     <div class="indexBody">
       <div class="panel">
-        <div class="section">VHM & FPT & GAS CORE / LIVE PRICE</div>
+        <div class="section">VHM & FPT & GAS & BSR CORE / LIVE PRICE</div>
         <div class="grid">
           <div class="box">
             <label>VHM core</label>
@@ -270,6 +270,16 @@ body.locked #pinGate{display:flex}
             <label>Current GAS price</label>
             <input id="gasPrice" type="number" value="" placeholder="Last valid / live" step="0.1" min="0" inputmode="decimal">
             <div id="gasLive" class="live">price not loaded</div>
+          </div>
+          <div class="box">
+            <label>BSR core</label>
+            <input id="baseBsrQty" type="number" value="0" readonly>
+            <div class="unit">0 @ -</div>
+          </div>
+          <div class="box">
+            <label>Current BSR price</label>
+            <input id="bsrPrice" type="number" value="" placeholder="Last valid / live" step="0.05" min="0" inputmode="decimal">
+            <div id="bsrLive" class="live">price not loaded</div>
           </div>
         </div>
       </div>
@@ -415,8 +425,44 @@ body.locked #pinGate{display:flex}
     </div>
   </div>
 
+  <div class="indexSection" id="bsrIndexSection">
+    <div class="indexTitle">BSR INDEX</div>
+    <div class="indexBody">
+      <div class="assetSummary">
+        <div class="result"><div class="k">Total BSR</div><div id="totalBsrOut" class="v neutral">0</div></div>
+        <div class="result"><div class="k">BSR average cost</div><div id="avgBsrCostOut" class="v neutral">0.000</div></div>
+        <div class="result"><div class="k">BSR current value</div><div id="bsrCurrentValueOut" class="v neutral">-</div></div>
+        <div class="result"><div class="k">BSR market P/L</div><div id="bsrMarketPnlOut" class="v">-</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="section">2 BSR BUY LOTS</div>
+        <table class="buytable">
+          <thead><tr><th>Symbol / lot</th><th>Buy quantity</th><th>Buy price (k)</th></tr></thead>
+          <tbody id="bsrBuyRows"></tbody>
+        </table>
+        <div class="section" style="margin-top:8px">2 BSR SELL LOTS</div>
+        <table class="buytable">
+          <thead><tr><th>Symbol / lot</th><th>Sell quantity</th><th>Sell price (k)</th></tr></thead>
+          <tbody id="bsrSellRows"></tbody>
+        </table>
+      </div>
+
+      <div class="assetResults">
+        <div class="result maxAssetCard"><div class="k">Max additional BSR</div><div id="bsrBuyOut" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max additional BSR at 20,25%</div><div id="bsrBuy2025Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max BSR at 20.5% collateral</div><div id="bsrBuy205Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max BSR at 21% collateral</div><div id="bsrBuy21Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max BSR at 22% collateral</div><div id="bsrBuy22Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max BSR at 23% collateral</div><div id="bsrBuy23Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max BSR at 24% collateral</div><div id="bsrBuy24Out" class="v">-</div></div>
+        <div class="result maxAssetCard"><div class="k">Max BSR at 25% collateral</div><div id="bsrBuy25Out" class="v">-</div></div>
+      </div>
+    </div>
+  </div>
+
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Prepared for Monday 30/11/2026 from the supplied Friday 27/11/2026 MegaBot closing snapshot. Core: VHM 20,000 @63.840 with market anchor 59.1; FPT 22,000 @52.425 with market anchor 44.60; GAS core remains 0. Total MegaBot Purchase Value: 2,433,787,173. NAV1: 712,611,740. Closing NAV2: 409,564,227. Three financing days (28, 29 and 30 November) at 0.045% per day are deducted before the 30/11 session. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve remains 2 days at 0.045%.</div>
+  <div id="source" class="footer">Prepared for Monday 30/11/2026 from the supplied Friday 27/11/2026 MegaBot closing snapshot. Core: VHM 20,000 @63.840 with market anchor 59.1; FPT 22,000 @52.425 with market anchor 44.60; GAS and BSR core remain 0. Total MegaBot Purchase Value: 2,433,787,173. NAV1: 712,611,740. Closing NAV2: 409,564,227. Three financing days (28, 29 and 30 November) at 0.045% per day are deducted before the 30/11 session. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve remains 2 days at 0.045%.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -529,6 +575,7 @@ const SNAPSHOT_TOTAL_BUY = 2433787173;
 const BASE_VHM_QTY = 20000;
 const BASE_FPT_QTY = 22000;
 const BASE_GAS_QTY = 0;
+const BASE_BSR_QTY = 0;
 const PRE_INTEREST_NAV2 = 409564227;
 const PRE_INTEREST_OPEN_PNL = -303047513;
 const PREPARED_INTEREST_DAYS = 3;
@@ -549,10 +596,11 @@ const MARK_TO_LIQUIDATION_FACTOR = SELL_NET_FACTOR * (1 - DAILY_RATE * SETTLEMEN
 const BASE_VHM_GROSS_COST = 1276791960;
 const BASE_FPT_GROSS_COST = 1153350000;
 const BASE_GAS_GROSS_COST = 0;
+const BASE_BSR_GROSS_COST = 0;
 const BASE_FPT_BUY_COST = BASE_FPT_GROSS_COST * (1 + BUY_FEE);
 const BASE_FPT_BUY_PRICE_K = BASE_FPT_GROSS_COST / BASE_FPT_QTY / 1000; // displays 52.425
 
-// End-of-day market anchors inferred exactly from the supplied 27/11/2026 current values. GAS has no core holding.
+// End-of-day market anchors inferred exactly from the supplied 27/11/2026 current values. GAS and BSR have no core holding.
 const MODEL_ANCHOR_VHM_PRICE_K = 59.1;
 const MODEL_ANCHOR_FPT_PRICE_K = 44.60;
 const INITIAL_LAST_VALID_VHM_PRICE_K = 59.1;
@@ -560,7 +608,9 @@ const INITIAL_LAST_VALID_LABEL = "Friday close 27/11/2026 @59.1";
 const INITIAL_LAST_VALID_FPT_PRICE_K = 44.60;
 const INITIAL_LAST_VALID_FPT_LABEL = "Friday close 27/11/2026 @44.60";
 const INITIAL_LAST_VALID_GAS_PRICE_K = 0;
+const INITIAL_LAST_VALID_BSR_PRICE_K = 0;
 const INITIAL_LAST_VALID_GAS_LABEL = "no GAS base position";
+const INITIAL_LAST_VALID_BSR_LABEL = "no BSR base position";
 
 const REMAINING_TOTAL_BUY = SNAPSHOT_TOTAL_BUY;
 const DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * DAILY_RATE;
@@ -575,15 +625,17 @@ const TARGET_RATIO_24 = 0.24;
 const TARGET_RATIO_25 = 0.25;
 const AUTO_REFRESH_MS = 5000;
 
-// Prepared base for Monday 30/11/2026: VHM 20,000, FPT 22,000, GAS 0.
+// Prepared base for Monday 30/11/2026: VHM 20,000, FPT 22,000, GAS 0, BSR 0.
 // Two BUY and two SELL rows remain free for future trades in each symbol.
 const VHM_CONFIRMED_BUYS = [];
 const FPT_CONFIRMED_BUYS = [];
 const GAS_CONFIRMED_BUYS = [];
+const BSR_CONFIRMED_BUYS = [];
 let lastComputedTotalBuy = SNAPSHOT_TOTAL_BUY;
 let lastComputedTotalVhm = BASE_VHM_QTY;
 let lastComputedTotalFpt = BASE_FPT_QTY;
 let lastComputedTotalGas = BASE_GAS_QTY;
+let lastComputedTotalBsr = BASE_BSR_QTY;
 
 // Persistent VHM last-valid-price memory for Android/desktop.
 // Priority on feed failure: explicit manual override -> persistent last valid price.
@@ -608,6 +660,13 @@ const GAS_CACHE_TS_KEY = "megabot_gas_last_valid_v1_ts";
 const GAS_CACHE_SOURCE_KEY = "megabot_gas_last_valid_v1_source";
 let sessionLastValidGas = null;
 let gasManualOverride = false;
+
+// Persistent BSR last-valid-price memory. BSR starts with no core holding and becomes part of NAV only after a BSR BUY lot is entered.
+const BSR_CACHE_KEY = "megabot_bsr_last_valid_v1_k";
+const BSR_CACHE_TS_KEY = "megabot_bsr_last_valid_v1_ts";
+const BSR_CACHE_SOURCE_KEY = "megabot_bsr_last_valid_v1_source";
+let sessionLastValidBsr = null;
+let bsrManualOverride = false;
 
 const $ = id => document.getElementById(id);
 let loading=false;
@@ -789,6 +848,54 @@ function restoreLastGoodGas(){
   return false;
 }
 
+function bootstrapPersistentBsrPrice(){
+  let p=Number(safeStorageGet(BSR_CACHE_KEY));
+  let ts=Number(safeStorageGet(BSR_CACHE_TS_KEY));
+  let source=safeStorageGet(BSR_CACHE_SOURCE_KEY);
+  if(!(Number.isFinite(p)&&p>0)){
+    sessionLastValidBsr=null;
+    return;
+  }
+  sessionLastValidBsr={price:p,ts:Number.isFinite(ts)&&ts>0?ts:Date.now(),source:source||'last valid'};
+}
+function saveLastGoodBsr(priceK,source='live'){
+  const p=Number(priceK);
+  if(!Number.isFinite(p)||p<=0)return;
+  const ts=Date.now();
+  sessionLastValidBsr={price:p,ts,source};
+  safeStorageSet(BSR_CACHE_KEY,p.toFixed(2));
+  safeStorageSet(BSR_CACHE_TS_KEY,ts);
+  safeStorageSet(BSR_CACHE_SOURCE_KEY,source);
+}
+function getLastGoodBsr(){
+  const p=Number(safeStorageGet(BSR_CACHE_KEY));
+  const ts=Number(safeStorageGet(BSR_CACHE_TS_KEY));
+  const source=safeStorageGet(BSR_CACHE_SOURCE_KEY)||'last valid';
+  if(Number.isFinite(p)&&p>0){
+    const validTs=Number.isFinite(ts)&&ts>0?ts:Date.now();
+    sessionLastValidBsr={price:p,ts:validTs,source};
+    return {price:p,ts:validTs,age:Math.max(0,Date.now()-validTs),source};
+  }
+  if(sessionLastValidBsr && Number.isFinite(sessionLastValidBsr.price) && sessionLastValidBsr.price>0){
+    return {...sessionLastValidBsr,age:Math.max(0,Date.now()-sessionLastValidBsr.ts)};
+  }
+  return null;
+}
+function restoreLastGoodBsr(){
+  bootstrapPersistentBsrPrice();
+  const cached=getLastGoodBsr();
+  if(cached){
+    $('bsrPrice').value=cached.price.toFixed(2);
+    $('bsrLive').textContent='LAST VALID '+cached.price.toFixed(2)+' · '+cached.source+' · '+formatCacheAge(cached.age);
+    $('bsrLive').className='live neutral';
+    return true;
+  }
+  $('bsrPrice').value='';
+  $('bsrLive').textContent='NO LAST VALID PRICE · waiting for live BSR';
+  $('bsrLive').className='live warning';
+  return false;
+}
+
 function applyTheme(theme){
   document.body.classList.toggle("dark", theme==="dark");
   $("themeBtn").textContent = theme==="dark" ? "☀ Light" : "☾ Dark";
@@ -813,13 +920,17 @@ function makeRows(){
   const fptBuyTb=$("fptBuyRows");
   const fptSellTb=$("fptSellRows");
   const gasBuyTb=$("gasBuyRows");
+  const bsrBuyTb=$("bsrBuyRows");
   const gasSellTb=$("gasSellRows");
+  const bsrSellTb=$("bsrSellRows");
   buyTb.innerHTML="";
   sellTb.innerHTML="";
   fptBuyTb.innerHTML="";
   fptSellTb.innerHTML="";
   gasBuyTb.innerHTML="";
+  bsrBuyTb.innerHTML="";
   gasSellTb.innerHTML="";
+  bsrSellTb.innerHTML="";
 
   for(let i=1;i<=2;i++){
     const preset=VHM_CONFIRMED_BUYS[i-1] || {qty:0,price:0};
@@ -878,6 +989,25 @@ function makeRows(){
     gasSellTb.appendChild(tr);
   }
 
+  for(let i=1;i<=2;i++){
+    const preset=BSR_CONFIRMED_BUYS[i-1] || {qty:0,price:0};
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td class="n">BSR BUY ${i}</td>
+      <td><input class="tradeQty buyQty" id="bsrBuyQty${i}" type="number" value="${preset.qty}" min="0" step="100" inputmode="numeric"></td>
+      <td><input class="tradePrice buyPrice" id="bsrBuyPrice${i}" type="number" value="${preset.price}" min="0" step="0.05" inputmode="decimal"></td>`;
+    bsrBuyTb.appendChild(tr);
+  }
+
+  for(let i=1;i<=2;i++){
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td class="n">BSR SELL ${i}</td>
+      <td><input class="tradeQty sellQty" id="bsrSellQty${i}" type="number" value="0" min="0" step="100" inputmode="numeric"></td>
+      <td><input class="tradePrice sellPrice" id="bsrSellPrice${i}" type="number" value="0" min="0" step="0.05" inputmode="decimal"></td>`;
+    bsrSellTb.appendChild(tr);
+  }
+
   document.querySelectorAll(".tradeQty,.tradePrice").forEach(el=>{
     el.addEventListener("input",calc);
     el.addEventListener("focus",e=>e.target.select());
@@ -888,6 +1018,7 @@ function calc(){
   const vpK=+$('vhmPrice').value||INITIAL_LAST_VALID_VHM_PRICE_K, vp=vpK*1000;
   const fpK=+$('fptPrice').value||INITIAL_LAST_VALID_FPT_PRICE_K, fp=fpK*1000;
   const gpK=+$('gasPrice').value||0, gp=gpK*1000;
+  const bpK=+$('bsrPrice').value||0, bsrp=bpK*1000;
 
   // VHM: two future BUY lots.
   let extraVhmQty=0;
@@ -989,23 +1120,59 @@ function calc(){
   const gasGrossCost=Math.max(0,preSellGasGrossCost-soldGasGrossCost);
   const gasBuyValue=gasGrossCost*(1+BUY_FEE);
 
-  const totalBuy=vhmBuyValue+fptBuyValue+gasBuyValue;
+  // BSR: two future BUY lots, then two SELL lots. Core BSR starts at zero.
+  let extraBsrQty=0;
+  let extraBsrGrossCost=0;
+  for(let i=1;i<=2;i++){
+    const q=Math.max(0,+$('bsrBuyQty'+i).value||0);
+    const pK=Math.max(0,+$('bsrBuyPrice'+i).value||0);
+    extraBsrQty+=q;
+    extraBsrGrossCost+=q*pK*1000;
+  }
+  const preSellBsrQty=BASE_BSR_QTY+extraBsrQty;
+  const preSellBsrGrossCost=BASE_BSR_GROSS_COST+extraBsrGrossCost;
+  const preSellBsrAvgGrossCost=preSellBsrQty>0?preSellBsrGrossCost/preSellBsrQty:0;
+  let sellBsrQty=0;
+  let bsrSellExecutionAdjustment=0;
+  let remainingBsrSellCapacity=preSellBsrQty;
+  let requestedBsrSellQty=0;
+  for(let i=1;i<=2;i++){
+    const qRequested=Math.max(0,+$('bsrSellQty'+i).value||0);
+    const pK=Math.max(0,+$('bsrSellPrice'+i).value||0);
+    requestedBsrSellQty+=qRequested;
+    const q=Math.min(qRequested,remainingBsrSellCapacity);
+    remainingBsrSellCapacity-=q;
+    sellBsrQty+=q;
+    if(q>0 && pK>0){
+      bsrSellExecutionAdjustment+=q*((pK*1000)-bsrp)*MARK_TO_LIQUIDATION_FACTOR;
+    }
+  }
+  const soldBsrGrossCost=sellBsrQty*preSellBsrAvgGrossCost;
+  const totalBsrQty=Math.max(0,preSellBsrQty-sellBsrQty);
+  const bsrGrossCost=Math.max(0,preSellBsrGrossCost-soldBsrGrossCost);
+  const bsrBuyValue=bsrGrossCost*(1+BUY_FEE);
+
+  const totalBuy=vhmBuyValue+fptBuyValue+gasBuyValue+bsrBuyValue;
   const vhmCurrentValue=totalVhmQty*vp;
   const fptCurrentValue=totalFptQty*fp;
   const gasCurrentValue=totalGasQty*gp;
-  const currentValue=vhmCurrentValue+fptCurrentValue+gasCurrentValue;
+  const bsrCurrentValue=totalBsrQty*bsrp;
+  const currentValue=vhmCurrentValue+fptCurrentValue+gasCurrentValue+bsrCurrentValue;
   const vhmMarketPnl=vhmCurrentValue-vhmGrossCost;
   const fptMarketPnl=fptCurrentValue-fptGrossCost;
   const gasMarketPnl=gasCurrentValue-gasGrossCost;
+  const bsrMarketPnl=bsrCurrentValue-bsrGrossCost;
   const avgVhmCost=totalVhmQty>0?vhmGrossCost/totalVhmQty:0;
   const avgFptCost=totalFptQty>0?fptGrossCost/totalFptQty:0;
   const avgGasCost=totalGasQty>0?gasGrossCost/totalGasQty:0;
+  const avgBsrCost=totalBsrQty>0?bsrGrossCost/totalBsrQty:0;
   lastComputedTotalBuy=totalBuy;
   lastComputedTotalVhm=totalVhmQty;
   lastComputedTotalFpt=totalFptQty;
   lastComputedTotalGas=totalGasQty;
+  lastComputedTotalBsr=totalBsrQty;
 
-  // Base positions move from the updated 25/11 anchors using MegaBot mark-to-liquidation assumptions.
+  // Base positions move from the updated 27/11 anchors using MegaBot mark-to-liquidation assumptions.
   const basePrice=MODEL_ANCHOR_VHM_PRICE_K*1000;
   const baseMovePnl=BASE_VHM_QTY*(vp-basePrice)*MARK_TO_LIQUIDATION_FACTOR;
   const fptBasePrice=MODEL_ANCHOR_FPT_PRICE_K*1000;
@@ -1032,8 +1199,15 @@ function calc(){
   const extraGasSettlementInterest=extraGasSellNet*DAILY_RATE*SETTLEMENT_DAYS;
   const extraGasPnl=extraGasSellNet-extraGasBuyCost-extraGasDayInterest-extraGasSettlementInterest;
 
-  const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+extraGasPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment+gasSellExecutionAdjustment;
-  const nav2=SNAPSHOT_NAV2+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+extraGasPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment+gasSellExecutionAdjustment;
+  // New BSR buys use the same MegaBot fee/interest mechanics.
+  const extraBsrBuyCost=extraBsrGrossCost*(1+BUY_FEE);
+  const extraBsrSellNet=extraBsrQty*bsrp*SELL_NET_FACTOR;
+  const extraBsrDayInterest=extraBsrBuyCost*DAILY_RATE;
+  const extraBsrSettlementInterest=extraBsrSellNet*DAILY_RATE*SETTLEMENT_DAYS;
+  const extraBsrPnl=extraBsrSellNet-extraBsrBuyCost-extraBsrDayInterest-extraBsrSettlementInterest;
+
+  const openPnl=SNAPSHOT_OPEN_PNL+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+extraGasPnl+extraBsrPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment+gasSellExecutionAdjustment+bsrSellExecutionAdjustment;
+  const nav2=SNAPSHOT_NAV2+baseMovePnl+fptMovePnl+extraVhmPnl+extraFptPnl+extraGasPnl+extraBsrPnl+vhmSellExecutionAdjustment+fptSellExecutionAdjustment+gasSellExecutionAdjustment+bsrSellExecutionAdjustment;
 
   const totalPnl=REALIZED_PNL+openPnl;
   const netWorth=NET_DEPOSIT_CAPITAL+totalPnl;
@@ -1102,6 +1276,26 @@ function calc(){
   const canBuyGas24=maxGasAtTarget(TARGET_RATIO_24);
   const canBuyGas25=maxGasAtTarget(TARGET_RATIO_25);
 
+  const costPerNewBsr=bsrp*(1+BUY_FEE);
+  const sellNetPerNewBsr=bsrp*SELL_NET_FACTOR;
+  const buyDayInterestPerBsr=costPerNewBsr*DAILY_RATE;
+  const settlementInterestPerBsr=sellNetPerNewBsr*DAILY_RATE*SETTLEMENT_DAYS;
+  const pnlPerNewBsr=sellNetPerNewBsr-costPerNewBsr-buyDayInterestPerBsr-settlementInterestPerBsr;
+  const immediateDragPerBsr=-pnlPerNewBsr;
+  function maxBsrAtTarget(target){
+    const denom=immediateDragPerBsr + target*costPerNewBsr;
+    const headroom=nav2 - target*totalBuy;
+    return (bsrp>0&&headroom>0&&denom>0)?Math.floor(headroom/denom):0;
+  }
+  const canBuyBsr=maxBsrAtTarget(REQUIRED_RATIO);
+  const canBuyBsr2025=maxBsrAtTarget(TARGET_RATIO_2025);
+  const canBuyBsr205=maxBsrAtTarget(TARGET_RATIO_205);
+  const canBuyBsr21=maxBsrAtTarget(TARGET_RATIO_21);
+  const canBuyBsr22=maxBsrAtTarget(TARGET_RATIO_22);
+  const canBuyBsr23=maxBsrAtTarget(TARGET_RATIO_23);
+  const canBuyBsr24=maxBsrAtTarget(TARGET_RATIO_24);
+  const canBuyBsr25=maxBsrAtTarget(TARGET_RATIO_25);
+
   $('totalVhmOut').textContent=fmtShares(totalVhmQty);
   $('avgVhmCostOut').textContent=fmtK(avgVhmCost);
   $('vhmCurrentValueOut').textContent=fmtMoneyFull(vhmCurrentValue);
@@ -1117,6 +1311,11 @@ function calc(){
   $('gasCurrentValueOut').textContent=fmtMoneyFull(gasCurrentValue);
   $('gasMarketPnlOut').textContent=fmtMoneyFull(gasMarketPnl);
   $('gasMarketPnlOut').className='v '+(gasMarketPnl>=0?'positive':'negative');
+  $('totalBsrOut').textContent=fmtShares(totalBsrQty);
+  $('avgBsrCostOut').textContent=fmtK(avgBsrCost);
+  $('bsrCurrentValueOut').textContent=fmtMoneyFull(bsrCurrentValue);
+  $('bsrMarketPnlOut').textContent=fmtMoneyFull(bsrMarketPnl);
+  $('bsrMarketPnlOut').className='v '+(bsrMarketPnl>=0?'positive':'negative');
   $('megaBotTotalBuyOut').textContent=fmtMoneyFull(totalBuy);
   $('currentValueOut').textContent=fmtMoneyFull(currentValue);
   $('nav2Out').textContent=fmtMoneyFull(nav2);
@@ -1163,6 +1362,15 @@ function calc(){
   $('gasBuy24Out').textContent=fmtShares(canBuyGas24);
   $('gasBuy25Out').textContent=fmtShares(canBuyGas25);
 
+  $('bsrBuyOut').textContent=fmtShares(canBuyBsr);
+  $('bsrBuy2025Out').textContent=fmtShares(canBuyBsr2025);
+  $('bsrBuy205Out').textContent=fmtShares(canBuyBsr205);
+  $('bsrBuy21Out').textContent=fmtShares(canBuyBsr21);
+  $('bsrBuy22Out').textContent=fmtShares(canBuyBsr22);
+  $('bsrBuy23Out').textContent=fmtShares(canBuyBsr23);
+  $('bsrBuy24Out').textContent=fmtShares(canBuyBsr24);
+  $('bsrBuy25Out').textContent=fmtShares(canBuyBsr25);
+
   $('ratioOut').className='v '+(ratio>=REQUIRED_RATIO?'positive':'negative');
   $('bpOut').className='v '+(buyingPower>=0?'positive':'negative');
   [
@@ -1174,21 +1382,26 @@ function calc(){
     ['fptBuy24Out',canBuyFpt24],['fptBuy25Out',canBuyFpt25],
     ['gasBuyOut',canBuyGas],['gasBuy2025Out',canBuyGas2025],['gasBuy205Out',canBuyGas205],
     ['gasBuy21Out',canBuyGas21],['gasBuy22Out',canBuyGas22],['gasBuy23Out',canBuyGas23],
-    ['gasBuy24Out',canBuyGas24],['gasBuy25Out',canBuyGas25]
+    ['gasBuy24Out',canBuyGas24],['gasBuy25Out',canBuyGas25],
+    ['bsrBuyOut',canBuyBsr],['bsrBuy2025Out',canBuyBsr2025],['bsrBuy205Out',canBuyBsr205],
+    ['bsrBuy21Out',canBuyBsr21],['bsrBuy22Out',canBuyBsr22],['bsrBuy23Out',canBuyBsr23],
+    ['bsrBuy24Out',canBuyBsr24],['bsrBuy25Out',canBuyBsr25]
   ].forEach(([id,val])=>$(id).className='v '+(val>0?'positive':'negative'));
 
   const warnings=[];
   if(requestedVhmSellQty>preSellVhmQty) warnings.push('VHM sell quantity capped at '+fmtShares(preSellVhmQty)+'.');
   if(requestedFptSellQty>preSellFptQty) warnings.push('FPT sell quantity capped at '+fmtShares(preSellFptQty)+'.');
   if(requestedGasSellQty>preSellGasQty) warnings.push('GAS sell quantity capped at '+fmtShares(preSellGasQty)+'.');
+  if(requestedBsrSellQty>preSellBsrQty) warnings.push('BSR sell quantity capped at '+fmtShares(preSellBsrQty)+'.');
+  if(extraBsrQty>0 && bsrp<=0) warnings.push('BSR price unavailable: enter a current BSR price before using the trade simulation.');
   const warningText=warnings.length?' '+warnings.join(' '):'';
 
   if(ratio<REQUIRED_RATIO){
     const shortfall=REQUIRED_RATIO*totalBuy-nav2;
     $('status').innerHTML='Approximately <b>'+fmtMoney(shortfall)+'</b> is needed to restore the collateral ratio to 20%.'+warningText;
   }else{
-    $('status').innerHTML='Max additional at 20%: VHM <b>'+fmtShares(canBuyVhm)+'</b> | FPT <b>'+fmtShares(canBuyFpt)+'</b> | GAS <b>'+fmtShares(canBuyGas)+'</b>. '
-      +'At 20,25%: VHM <b>'+fmtShares(canBuyVhm2025)+'</b> | FPT <b>'+fmtShares(canBuyFpt2025)+'</b> | GAS <b>'+fmtShares(canBuyGas2025)+'</b>.'+warningText;
+    $('status').innerHTML='Max additional at 20%: VHM <b>'+fmtShares(canBuyVhm)+'</b> | FPT <b>'+fmtShares(canBuyFpt)+'</b> | GAS <b>'+fmtShares(canBuyGas)+'</b> | BSR <b>'+fmtShares(canBuyBsr)+'</b>. '
+      +'At 20,25%: VHM <b>'+fmtShares(canBuyVhm2025)+'</b> | FPT <b>'+fmtShares(canBuyFpt2025)+'</b> | GAS <b>'+fmtShares(canBuyGas2025)+'</b> | BSR <b>'+fmtShares(canBuyBsr2025)+'</b>.'+warningText;
   }
 }
 
@@ -1424,6 +1637,35 @@ async function loadPrices(){
     }
   }
 
+  // BSR is a full fourth MegaBot symbol. With zero core holding it affects NAV only after a BSR BUY lot is entered.
+  let bsrOk=false;
+  let bsrSource='';
+  try{
+    const x=await getPrice('BSR');
+    $('bsrPrice').value=x.price.toFixed(2);
+    saveLastGoodBsr(x.price,'LIVE '+x.source);
+    bsrManualOverride=false;
+    $('bsrLive').textContent='LIVE '+x.source+' '+x.price.toFixed(2);
+    $('bsrLive').className='live positive';
+    bsrSource=x.source;
+    bsrOk=true;
+  }catch(e){
+    const cached=getLastGoodBsr();
+    const current=Number($('bsrPrice').value);
+    if(bsrManualOverride && Number.isFinite(current) && current>0){
+      $('bsrLive').textContent='MANUAL '+current.toFixed(2)+' · live feed unavailable';
+      $('bsrLive').className='live warning';
+    }else if(cached){
+      $('bsrPrice').value=cached.price.toFixed(2);
+      $('bsrLive').textContent='LAST VALID '+cached.price.toFixed(2)+' · '+cached.source+' · '+formatCacheAge(cached.age);
+      $('bsrLive').className='live neutral';
+    }else{
+      $('bsrPrice').value='';
+      $('bsrLive').textContent='NO LAST VALID PRICE · enter manual BSR price';
+      $('bsrLive').className='live warning';
+    }
+  }
+
   // VIC is completely independent: reference-only, quantity = 0, excluded from calc()/NAV.
   let vicOk=false;
   let vicSource='';
@@ -1454,8 +1696,8 @@ async function loadPrices(){
     $('vnindexLive').className='live warning';
   }
 
-  // VHM and FPT both affect NAV. VIC/VNINDEX remain reference-only.
-  $('errorBanner').style.display=(vhmOk&&fptOk&&gasOk)?'none':'block';
+  // VHM, FPT, GAS and BSR affect NAV. VIC/VNINDEX remain reference-only.
+  $('errorBanner').style.display=(vhmOk&&fptOk&&gasOk&&(bsrOk||lastComputedTotalBsr===0))?'none':'block';
   calc();
 
   const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -1483,13 +1725,21 @@ async function loadPrices(){
       : (gasCachedNow
         ? 'GAS LAST VALID '+$('gasPrice').value+' ('+gasCachedNow.source+', '+formatCacheAge(gasCachedNow.age)+')'
         : 'GAS awaiting live/manual price'));
+  const bsrCachedNow=getLastGoodBsr();
+  const bsrText=bsrOk
+    ? 'BSR LIVE '+bsrSource+' '+$('bsrPrice').value
+    : (bsrManualOverride
+      ? 'BSR MANUAL '+$('bsrPrice').value
+      : (bsrCachedNow
+        ? 'BSR LAST VALID '+$('bsrPrice').value+' ('+bsrCachedNow.source+', '+formatCacheAge(bsrCachedNow.age)+')'
+        : 'BSR awaiting live/manual price'));
   const vicText=vicOk ? 'VIC '+vicSource+' '+$('vicPrice').value : 'VIC reference unavailable';
   const vnindexText=vnindexOk ? 'VNINDEX '+vnindexSource+' '+$('vnindexPrice').value : 'VNINDEX reference unavailable';
-  $('source').textContent='Checked '+t+' | '+vhmText+' | '+fptText+' | '+gasText+' | '+vicText+' | '+vnindexText
-    +' | Total VHM: '+fmtShares(lastComputedTotalVhm)+' | Total FPT: '+fmtShares(lastComputedTotalFpt)+' | Total GAS: '+fmtShares(lastComputedTotalGas)
+  $('source').textContent='Checked '+t+' | '+vhmText+' | '+fptText+' | '+gasText+' | '+bsrText+' | '+vicText+' | '+vnindexText
+    +' | Total VHM: '+fmtShares(lastComputedTotalVhm)+' | Total FPT: '+fmtShares(lastComputedTotalFpt)+' | Total GAS: '+fmtShares(lastComputedTotalGas)+' | Total BSR: '+fmtShares(lastComputedTotalBsr)
     +' | MegaBot purchase value: '+fmtMoneyFull(lastComputedTotalBuy)
     +' | Daily interest at 0.045%: '+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-        +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Monday 30/11/2026 from Friday close. Core: VHM 20,000 @63.840 anchored at 59.1; FPT 22,000 @52.425 anchored at 44.60; GAS core 0. Total MegaBot Purchase Value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; three-day financing deduction (28, 29 and 30 November) '+fmtMoneyFull(PREPARED_TOTAL_INTEREST)+'; prepared NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
+        +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Monday 30/11/2026 from Friday close. Core: VHM 20,000 @63.840 anchored at 59.1; FPT 22,000 @52.425 anchored at 44.60; GAS and BSR core 0. Total MegaBot Purchase Value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; three-day financing deduction (28, 29 and 30 November) '+fmtMoneyFull(PREPARED_TOTAL_INTEREST)+'; prepared NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
@@ -1500,6 +1750,7 @@ makeRows();
 restoreLastGoodVhm();
 restoreLastGoodFpt();
 restoreLastGoodGas();
+restoreLastGoodBsr();
 $('vhmPrice').addEventListener("input",()=>{
   vhmManualOverride=true;
   $('vhmLive').textContent='MANUAL '+$('vhmPrice').value;
@@ -1521,6 +1772,13 @@ $('gasPrice').addEventListener("input",()=>{
   calc();
 });
 $('gasPrice').addEventListener("focus",e=>e.target.select());
+$('bsrPrice').addEventListener("input",()=>{
+  bsrManualOverride=true;
+  $('bsrLive').textContent='MANUAL '+$('bsrPrice').value;
+  $('bsrLive').className='live neutral';
+  calc();
+});
+$('bsrPrice').addEventListener("focus",e=>e.target.select());
 $('vicPrice').addEventListener("focus",e=>e.target.select());
 $('vicPrice').addEventListener("input",()=>{ $('vicLive').textContent='manual reference'; $('vicLive').className='live neutral'; });
 $('vnindexPrice').addEventListener("focus",e=>e.target.select());
