@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last updated: 26-11-2026 time 10-13</title>
+<title>Last updated: 27-11-2026 time 9-10</title>
 <style>
 :root{
   --bg:#ffffff; --card:#f8fafc; --line:#dbe3ec; --text:#111827;
@@ -233,7 +233,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="errorBanner">LIVE FEED UNAVAILABLE – USING LAST VALID PRICE</div>
-  <div id="versionLine">Last updated: 26-11-2026 time 10-13</div>
+  <div id="versionLine">Last updated: 27-11-2026 time 9-10</div>
 
   <div class="indexSection" id="generalIndexSection">
     <div class="indexTitle">GENERAL INDEX</div>
@@ -416,7 +416,7 @@ body.locked #pinGate{display:flex}
   </div>
 
   <div id="status" class="footer"></div>
-  <div id="source" class="footer">Prepared for Thursday 26/11/2026 from the supplied Wednesday 25/11/2026 MegaBot closing snapshot. Core: VHM 20,000 @63.840 with market anchor 61.1; FPT 22,000 @52.425 with market anchor 46.05; GAS core remains 0. Total MegaBot Purchase Value: 2,433,787,173. NAV1: 691,711,740. Closing NAV2: 462,510,337. One financing day at 0.045% is deducted before the 26/11 session. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve remains 2 days at 0.045%.</div>
+  <div id="source" class="footer">Prepared for Friday 27/11/2026 from the supplied Thursday 26/11/2026 MegaBot closing snapshot. Core: VHM 20,000 @63.840 with market anchor 59.0; FPT 22,000 @52.425 with market anchor 44.50; GAS core remains 0. Total MegaBot Purchase Value: 2,433,787,173. NAV1: 691,711,740. Closing NAV2: 385,573,702. One financing day at 0.045% is deducted before the 27/11 session. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve remains 2 days at 0.045%.</div>
 </div>
 
 <script src="https://widget.time.is/t.js"></script>
@@ -519,18 +519,18 @@ document.addEventListener("DOMContentLoaded", initPinGate);
 const COLLATERAL_WITHDRAWAL = 15000000; // historical withdrawal already reflected in the account base
 const NET_DEPOSIT_CAPITAL = 1309100456.518321; // retained only to preserve historical realized-P/L bookkeeping
 
-// Official MegaBot closing snapshot supplied for Wednesday 25/11/2026.
-// Prepared for Thursday 26/11/2026 by deducting 1 full financing day
+// Official MegaBot closing snapshot supplied for Thursday 26/11/2026.
+// Prepared for Friday 27/11/2026 by deducting 1 full financing day
 // at 0.045% of the full MegaBot Purchase Value.
 // Collateral is not deducted from the interest base.
 const NAV1 = 691711740;
-const PRIOR_SNAPSHOT_TOTAL_BUY = 2433737098;
+const PRIOR_SNAPSHOT_TOTAL_BUY = 2433787173;
 const SNAPSHOT_TOTAL_BUY = 2433787173;
 const BASE_VHM_QTY = 20000;
 const BASE_FPT_QTY = 22000;
 const BASE_GAS_QTY = 0;
-const PRE_INTEREST_NAV2 = 462510337;
-const PRE_INTEREST_OPEN_PNL = -229201403;
+const PRE_INTEREST_NAV2 = 385573702;
+const PRE_INTEREST_OPEN_PNL = -306138038;
 const PREPARED_INTEREST_DAYS = 1;
 const PREPARED_DAILY_INTEREST = SNAPSHOT_TOTAL_BUY * 0.00045;
 const PREPARED_TOTAL_INTEREST = PREPARED_DAILY_INTEREST * PREPARED_INTEREST_DAYS;
@@ -545,20 +545,20 @@ const SETTLEMENT_DAYS = 2;              // MegaBot mark-to-liquidation interest 
 const SELL_NET_FACTOR = 1 - SELL_FEE;
 const MARK_TO_LIQUIDATION_FACTOR = SELL_NET_FACTOR * (1 - DAILY_RATE * SETTLEMENT_DAYS);
 
-// Exact gross purchase values from the supplied 25/11/2026 closing snapshot.
+// Exact gross purchase values from the supplied 26/11/2026 closing snapshot.
 const BASE_VHM_GROSS_COST = 1276791960;
 const BASE_FPT_GROSS_COST = 1153350000;
 const BASE_GAS_GROSS_COST = 0;
 const BASE_FPT_BUY_COST = BASE_FPT_GROSS_COST * (1 + BUY_FEE);
 const BASE_FPT_BUY_PRICE_K = BASE_FPT_GROSS_COST / BASE_FPT_QTY / 1000; // displays 52.425
 
-// End-of-day market anchors inferred exactly from the supplied 25/11/2026 current values. GAS has no core holding.
-const MODEL_ANCHOR_VHM_PRICE_K = 61.1;
-const MODEL_ANCHOR_FPT_PRICE_K = 46.05;
-const INITIAL_LAST_VALID_VHM_PRICE_K = 61.1;
-const INITIAL_LAST_VALID_LABEL = "Wednesday close 25/11/2026 @61.1";
-const INITIAL_LAST_VALID_FPT_PRICE_K = 46.05;
-const INITIAL_LAST_VALID_FPT_LABEL = "Wednesday close 25/11/2026 @46.05";
+// End-of-day market anchors inferred exactly from the supplied 26/11/2026 current values. GAS has no core holding.
+const MODEL_ANCHOR_VHM_PRICE_K = 59.0;
+const MODEL_ANCHOR_FPT_PRICE_K = 44.50;
+const INITIAL_LAST_VALID_VHM_PRICE_K = 59.0;
+const INITIAL_LAST_VALID_LABEL = "Thursday close 26/11/2026 @59.0";
+const INITIAL_LAST_VALID_FPT_PRICE_K = 44.50;
+const INITIAL_LAST_VALID_FPT_LABEL = "Thursday close 26/11/2026 @44.50";
 const INITIAL_LAST_VALID_GAS_PRICE_K = 0;
 const INITIAL_LAST_VALID_GAS_LABEL = "no GAS base position";
 
@@ -575,7 +575,7 @@ const TARGET_RATIO_24 = 0.24;
 const TARGET_RATIO_25 = 0.25;
 const AUTO_REFRESH_MS = 5000;
 
-// Prepared base for Thursday 26/11/2026: VHM 20,000, FPT 22,000, GAS 0.
+// Prepared base for Friday 27/11/2026: VHM 20,000, FPT 22,000, GAS 0.
 // Two BUY and two SELL rows remain free for future trades in each symbol.
 const VHM_CONFIRMED_BUYS = [];
 const FPT_CONFIRMED_BUYS = [];
@@ -587,18 +587,18 @@ let lastComputedTotalGas = BASE_GAS_QTY;
 
 // Persistent VHM last-valid-price memory for Android/desktop.
 // Priority on feed failure: explicit manual override -> persistent last valid price.
-// The Wednesday 25/11 close at 61.1 is used only once to bootstrap an empty cache;
+// The Thursday 26/11 close at 59.0 is used only once to bootstrap an empty cache;
 // every successful LIVE quote permanently replaces it, including tomorrow's close.
-const VHM_CACHE_KEY = "megabot_vhm_last_valid_v29_k";
-const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v29_ts";
-const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v29_source";
+const VHM_CACHE_KEY = "megabot_vhm_last_valid_v30_k";
+const VHM_CACHE_TS_KEY = "megabot_vhm_last_valid_v30_ts";
+const VHM_CACHE_SOURCE_KEY = "megabot_vhm_last_valid_v30_source";
 let sessionLastValidVhm = null;
 let vhmManualOverride = false;
 
 // Persistent FPT last-valid-price memory. FPT is now part of NAV, so a reliable fallback is required.
-const FPT_CACHE_KEY = "megabot_fpt_last_valid_v19_k";
-const FPT_CACHE_TS_KEY = "megabot_fpt_last_valid_v19_ts";
-const FPT_CACHE_SOURCE_KEY = "megabot_fpt_last_valid_v19_source";
+const FPT_CACHE_KEY = "megabot_fpt_last_valid_v20_k";
+const FPT_CACHE_TS_KEY = "megabot_fpt_last_valid_v20_ts";
+const FPT_CACHE_SOURCE_KEY = "megabot_fpt_last_valid_v20_source";
 let sessionLastValidFpt = null;
 let fptManualOverride = false;
 
@@ -1489,7 +1489,7 @@ async function loadPrices(){
     +' | Total VHM: '+fmtShares(lastComputedTotalVhm)+' | Total FPT: '+fmtShares(lastComputedTotalFpt)+' | Total GAS: '+fmtShares(lastComputedTotalGas)
     +' | MegaBot purchase value: '+fmtMoneyFull(lastComputedTotalBuy)
     +' | Daily interest at 0.045%: '+fmtMoney(lastComputedTotalBuy*DAILY_RATE)
-        +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Thursday 26/11/2026 from Wednesday close. Core: VHM 20,000 @63.840 anchored at 61.1; FPT 22,000 @52.425 anchored at 46.05; GAS core 0. Total MegaBot Purchase Value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; one-day financing deduction '+fmtMoneyFull(PREPARED_TOTAL_INTEREST)+'; prepared NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
+        +'. Buy fee 0.15%; sell fee 0.25%; settlement interest reserve: 2 days at 0.045%. Prepared for Friday 27/11/2026 from Thursday close. Core: VHM 20,000 @63.840 anchored at 59.0; FPT 22,000 @52.425 anchored at 44.50; GAS core 0. Total MegaBot Purchase Value '+fmtMoneyFull(SNAPSHOT_TOTAL_BUY)+'; NAV1 '+fmtMoneyFull(NAV1)+'; one-day financing deduction '+fmtMoneyFull(PREPARED_TOTAL_INTEREST)+'; prepared NAV2 '+fmtMoneyFull(SNAPSHOT_NAV2)+'.';
 
   btn.disabled=false;
   btn.textContent='↻ Refresh';
